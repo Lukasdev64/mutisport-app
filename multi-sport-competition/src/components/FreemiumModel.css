@@ -1,0 +1,132 @@
+.freemium-section {
+  padding: 6rem 3rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.freemium-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.freemium-text h2 {
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.freemium-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+}
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.benefit-item {
+  display: flex;
+  gap: 1rem;
+  align-items: start;
+}
+
+.benefit-icon {
+  font-size: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.benefit-item h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.benefit-item p {
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.freemium-steps {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.freemium-steps h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.step {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: start;
+}
+
+.step:last-child {
+  margin-bottom: 0;
+}
+
+.step-number {
+  background: #1f2937;
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.step-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.step-content p {
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .freemium-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .freemium-text h2 {
+    font-size: 2rem;
+  }
+  
+  .freemium-steps {
+    padding: 2rem;
+  }
+}
