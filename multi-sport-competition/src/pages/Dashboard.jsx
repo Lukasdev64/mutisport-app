@@ -6,6 +6,9 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase, auth } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
+import { createCompetitionWithFiles, getUserCompetitions } from '../services/competitionService'
+import { ensureUserProfile } from '../services/profileService'
+import { Calendar, MapPin, Users, Target } from 'lucide-react'
 import './Dashboard.css'
 
 function Dashboard() {
@@ -26,6 +29,10 @@ function Dashboard() {
 
       setSession(currentSession)
       setUser(currentSession.user)
+      
+      // Vérifier/créer le profil utilisateur
+      await ensureUserProfile()
+      
       setIsPending(false)
     }
 
@@ -90,6 +97,51 @@ function ProfileView({ user }) {
   const firstName = user.user_metadata?.first_name || ''
   const lastName = user.user_metadata?.last_name || ''
   const fullName = user.user_metadata?.full_name || `${firstName} ${lastName}`.trim()
+  
+  const [stats, setStats] = useState({
+    competitions: 0,
+    participants: 0,
+    messages: 0
+  })
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      // Récupérer le nombre de compétitions
+      const { count: competitionsCount } = await supabase
+        .from('competitions')
+        .select('*', { count: 'exact', head: true })
+        .eq('organizer_id', user.id)
+
+      // Récupérer le nombre total de participants dans toutes les compétitions de l'utilisateur
+      const { data: competitions } = await supabase
+        .from('competitions')
+        .select('current_participants')
+        .eq('organizer_id', user.id)
+      
+      const totalParticipants = competitions?.reduce((sum, comp) => sum + (comp.current_participants || 0), 0) || 0
+
+      // Récupérer le nombre de messages
+      const { count: messagesCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+
+      setStats({
+        competitions: competitionsCount || 0,
+        participants: totalParticipants,
+        messages: messagesCount || 0
+      })
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques:', error)
+    } finally {
+      setIsLoadingStats(false)
+    }
+  }
 
   return (
     <div className="view-container">
@@ -127,20 +179,26 @@ function ProfileView({ user }) {
 
         <div className="card">
           <h3>Statistiques rapides</h3>
-          <div className="stats-quick">
-            <div className="stat-item">
-              <div className="stat-value">0</div>
-              <div className="stat-label">Compétitions</div>
+          {isLoadingStats ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <div className="loading-spinner" style={{ margin: '0 auto' }}></div>
             </div>
-            <div className="stat-item">
-              <div className="stat-value">0</div>
-              <div className="stat-label">Participants</div>
+          ) : (
+            <div className="stats-quick">
+              <div className="stat-item">
+                <div className="stat-value">{stats.competitions}</div>
+                <div className="stat-label">Compétitions</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{stats.participants}</div>
+                <div className="stat-label">Participants</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-value">{stats.messages}</div>
+                <div className="stat-label">Messages</div>
+              </div>
             </div>
-            <div className="stat-item">
-              <div className="stat-value">0</div>
-              <div className="stat-label">Messages</div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -151,6 +209,9 @@ function ProfileView({ user }) {
 function CompetitionsView() {
   const [showForm, setShowForm] = useState(false)
   const [competitions, setCompetitions] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     sport: '',
@@ -164,6 +225,27 @@ function CompetitionsView() {
     description: '',
     files: []
   })
+
+  // Charger les compétitions au montage du composant
+  useEffect(() => {
+    loadCompetitions()
+  }, [])
+
+  const loadCompetitions = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    const { data, error: fetchError } = await getUserCompetitions()
+    
+    if (fetchError) {
+      setError('Erreur lors du chargement des compétitions')
+      console.error(fetchError)
+    } else {
+      setCompetitions(data || [])
+    }
+    
+    setIsLoading(false)
+  }
 
   const sports = [
     'Tennis', 'Football', 'Basketball', 'Volleyball', 
@@ -207,29 +289,56 @@ function CompetitionsView() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const newCompetition = {
-      id: Date.now(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-      participants: 0
+    setIsSubmitting(true)
+    setError(null)
+
+    console.log('📝 Soumission du formulaire...', formData)
+
+    try {
+      // Créer la compétition avec les fichiers
+      console.log('📤 Envoi vers Supabase...')
+      const { data, error: createError } = await createCompetitionWithFiles(
+        formData,
+        formData.files
+      )
+
+      if (createError) {
+        console.error('❌ Erreur création:', createError)
+        setError(typeof createError === 'string' ? createError : 'Erreur lors de la création')
+        return
+      }
+
+      console.log('✅ Compétition créée:', data)
+
+      // Recharger la liste des compétitions
+      await loadCompetitions()
+
+      // Réinitialiser le formulaire
+      setFormData({
+        name: '',
+        sport: '',
+        date: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        maxParticipants: '',
+        ageCategory: 'both',
+        isOfficial: false,
+        description: '',
+        files: []
+      })
+      setShowForm(false)
+      
+      // Message de succès
+      alert('✅ Compétition créée avec succès !')
+    } catch (err) {
+      console.error('❌ Erreur inattendue:', err)
+      setError('Une erreur inattendue s\'est produite: ' + (err.message || err))
+    } finally {
+      setIsSubmitting(false)
     }
-    setCompetitions(prev => [...prev, newCompetition])
-    setFormData({
-      name: '',
-      sport: '',
-      date: '',
-      address: '',
-      city: '',
-      postalCode: '',
-      maxParticipants: '',
-      ageCategory: 'both',
-      isOfficial: false,
-      description: '',
-      files: []
-    })
-    setShowForm(false)
   }
 
   if (showForm) {
@@ -246,6 +355,12 @@ function CompetitionsView() {
         </div>
 
         <div className="form-card">
+          {error && (
+            <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
+              ⚠️ {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit}>
             <div className="form-section">
               <h3>Informations générales</h3>
@@ -473,11 +588,20 @@ function CompetitionsView() {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
+              <button 
+                type="button" 
+                className="btn-cancel" 
+                onClick={() => setShowForm(false)}
+                disabled={isSubmitting}
+              >
                 Annuler
               </button>
-              <button type="submit" className="btn-primary">
-                Créer la compétition
+              <button 
+                type="submit" 
+                className="btn-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Création en cours...' : 'Créer la compétition'}
               </button>
             </div>
           </form>
@@ -497,8 +621,19 @@ function CompetitionsView() {
           + Nouvelle Compétition
         </button>
       </div>
+
+      {error && (
+        <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
+          ⚠️ {error}
+        </div>
+      )}
       
-      {competitions.length === 0 ? (
+      {isLoading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Chargement des compétitions...</p>
+        </div>
+      ) : competitions.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🏆</div>
           <h3>Aucune compétition</h3>
@@ -513,37 +648,42 @@ function CompetitionsView() {
             <div key={comp.id} className="competition-card">
               <div className="competition-header">
                 <div className="competition-sport">{comp.sport}</div>
-                {comp.isOfficial && <span className="badge-official">Officiel</span>}
+                {comp.is_official && <span className="badge-official">Officiel</span>}
               </div>
               <h3>{comp.name}</h3>
               <div className="competition-details">
                 <div className="detail-item">
-                  <span className="detail-icon">📅</span>
-                  <span>{new Date(comp.date).toLocaleDateString('fr-FR', { 
+                  <Calendar className="detail-icon" size={18} />
+                  <span>{new Date(comp.competition_date).toLocaleDateString('fr-FR', { 
                     day: 'numeric', 
                     month: 'long', 
                     year: 'numeric' 
                   })}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-icon">📍</span>
+                  <MapPin className="detail-icon" size={18} />
                   <span>{comp.city}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-icon">👥</span>
-                  <span>{comp.participants} / {comp.maxParticipants} participants</span>
+                  <Users className="detail-icon" size={18} />
+                  <span>{comp.current_participants} / {comp.max_participants} participants</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-icon">🎯</span>
+                  <Target className="detail-icon" size={18} />
                   <span>
-                    {comp.ageCategory === 'minors' && 'Mineurs'}
-                    {comp.ageCategory === 'adults' && 'Majeurs'}
-                    {comp.ageCategory === 'both' && 'Toutes catégories'}
+                    {comp.age_category === 'minors' && 'Mineurs'}
+                    {comp.age_category === 'adults' && 'Majeurs'}
+                    {comp.age_category === 'both' && 'Toutes catégories'}
                   </span>
                 </div>
               </div>
               <div className="competition-actions">
-                <button className="btn-secondary">Voir détails</button>
+                <button 
+                  className="btn-secondary"
+                  onClick={() => window.location.href = `/competition/${comp.id}`}
+                >
+                  Voir détails
+                </button>
               </div>
             </div>
           ))}

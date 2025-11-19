@@ -8,6 +8,7 @@ import Footer from './components/Footer'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import CompetitionDetails from './pages/CompetitionDetails'
 import './App.css'
 import './accessibility.css'
 
@@ -36,6 +37,7 @@ function App() {
         
         {/* Routes protégées */}
         <Route path="/dashboard/*" element={<Dashboard />} />
+        <Route path="/competition/:id" element={<CompetitionDetails />} />
         <Route path="/welcome" element={<Dashboard />} />
         
         {/* Redirection pour les routes non trouvées */}

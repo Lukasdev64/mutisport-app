@@ -37,6 +37,7 @@
 .view-container {
   max-width: 1400px;
   margin: 0 auto;
+  min-height: auto;
 }
 
 .view-header {
@@ -619,6 +620,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
+  align-items: start;
 }
 
 .competition-card {
@@ -628,6 +630,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border: 1px solid #e5e7eb;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
 }
 
 .competition-card:hover {
@@ -675,6 +680,8 @@
   flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  min-height: 0 !important;
+  height: auto !important;
 }
 
 .detail-item {
@@ -686,7 +693,8 @@
 }
 
 .detail-icon {
-  font-size: 1.1rem;
+  color: #3b82f6;
+  flex-shrink: 0;
 }
 
 .competition-actions {
@@ -698,12 +706,245 @@
   margin-bottom: 0;
 }
 
-@media (max-width: 768px) {
-  .form-row {
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .competitions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .cards-grid {
     grid-template-columns: 1fr;
   }
-  
+}
+
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .sidebar {
+    width: 80px;
+    padding: 1.5rem 0.5rem;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .nav-text {
+    display: none;
+  }
+
+  .user-name,
+  .user-email {
+    display: none;
+  }
+
+  .sidebar-nav {
+    gap: 0.5rem;
+  }
+
+  .sidebar-footer {
+    padding: 0.5rem;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .view-header button {
+    width: 100%;
+  }
+
+  .competitions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-top: 1px solid #e5e7eb;
+    z-index: 100;
+    padding: 0.75rem 0.5rem;
+    background: white;
+  }
+
+  .sidebar-header {
+    display: none;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .nav-link {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    min-width: fit-content;
+  }
+
+  .nav-icon {
+    font-size: 1.25rem;
+  }
+
+  .nav-text {
+    display: block;
+    font-size: 0.625rem;
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  .dashboard-content {
+    padding-bottom: 80px;
+    padding: 1rem 0.5rem 80px;
+  }
+
+  .view-container {
+    padding: 1rem;
+  }
+
+  .view-header {
+    padding: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .view-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .view-description {
+    font-size: 0.875rem;
+  }
+
   .competitions-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .competition-card {
+    padding: 1.25rem;
+  }
+
+  .form-card {
+    padding: 1.25rem;
+  }
+
+  .form-section h3 {
+    font-size: 1.125rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 0.5rem 0.25rem 80px;
+  }
+
+  .view-container {
+    padding: 0.75rem;
+  }
+
+  .view-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .view-description {
+    font-size: 0.8125rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .competition-card {
+    padding: 1rem;
+  }
+
+  .competition-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .detail-item {
+    font-size: 0.875rem;
+  }
+
+  .form-card {
+    padding: 1rem;
+  }
+
+  .form-group label {
+    font-size: 0.875rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 0.875rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1.125rem;
+  }
+
+  .empty-state p {
+    font-size: 0.875rem;
   }
 }
