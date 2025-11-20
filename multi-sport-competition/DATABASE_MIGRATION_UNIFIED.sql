@@ -144,7 +144,38 @@ CREATE INDEX IF NOT EXISTS idx_tournament_players_profile_id ON tournament_playe
 CREATE INDEX IF NOT EXISTS idx_tournament_players_status ON tournament_players(status);
 CREATE INDEX IF NOT EXISTS idx_tournament_players_seed ON tournament_players(seed);
 
+-- Tournament Rounds Table (MUST be created before tournament_matches)
+CREATE TABLE IF NOT EXISTS tournament_rounds (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+
+  -- Round information
+  round_number INTEGER NOT NULL,
+  name TEXT NOT NULL, -- e.g., "Round 1", "Quarterfinals", "Semifinals", "Finals"
+
+  -- Round type
+  round_type TEXT CHECK (round_type IN ('winners', 'losers', 'finals', 'third-place', 'round-robin', 'swiss')),
+
+  -- Status
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
+
+  -- Scheduling
+  scheduled_date DATE,
+
+  -- Metadata
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+
+  -- Constraints
+  UNIQUE(tournament_id, round_number, round_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tournament_rounds_tournament_id ON tournament_rounds(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_tournament_rounds_status ON tournament_rounds(status);
+
 -- Tournament Matches Table (normalized match tracking)
+-- IMPORTANT: Created AFTER tournament_rounds and tournament_players (foreign key dependencies)
 CREATE TABLE IF NOT EXISTS tournament_matches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
@@ -200,36 +231,6 @@ CREATE INDEX IF NOT EXISTS idx_tournament_matches_status ON tournament_matches(s
 CREATE INDEX IF NOT EXISTS idx_tournament_matches_player1 ON tournament_matches(player1_id);
 CREATE INDEX IF NOT EXISTS idx_tournament_matches_player2 ON tournament_matches(player2_id);
 CREATE INDEX IF NOT EXISTS idx_tournament_matches_winner ON tournament_matches(winner_id);
-
--- Tournament Rounds Table
-CREATE TABLE IF NOT EXISTS tournament_rounds (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
-
-  -- Round information
-  round_number INTEGER NOT NULL,
-  name TEXT NOT NULL, -- e.g., "Round 1", "Quarterfinals", "Semifinals", "Finals"
-
-  -- Round type
-  round_type TEXT CHECK (round_type IN ('winners', 'losers', 'finals', 'third-place', 'round-robin', 'swiss')),
-
-  -- Status
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed')),
-
-  -- Scheduling
-  scheduled_date DATE,
-
-  -- Metadata
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  completed_at TIMESTAMPTZ,
-
-  -- Constraints
-  UNIQUE(tournament_id, round_number, round_type)
-);
-
-CREATE INDEX IF NOT EXISTS idx_tournament_rounds_tournament_id ON tournament_rounds(tournament_id);
-CREATE INDEX IF NOT EXISTS idx_tournament_rounds_status ON tournament_rounds(status);
 
 -- Tournament Files Table (documents, images, etc.)
 CREATE TABLE IF NOT EXISTS tournament_files (
