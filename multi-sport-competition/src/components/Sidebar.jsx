@@ -15,33 +15,22 @@ import './Sidebar.css'
 
 function Sidebar({ user, onSignOut }) {
   const navItems = [
-    { 
-      path: '/dashboard/profile', 
-      icon: <FiUser />, 
+    {
+      path: '/dashboard/profile',
+      icon: <FiUser />,
       label: 'Mon Profil',
       description: 'Informations personnelles'
     },
-    { 
-      path: '/dashboard/create-tournament', 
-      icon: <FiPlusCircle />, 
-      label: 'Créer un tournoi',
-      description: 'Nouveau tournoi rapide'
+    {
+      path: '/dashboard/tournaments',
+      icon: <FiCalendar />,
+      label: 'Tournois',
+      description: 'Tous vos tournois',
+      badge: null // Peut être dynamique plus tard
     },
-    { 
-      path: '/dashboard/my-tournaments', 
-      icon: <FiList />, 
-      label: 'Mes Tournois',
-      description: 'Gérer vos tournois'
-    },
-    { 
-      path: '/dashboard/competitions', 
-      icon: <FiCalendar />, 
-      label: 'Compétitions',
-      description: 'Gérer les événements'
-    },
-    { 
-      path: '/dashboard/participants', 
-      icon: <FiUsers />, 
+    {
+      path: '/dashboard/participants',
+      icon: <FiUsers />,
       label: 'Participants',
       description: 'Inscriptions et équipes'
     },

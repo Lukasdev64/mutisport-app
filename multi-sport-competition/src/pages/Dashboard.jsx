@@ -6,10 +6,9 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase, auth } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
+import TournamentList from './dashboard/tournaments/TournamentList'
 import TournamentWizard from '../components/tournament/TournamentWizard'
-import TournamentList from './tournament/TournamentList'
 import TournamentDashboard from './tournament/TournamentDashboard'
-import { createCompetitionWithFiles, getUserCompetitions } from '../services/competitionService'
 import { ensureUserProfile } from '../services/profileService'
 import { Calendar, MapPin, Users, Target } from 'lucide-react'
 import './Dashboard.css'
@@ -80,12 +79,21 @@ function Dashboard() {
       
       <main className="dashboard-content">
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard/profile" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard/tournaments" replace />} />
           <Route path="/profile" element={<ProfileView user={user} />} />
-          <Route path="/create-tournament" element={<TournamentCreateView />} />
-          <Route path="/my-tournaments" element={<TournamentList />} />
-          <Route path="/tournament/:code" element={<TournamentDashboard />} />
-          <Route path="/competitions" element={<CompetitionsView />} />
+
+          {/* Routes de tournois unifiées */}
+          <Route path="/tournaments" element={<TournamentList />} />
+          <Route path="/tournaments/create" element={<TournamentWizard />} />
+          <Route path="/tournaments/:id" element={<TournamentDashboard />} />
+
+          {/* Anciennes routes redirigées */}
+          <Route path="/create-tournament" element={<Navigate to="/dashboard/tournaments/create" replace />} />
+          <Route path="/my-tournaments" element={<Navigate to="/dashboard/tournaments" replace />} />
+          <Route path="/tournament/:code" element={<Navigate to="/dashboard/tournaments" replace />} />
+          <Route path="/competitions" element={<Navigate to="/dashboard/tournaments" replace />} />
+
+          {/* Autres pages */}
           <Route path="/participants" element={<ParticipantsView />} />
           <Route path="/availability" element={<AvailabilityView />} />
           <Route path="/results" element={<ResultsView />} />

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Sports from './components/Sports'
@@ -8,10 +8,6 @@ import Footer from './components/Footer'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
-import CompetitionDetails from './pages/CompetitionDetails'
-import TournamentCreate from './pages/tournament/TournamentCreate'
-import TournamentView from './pages/tournament/TournamentView'
-import TournamentManage from './pages/tournament/TournamentManage'
 import './App.css'
 import './accessibility.css'
 
@@ -20,8 +16,8 @@ function App() {
     <Router>
       <Routes>
         {/* Route de la landing page */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <>
               <Header />
@@ -31,22 +27,22 @@ function App() {
               <Events />
               <Footer />
             </>
-          } 
+          }
         />
-        
+
         {/* Routes d'authentification */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Routes de tournoi anonyme (tennis pour seniors) */}
-        <Route path="/tournament/create" element={<TournamentCreate />} />
-        <Route path="/tournament/:code" element={<TournamentView />} />
-        <Route path="/tournament/:code/manage" element={<TournamentManage />} />
+        {/* Redirections depuis anciennes routes publiques vers dashboard */}
+        <Route path="/tournament/create" element={<Navigate to="/dashboard/tournaments/create" replace />} />
+        <Route path="/tournament/:code" element={<Navigate to="/dashboard/tournaments" replace />} />
+        <Route path="/tournament/:code/manage" element={<Navigate to="/dashboard/tournaments" replace />} />
+        <Route path="/competition/:id" element={<Navigate to="/dashboard/tournaments" replace />} />
 
-        {/* Routes protégées */}
+        {/* Routes protégées - TOUT dans le dashboard */}
         <Route path="/dashboard/*" element={<Dashboard />} />
-        <Route path="/competition/:id" element={<CompetitionDetails />} />
-        <Route path="/welcome" element={<Dashboard />} />
+        <Route path="/welcome" element={<Navigate to="/dashboard" replace />} />
         
         {/* Redirection pour les routes non trouvées */}
         <Route path="*" element={
