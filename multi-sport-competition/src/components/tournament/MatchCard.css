@@ -1,0 +1,218 @@
+/* MatchCard - Modern Dashboard Style */
+
+.match-card {
+  background: #FFFFFF;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.match-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.match-card.completed {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.match-card.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.match-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.match-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.match-round {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.match-players {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.player-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+}
+
+.player-section.winner {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.player-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-name .tbd {
+  color: #94a3b8;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+.vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vs-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.win-button {
+  background: #FFFFFF;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.win-button:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.win-button:active:not(:disabled) {
+  background: #dbeafe;
+}
+
+.win-button:disabled {
+  border-color: #cbd5e1;
+  color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.win-icon {
+  font-size: 1rem;
+}
+
+.win-text {
+  font-size: 0.85rem;
+}
+
+.winner-badge {
+  background: #10b981;
+  color: #FFFFFF;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  width: 100%;
+}
+
+.winner-icon {
+  font-size: 1rem;
+}
+
+.winner-text {
+  font-size: 0.85rem;
+}
+
+.match-card-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.undo-button {
+  width: 100%;
+  background: transparent;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.undo-button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #94a3b8;
+}
+
+.undo-button.confirm {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.undo-button.confirm:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .match-players {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .vs-divider {
+    margin: 0.25rem 0;
+  }
+}
+
+/* Accessibility */
+.win-button:focus-visible,
+.undo-button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}

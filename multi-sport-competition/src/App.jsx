@@ -9,6 +9,9 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import CompetitionDetails from './pages/CompetitionDetails'
+import TournamentCreate from './pages/tournament/TournamentCreate'
+import TournamentView from './pages/tournament/TournamentView'
+import TournamentManage from './pages/tournament/TournamentManage'
 import './App.css'
 import './accessibility.css'
 
@@ -34,7 +37,12 @@ function App() {
         {/* Routes d'authentification */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
+
+        {/* Routes de tournoi anonyme (tennis pour seniors) */}
+        <Route path="/tournament/create" element={<TournamentCreate />} />
+        <Route path="/tournament/:code" element={<TournamentView />} />
+        <Route path="/tournament/:code/manage" element={<TournamentManage />} />
+
         {/* Routes protégées */}
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/competition/:id" element={<CompetitionDetails />} />

@@ -7,7 +7,9 @@ import {
   FiTrendingUp, 
   FiSettings,
   FiUsers,
-  FiAward
+  FiAward,
+  FiPlusCircle,
+  FiList
 } from 'react-icons/fi'
 import './Sidebar.css'
 
@@ -18,6 +20,18 @@ function Sidebar({ user, onSignOut }) {
       icon: <FiUser />, 
       label: 'Mon Profil',
       description: 'Informations personnelles'
+    },
+    { 
+      path: '/dashboard/create-tournament', 
+      icon: <FiPlusCircle />, 
+      label: 'Créer un tournoi',
+      description: 'Nouveau tournoi rapide'
+    },
+    { 
+      path: '/dashboard/my-tournaments', 
+      icon: <FiList />, 
+      label: 'Mes Tournois',
+      description: 'Gérer vos tournois'
     },
     { 
       path: '/dashboard/competitions', 

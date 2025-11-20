@@ -1,12 +1,13 @@
 import './Hero.css'
+import { Link } from 'react-router-dom'
 import mainIllustration from '../assets/main-illustration.svg'
 
 function Hero() {
   return (
     <main>
-      <section 
-        id="accueil" 
-        className="hero" 
+      <section
+        id="accueil"
+        className="hero"
         aria-label="Présentation de la plateforme de tournois sportifs"
       >
         <div className="hero-content">
@@ -16,12 +17,26 @@ function Hero() {
               <span className="gradient-text"> simple</span>
             </h1>
             <p className="hero-description">
-              Commencez immédiatement avec notre plateforme gratuite. 
-              Pas d'inscription, pas de friction. Explorez toutes les fonctionnalités 
+              Commencez immédiatement avec notre plateforme gratuite.
+              Pas d'inscription, pas de friction. Explorez toutes les fonctionnalités
               et décidez quand vous êtes prêt à passer au niveau supérieur.
             </p>
+
+            {/* NOUVEAU: Bouton Tennis pour Seniors */}
+            <div className="hero-feature-callout">
+              <div className="callout-badge">🎾 NOUVEAU</div>
+              <h3>Tournois de Tennis pour Seniors</h3>
+              <p>Interface simplifiée spécialement conçue pour les seniors. Création anonyme, gros boutons, impression facile.</p>
+              <Link
+                to="/tournament/create"
+                className="btn-tennis-large"
+              >
+                🎾 Créer un Tournoi de Tennis
+              </Link>
+            </div>
+
             <div className="hero-buttons" role="group" aria-label="Actions principales">
-              <button 
+              <button
                 className="btn-primary btn-large"
                 aria-describedby="free-start-desc"
               >
@@ -30,7 +45,7 @@ function Hero() {
               <span id="free-start-desc" className="sr-only">
                 Démarre l'utilisation gratuite de la plateforme sans inscription
               </span>
-              <button 
+              <button
                 className="btn-secondary btn-large"
                 aria-describedby="discover-desc"
               >

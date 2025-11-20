@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { auth } from '../lib/supabase'
+import TestLoginButton from '../components/TestLoginButton'
 import './Auth.css'
 
 function Login() {
@@ -202,6 +203,9 @@ function Login() {
           </div>
         </div>
       </div>
+
+      {/* Test Login Button - Only visible in development */}
+      <TestLoginButton onSuccess={() => navigate('/dashboard')} />
     </div>
   )
 }

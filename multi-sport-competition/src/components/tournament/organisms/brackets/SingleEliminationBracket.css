@@ -1,0 +1,258 @@
+.single-elim-bracket {
+  display: flex;
+  gap: 3rem;
+  padding: 2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 600px;
+  background: #f9fafb;
+  border-radius: 1rem;
+}
+
+/* Round */
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  flex-shrink: 0;
+}
+
+.bracket-round__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.bracket-round__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.bracket-round__meta {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 0.25rem 0.75rem;
+  background: white;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Matches */
+.bracket-round__matches {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+  justify-content: space-evenly;
+}
+
+.bracket-match-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* Connector Lines */
+.bracket-connector {
+  position: absolute;
+  left: 100%;
+  width: 40px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bracket-connector svg {
+  display: block;
+}
+
+/* Empty State */
+.bracket-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 3rem;
+  background: #f9fafb;
+  border: 2px dashed #d1d5db;
+  border-radius: 1rem;
+}
+
+.bracket-empty p {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Legend */
+.bracket-legend {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.bracket-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bracket-legend__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: 0.875rem;
+}
+
+.bracket-legend__icon--completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.bracket-legend__icon--pending {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.bracket-legend__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Compact Mode */
+.single-elim-bracket--compact {
+  gap: 2rem;
+  padding: 1.5rem;
+  min-height: 500px;
+}
+
+.single-elim-bracket--compact .bracket-round {
+  min-width: 280px;
+}
+
+.single-elim-bracket--compact .bracket-round__matches {
+  gap: 1.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .single-elim-bracket {
+    gap: 2rem;
+    padding: 1.5rem;
+  }
+
+  .bracket-round {
+    min-width: 280px;
+  }
+
+  .bracket-legend {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .single-elim-bracket {
+    gap: 1.5rem;
+    padding: 1rem;
+    min-height: 500px;
+  }
+
+  .bracket-round {
+    min-width: 260px;
+  }
+
+  .bracket-round__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .bracket-round__title {
+    font-size: 1.125rem;
+  }
+
+  .bracket-round__matches {
+    gap: 1.25rem;
+  }
+
+  .bracket-legend {
+    position: static;
+    margin-top: 2rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .single-elim-bracket {
+    padding: 0.75rem;
+  }
+
+  .bracket-round {
+    min-width: 240px;
+  }
+
+  .bracket-round__title {
+    font-size: 1rem;
+  }
+
+  .bracket-connector {
+    width: 30px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .single-elim-bracket {
+    overflow: visible;
+    background: white;
+  }
+
+  .bracket-legend {
+    position: static;
+    margin-top: 2rem;
+    page-break-before: avoid;
+  }
+
+  .bracket-round {
+    page-break-inside: avoid;
+  }
+}
+
+/* Animation */
+.bracket-match-wrapper {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

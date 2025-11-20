@@ -1,0 +1,98 @@
+/* TournamentCreate page styling - Modern Dashboard Style */
+
+.tournament-create-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  color: #1e293b;
+  padding: 2rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.create-header {
+  max-width: 1000px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.create-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+  letter-spacing: -0.025em;
+}
+
+.header-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  line-height: 1.5;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.create-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+}
+
+.create-footer {
+  max-width: 800px;
+  margin: 2rem auto 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+  background-color: #f1f5f9;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tournament-create-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .create-content {
+    padding: 1.5rem;
+  }
+
+  .create-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .header-subtitle {
+    font-size: 1rem;
+  }
+
+  .back-link {
+    width: 100%;
+    justify-content: center;
+  }
+}

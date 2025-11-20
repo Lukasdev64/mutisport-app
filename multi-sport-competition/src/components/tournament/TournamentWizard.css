@@ -1,0 +1,380 @@
+/* TournamentWizard - Modern Dashboard Style */
+
+.tournament-wizard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Progress Indicator */
+.wizard-progress {
+  margin-bottom: 2rem;
+}
+
+.mobile-step-indicator {
+  display: none;
+  text-align: center;
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 1.5rem;
+  background: #eff6ff;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.progress-steps::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.progress-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0 1rem;
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .step-number {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.progress-step.completed .step-number {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.progress-step.active .step-label {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.progress-bar {
+  display: none; /* Using the line in progress-steps instead */
+}
+
+/* Error message */
+.wizard-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Steps content */
+.wizard-content {
+  min-height: 300px;
+  margin-bottom: 2rem;
+}
+
+.wizard-step h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.step-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+/* Form groups */
+.form-group-large {
+  margin-bottom: 1.5rem;
+}
+
+.form-group-large label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.input-large {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1e293b;
+  transition: all 0.2s ease;
+}
+
+.input-large:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Player count selector */
+.player-count-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.count-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.count-button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #3b82f6;
+}
+
+.count-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.count-display {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  min-width: 80px;
+  text-align: center;
+}
+
+.quick-select-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.quick-select-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-select-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.quick-select-btn.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Player names */
+.player-names-section {
+  margin-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
+.player-names-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.player-names-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.player-name-input {
+  width: 100%;
+  padding: 0.625rem;
+  font-size: 0.9rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.player-name-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Verification */
+.verification-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.verification-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.verification-item:last-child {
+  border-bottom: none;
+}
+
+.verification-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.verification-value {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Navigation */
+.wizard-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-nav {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-previous {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-previous:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.btn-next {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.btn-next:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-submit {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-nav:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .progress-steps {
+    display: none;
+  }
+
+  .mobile-step-indicator {
+    display: block;
+  }
+  
+  .wizard-navigation {
+    flex-direction: column-reverse;
+  }
+  
+  .btn-nav {
+    width: 100%;
+  }
+}

@@ -147,3 +147,100 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* NOUVEAU: Section Tournois de Tennis pour Seniors */
+.hero-feature-callout {
+  background: linear-gradient(135deg, #FF9500 0%, #FFC107 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem 0 3rem 0;
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.3);
+  text-align: center;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.callout-badge {
+  display: inline-block;
+  background: #FFFFFF;
+  color: #FF9500;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero-feature-callout h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hero-feature-callout p {
+  font-size: 18px;
+  color: #FFFFFF;
+  opacity: 0.95;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.btn-tennis-large {
+  display: inline-block;
+  background: #FFFFFF;
+  color: #FF9500;
+  font-size: 24px;
+  font-weight: 700;
+  padding: 1.25rem 3rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 3px solid transparent;
+}
+
+.btn-tennis-large:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: #FFF8F0;
+  border-color: #FFFFFF;
+}
+
+.btn-tennis-large:active {
+  transform: translateY(-2px);
+}
+
+/* Responsive pour le callout */
+@media (max-width: 768px) {
+  .hero-feature-callout {
+    padding: 1.5rem;
+    margin: 1.5rem 0 2rem 0;
+  }
+
+  .hero-feature-callout h3 {
+    font-size: 22px;
+  }
+
+  .hero-feature-callout p {
+    font-size: 16px;
+  }
+
+  .btn-tennis-large {
+    font-size: 20px;
+    padding: 1rem 2rem;
+    width: 100%;
+  }
+}

@@ -6,6 +6,9 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase, auth } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
+import TournamentWizard from '../components/tournament/TournamentWizard'
+import TournamentList from './tournament/TournamentList'
+import TournamentDashboard from './tournament/TournamentDashboard'
 import { createCompetitionWithFiles, getUserCompetitions } from '../services/competitionService'
 import { ensureUserProfile } from '../services/profileService'
 import { Calendar, MapPin, Users, Target } from 'lucide-react'
@@ -79,6 +82,9 @@ function Dashboard() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard/profile" replace />} />
           <Route path="/profile" element={<ProfileView user={user} />} />
+          <Route path="/create-tournament" element={<TournamentCreateView />} />
+          <Route path="/my-tournaments" element={<TournamentList />} />
+          <Route path="/tournament/:code" element={<TournamentDashboard />} />
           <Route path="/competitions" element={<CompetitionsView />} />
           <Route path="/participants" element={<ParticipantsView />} />
           <Route path="/availability" element={<AvailabilityView />} />
@@ -88,6 +94,24 @@ function Dashboard() {
           <Route path="/settings" element={<SettingsView user={user} />} />
         </Routes>
       </main>
+    </div>
+  )
+}
+
+// Composant TournamentCreateView
+function TournamentCreateView() {
+  return (
+    <div className="view-container">
+      <div className="view-header">
+        <div>
+          <h1>Créer un tournoi</h1>
+          <p className="view-description">Configurez votre nouveau tournoi rapide</p>
+        </div>
+      </div>
+      
+      <div className="card" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        <TournamentWizard />
+      </div>
     </div>
   )
 }

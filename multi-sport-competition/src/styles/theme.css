@@ -1,0 +1,216 @@
+/**
+ * Theme Variables
+ * CSS custom properties for light and dark modes
+ */
+
+:root {
+  /* Light Mode Colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f9fafb;
+  --color-bg-tertiary: #f3f4f6;
+  --color-bg-hover: #e5e7eb;
+
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #d1d5db;
+
+  --color-accent-primary: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-accent-light: #dbeafe;
+
+  --color-success: #10b981;
+  --color-success-light: #d1fae5;
+  --color-success-dark: #065f46;
+
+  --color-error: #ef4444;
+  --color-error-light: #fee2e2;
+  --color-error-dark: #991b1b;
+
+  --color-warning: #f59e0b;
+  --color-warning-light: #fef3c7;
+  --color-warning-dark: #92400e;
+
+  --color-info: #3b82f6;
+  --color-info-light: #dbeafe;
+  --color-info-dark: #1e3a8a;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* Tournament Specific */
+  --color-winner-bracket: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  --color-loser-bracket: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  --color-grand-final: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+
+  --color-match-scheduled: #f3f4f6;
+  --color-match-in-progress: #dbeafe;
+  --color-match-completed: #d1fae5;
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Colors */
+  --color-bg-primary: #1f2937;
+  --color-bg-secondary: #111827;
+  --color-bg-tertiary: #374151;
+  --color-bg-hover: #4b5563;
+
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border-primary: #374151;
+  --color-border-secondary: #4b5563;
+
+  --color-accent-primary: #60a5fa;
+  --color-accent-hover: #3b82f6;
+  --color-accent-light: #1e3a8a;
+
+  --color-success: #34d399;
+  --color-success-light: #064e3b;
+  --color-success-dark: #d1fae5;
+
+  --color-error: #f87171;
+  --color-error-light: #7f1d1d;
+  --color-error-dark: #fee2e2;
+
+  --color-warning: #fbbf24;
+  --color-warning-light: #78350f;
+  --color-warning-dark: #fef3c7;
+
+  --color-info: #60a5fa;
+  --color-info-light: #1e3a8a;
+  --color-info-dark: #dbeafe;
+
+  /* Shadows (darker in dark mode) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6);
+
+  /* Tournament Specific (adjusted for dark mode) */
+  --color-winner-bracket: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+  --color-loser-bracket: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+  --color-grand-final: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+
+  --color-match-scheduled: #374151;
+  --color-match-in-progress: #1e3a8a;
+  --color-match-completed: #064e3b;
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Base body styling */
+body {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Apply theme variables to common elements */
+.card {
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.button-primary {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.button-secondary {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border-primary);
+}
+
+.button-secondary:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-border-secondary);
+}
+
+input,
+textarea,
+select {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border-primary);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-accent-primary);
+  outline: none;
+}
+
+/* Tournament bracket theming */
+.winner-bracket {
+  background: var(--color-winner-bracket);
+}
+
+.loser-bracket {
+  background: var(--color-loser-bracket);
+}
+
+.grand-final {
+  background: var(--color-grand-final);
+}
+
+.match--scheduled {
+  background-color: var(--color-match-scheduled);
+}
+
+.match--in-progress {
+  background-color: var(--color-match-in-progress);
+}
+
+.match--completed {
+  background-color: var(--color-match-completed);
+}
+
+/* Scrollbar theming */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* Print mode - always light */
+@media print {
+  [data-theme="dark"] {
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f9fafb;
+    --color-text-primary: #1f2937;
+    --color-text-secondary: #6b7280;
+    --color-border-primary: #e5e7eb;
+  }
+}
