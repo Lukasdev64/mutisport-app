@@ -1,0 +1,127 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTournamentStore } from './store/tournamentStore';
+import { MOCK_TOURNAMENTS } from '@/lib/mockData';
+import { Button } from '@/components/ui/button';
+import { Plus, Search, Filter, Trophy, Calendar, Users, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+
+export function TournamentsPage() {
+  const navigate = useNavigate();
+  // In a real app, we might merge store tournaments with mock ones or just fetch from API
+  // For now, let's combine them to show both created and mock data
+  const storeTournaments = useTournamentStore(state => state.tournaments);
+  const allTournaments = [...storeTournaments, ...MOCK_TOURNAMENTS.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
+  
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft'>('all');
+  const [search, setSearch] = useState('');
+
+  const filteredTournaments = allTournaments.filter(t => {
+    const matchesFilter = filter === 'all' || t.status === filter;
+    const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-heading font-bold text-white">Tournaments</h1>
+          <p className="text-slate-400">Manage and track all your competitions</p>
+        </div>
+        <Button onClick={() => navigate('/tournaments/new')} className="bg-blue-600 hover:bg-blue-500">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Tournament
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input 
+            type="text" 
+            placeholder="Search tournaments..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-slate-900/50 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          />
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+          {(['all', 'active', 'completed', 'draft'] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize whitespace-nowrap",
+                filter === f 
+                  ? "bg-white/10 text-white border border-white/10" 
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              )}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredTournaments.map((tournament, index) => (
+          <motion.div
+            key={tournament.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            onClick={() => navigate(`/tournaments/${tournament.id}`)}
+            className="group relative bg-slate-900/50 border border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Trophy className="w-24 h-24 text-blue-500 rotate-12" />
+            </div>
+
+            <div className="relative z-10 space-y-4">
+              <div className="flex justify-between items-start">
+                <span className={cn(
+                  "px-2 py-1 rounded text-xs font-medium uppercase tracking-wider border",
+                  tournament.status === 'active' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                  tournament.status === 'completed' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                  "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                )}>
+                  {tournament.status}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">{tournament.name}</h3>
+                <p className="text-slate-500 text-sm capitalize">{tournament.format.replace('_', ' ')}</p>
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-slate-400">
+                <div className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  {tournament.players.length} Players
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  {new Date(tournament.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+          </motion.div>
+        ))}
+
+        {filteredTournaments.length === 0 && (
+          <div className="col-span-full py-20 text-center text-slate-500">
+            <Filter className="w-12 h-12 mx-auto mb-4 opacity-20" />
+            <p>No tournaments found matching your criteria.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
