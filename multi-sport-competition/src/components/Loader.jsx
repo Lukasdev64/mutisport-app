@@ -20,10 +20,7 @@ const sportsIcons = [
   <IoBicycle />
 ]
 
-/**
- * Composant Loader Sportif
- * Affiche un carrousel rotatif d'icônes de sport
- */
+
 const Loader = ({ text = null }) => {
   return (
     <div className="loader-wrapper">
