@@ -90,8 +90,7 @@ const TournamentList = () => {
     }
   ]
 
-  // Fetch tournaments with React Query - DISABLED FOR TESTING
-  /*
+  // Fetch tournaments with React Query
   const {
     data: tournaments,
     isLoading,
@@ -108,13 +107,6 @@ const TournamentList = () => {
     staleTime: 30000, // 30 seconds
     cacheTime: 300000 // 5 minutes
   })
-  */
-  
-  const tournaments = hardcodedTournaments
-  const isLoading = false
-  const isError = false
-  const error = null
-  const refetch = () => {}
 
   const handleCreateNew = () => {
     navigate('/dashboard/tournaments/create')
@@ -159,24 +151,24 @@ const TournamentList = () => {
     return labels[format] || format
   }
 
-  // Skeleton removed for testing
-  /*
   if (isLoading) {
     return (
       <div className="tournament-list">
         <div className="tournament-list-header">
           <div className="header-content">
-            <Skeleton type="text" width="200px" height="32px" className="mb-2" />
-            <Skeleton type="text" width="300px" height="20px" />
+            {/* <Skeleton type="text" width="200px" height="32px" className="mb-2" />
+            <Skeleton type="text" width="300px" height="20px" /> */}
+            <h1>Mes Tournois</h1>
+            <p>Chargement...</p>
           </div>
-          <Skeleton type="rect" width="180px" height="48px" />
+          {/* <Skeleton type="rect" width="180px" height="48px" /> */}
         </div>
 
         <div className="tournament-filters">
           {[1, 2, 3].map(i => (
             <div key={i} className="filter-group">
-              <Skeleton type="text" width="60px" height="16px" className="mb-1" />
-              <Skeleton type="rect" width="100%" height="40px" />
+              {/* <Skeleton type="text" width="60px" height="16px" className="mb-1" />
+              <Skeleton type="rect" width="100%" height="40px" /> */}
             </div>
           ))}
         </div>
@@ -184,23 +176,23 @@ const TournamentList = () => {
         <div className="tournament-grid">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="tournament-card">
-              <Skeleton type="rect" height="140px" style={{ borderRadius: '12px 12px 0 0' }} />
+              {/* <Skeleton type="rect" height="140px" style={{ borderRadius: '12px 12px 0 0' }} /> */}
               <div className="tournament-card-content">
                 <div className="tournament-card-header">
-                  <Skeleton type="text" width="70%" height="24px" />
-                  <Skeleton type="rect" width="80px" height="24px" style={{ borderRadius: '999px' }} />
+                  {/* <Skeleton type="text" width="70%" height="24px" />
+                  <Skeleton type="rect" width="80px" height="24px" style={{ borderRadius: '999px' }} /> */}
                 </div>
                 <div className="tournament-card-meta">
                   {[1, 2, 3, 4].map(j => (
                     <div key={j} className="meta-item">
-                      <Skeleton type="circle" width="16px" height="16px" />
-                      <Skeleton type="text" width="80px" height="16px" />
+                      {/* <Skeleton type="circle" width="16px" height="16px" />
+                      <Skeleton type="text" width="80px" height="16px" /> */}
                     </div>
                   ))}
                 </div>
                 <div className="tournament-card-actions">
-                  <Skeleton type="rect" width="100%" height="36px" />
-                  <Skeleton type="rect" width="40px" height="36px" />
+                  {/* <Skeleton type="rect" width="100%" height="36px" />
+                  <Skeleton type="rect" width="40px" height="36px" /> */}
                 </div>
               </div>
             </div>
@@ -209,7 +201,6 @@ const TournamentList = () => {
       </div>
     )
   }
-  */
 
   if (isError) {
     return (

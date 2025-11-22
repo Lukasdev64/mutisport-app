@@ -20,7 +20,10 @@ export async function createPlayers(tournamentId, players) {
       name: p.name,
       seed: p.seed || null,
       email: p.email || null,
-      phone: p.phone || null
+      phone: p.phone || null,
+      availability: p.availability || {},
+      constraints: p.constraints || {},
+      status: p.status || 'registered'
     }))
 
     const { data, error } = await supabase
@@ -144,10 +147,38 @@ export async function getPlayerStandings(tournamentId) {
   }
 }
 
+/**
+ * Update player status (e.g. registered -> confirmed)
+ * @param {string} playerId
+ * @param {string} status
+ * @returns {Promise<{data: object|null, error: object|null}>}
+ */
+export async function updatePlayerStatus(playerId, status) {
+  try {
+    const { data, error } = await supabase
+      .from('tournament_players')
+      .update({ status })
+      .eq('id', playerId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating player status:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  } catch (err) {
+    console.error('Exception in updatePlayerStatus:', err)
+    return { data: null, error: err }
+  }
+}
+
 export default {
   createPlayers,
   getPlayers,
   updatePlayerSeed,
   bulkUpdateSeeds,
-  getPlayerStandings
+  getPlayerStandings,
+  updatePlayerStatus
 }

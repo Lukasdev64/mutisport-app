@@ -20,8 +20,9 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
   const navigate = useNavigate();
 
   const canProceed = () => {
-    if (step === 1) return !!format && !!tournamentName;
-    if (step === 2) return players.length >= 2;
+    if (step === 1) return true; // Mode is always selected (default)
+    if (step === 2) return !!format && !!tournamentName;
+    if (step === 3) return players.length >= 2;
     return true;
   };
 

@@ -74,6 +74,12 @@ CREATE TABLE IF NOT EXISTS public.tournament_players (
   name TEXT NOT NULL CHECK (length(name) >= 1 AND length(name) <= 100),
   seed INT CHECK (seed >= 1), -- Seeding position (1 = top seed)
 
+  -- Registration & Scheduling
+  status TEXT DEFAULT 'registered' CHECK (status IN ('registered', 'confirmed', 'waitlist', 'rejected')),
+  availability JSONB DEFAULT '{}'::jsonb, -- { "dates": ["2023-10-27"], "time_ranges": [{"start": "09:00", "end": "12:00"}] }
+  constraints JSONB DEFAULT '{}'::jsonb, -- { "max_matches_per_day": 2 }
+  registration_date TIMESTAMPTZ DEFAULT NOW(),
+
   -- Optional Contact (for authenticated tournaments)
   email TEXT CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
   phone TEXT,
@@ -93,13 +99,12 @@ CREATE TABLE IF NOT EXISTS public.tournament_players (
 
   -- Constraints
   UNIQUE(tournament_id, name), -- No duplicate names in same tournament
-  UNIQUE(tournament_id, seed) WHERE seed IS NOT NULL, -- No duplicate seeds
   CHECK (matches_won + matches_lost <= matches_played)
 );
 
 -- Indexes
 CREATE INDEX idx_players_tournament ON public.tournament_players(tournament_id);
-CREATE INDEX idx_players_seed ON public.tournament_players(tournament_id, seed) WHERE seed IS NOT NULL;
+CREATE UNIQUE INDEX idx_players_seed ON public.tournament_players(tournament_id, seed) WHERE seed IS NOT NULL;
 CREATE INDEX idx_players_points ON public.tournament_players(tournament_id, points DESC);
 
 -- =====================================================

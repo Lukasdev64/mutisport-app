@@ -428,6 +428,9 @@ const TournamentDashboard = () => {
               {tournament.status === 'in_progress' ? 'En cours' : tournament.status}
             </span>
             <span className="format-badge">
+              {tournament.sport}
+            </span>
+            <span className="format-badge">
               {tournament.format.replace('_', ' ')}
             </span>
             <span className="round-badge" style={{ background: '#e2e8f0', color: '#475569', padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: '600' }}>

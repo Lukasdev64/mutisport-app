@@ -1,0 +1,141 @@
+.invitation-manager {
+  background: var(--color-surface);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.invitation-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.invitation-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.invitation-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--color-background);
+  border-radius: 8px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-item.success .stat-val { color: var(--color-success); }
+.stat-item.warning .stat-val { color: var(--color-warning); }
+
+.invitation-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.player-invite-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 600;
+}
+
+.player-email {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.invite-status .badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge-gray { background: #f3f4f6; color: #4b5563; }
+.badge-yellow { background: #fef3c7; color: #d97706; }
+.badge-green { background: #d1fae5; color: #059669; }
+.badge-red { background: #fee2e2; color: #dc2626; }
+
+.debug-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.player-invite-card:hover .debug-controls {
+  opacity: 1;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.btn-icon.success:hover { color: var(--color-success); background: #d1fae5; }
+.btn-icon.danger:hover { color: var(--color-danger); background: #fee2e2; }
+
+.invitation-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.5rem;
+}
+
+.debug-note {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.btn-large {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}

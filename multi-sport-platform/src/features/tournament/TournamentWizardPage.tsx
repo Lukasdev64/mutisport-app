@@ -1,5 +1,6 @@
 import { useWizardStore } from './store/wizardStore';
 import { WizardLayout } from './components/wizard/WizardLayout';
+import { ModeSelection } from './components/wizard/ModeSelection';
 import { FormatSelection } from './components/wizard/FormatSelection';
 import { PlayerSelection } from './components/wizard/PlayerSelection';
 import { TournamentSummary } from './components/wizard/TournamentSummary';
@@ -12,17 +13,23 @@ export function TournamentWizardPage() {
     switch (step) {
       case 1:
         return {
+          title: "Mode Selection",
+          description: "How do you want to play?",
+          component: <ModeSelection />
+        };
+      case 2:
+        return {
           title: "Select Format",
           description: "Choose how your tournament will be played.",
           component: <FormatSelection />
         };
-      case 2:
+      case 3:
         return {
           title: "Add Players",
           description: "Who will be competing for glory?",
           component: <PlayerSelection />
         };
-      case 3:
+      case 4:
         return {
           title: "Review & Launch",
           description: "Double check everything before we start.",

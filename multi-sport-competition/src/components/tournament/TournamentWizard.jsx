@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import FormatSelector from './FormatSelector'
 import BracketDisplay from './BracketDisplay'
+import InvitationManager from './organisms/InvitationManager'
 import Skeleton from '../common/Skeleton'
 import {
   generateSingleEliminationBracket,
@@ -61,6 +62,7 @@ const TournamentWizard = () => {
     format: 'single-elimination',
     players_count: 8,
     players_names: [],
+    mode: 'instant', // 'instant' or 'planned'
   })
 
   // Gérer le changement des inputs
@@ -77,7 +79,7 @@ const TournamentWizard = () => {
         setError('Veuillez entrer un nom pour le tournoi')
         return
       }
-      if (currentStep === 3 && formData.players_count < 2) {
+      if (currentStep === 4 && formData.players_count < 2) {
         setError('Le tournoi doit avoir au moins 2 joueurs')
         return
       }
@@ -95,6 +97,12 @@ const TournamentWizard = () => {
   const handleSubmit = async () => {
     if (!user) {
       setError("Vous devez être connecté pour créer un tournoi.")
+      return
+    }
+
+    // If Planned mode, show Invitation Manager instead of immediate submit
+    if (formData.mode === 'planned' && currentStep !== 'invitation') {
+      setCurrentStep('invitation')
       return
     }
 
@@ -148,15 +156,16 @@ const TournamentWizard = () => {
       {/* Progress indicator */}
       <div className="wizard-progress">
         <div className="mobile-step-indicator" aria-live="polite">
-          Étape {currentStep} sur 4: {
+          Étape {currentStep} sur 5: {
             currentStep === 1 ? 'Infos' :
-            currentStep === 2 ? 'Format' :
-            currentStep === 3 ? 'Joueurs' :
+            currentStep === 2 ? 'Mode' :
+            currentStep === 3 ? 'Format' :
+            currentStep === 4 ? 'Joueurs' :
             'Aperçu'
           }
         </div>
         <div className="progress-steps">
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3, 4, 5].map((step) => (
             <div
               key={step}
               className={`progress-step ${currentStep === step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
@@ -166,9 +175,10 @@ const TournamentWizard = () => {
               </div>
               <div className="step-label">
                 {step === 1 && 'Infos'}
-                {step === 2 && 'Format'}
-                {step === 3 && 'Joueurs'}
-                {step === 4 && 'Aperçu'}
+                {step === 2 && 'Mode'}
+                {step === 3 && 'Format'}
+                {step === 4 && 'Joueurs'}
+                {step === 5 && 'Aperçu'}
               </div>
             </div>
           ))}
@@ -237,8 +247,36 @@ const TournamentWizard = () => {
           </div>
         )}
 
-        {/* Étape 2: Format */}
+        {/* Étape 2: Mode */}
         {currentStep === 2 && (
+          <div className="wizard-step slide-in">
+            <h2>Mode de tournoi</h2>
+            <p className="step-subtitle">Comment souhaitez-vous gérer les participants ?</p>
+
+            <div className="mode-selection">
+              <div 
+                className={`mode-card ${formData.mode === 'instant' ? 'selected' : ''}`}
+                onClick={() => handleChange('mode', 'instant')}
+              >
+                <div className="mode-icon">⚡</div>
+                <h3>Instant</h3>
+                <p>Les joueurs sont déjà présents. Créez le tournoi et commencez tout de suite.</p>
+              </div>
+
+              <div 
+                className={`mode-card ${formData.mode === 'planned' ? 'selected' : ''}`}
+                onClick={() => handleChange('mode', 'planned')}
+              >
+                <div className="mode-icon">📅</div>
+                <h3>Planifié</h3>
+                <p>Envoyez des invitations, gérez les réponses et planifiez les matchs à l'avance.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Étape 3: Format */}
+        {currentStep === 3 && (
           <div className="wizard-step slide-in">
             <FormatSelector
               selectedFormat={formData.format}
@@ -248,8 +286,8 @@ const TournamentWizard = () => {
           </div>
         )}
 
-        {/* Étape 3: Joueurs */}
-        {currentStep === 3 && (
+        {/* Étape 4: Joueurs */}
+        {currentStep === 4 && (
           <div className="wizard-step slide-in">
             <h2>Participants</h2>
             <p className="step-subtitle">Définissez le nombre de joueurs et leurs noms</p>
@@ -311,8 +349,8 @@ const TournamentWizard = () => {
           </div>
         )}
 
-        {/* Étape 4: Vérification */}
-        {currentStep === 4 && (
+        {/* Étape 5: Vérification */}
+        {currentStep === 5 && (
           <div className="wizard-step slide-in">
             <h2>Récapitulatif</h2>
             <p className="step-subtitle">Vérifiez les informations avant de créer le tournoi</p>
@@ -353,6 +391,12 @@ const TournamentWizard = () => {
                 <span className="verification-label">Participants</span>
                 <span className="verification-value">{formData.players_count} joueurs</span>
               </div>
+              <div className="verification-item">
+                <span className="verification-label">Mode</span>
+                <span className="verification-value">
+                  {formData.mode === 'instant' ? 'Instant (Joueurs présents)' : 'Planifié (Invitations)'}
+                </span>
+              </div>
             </div>
 
             <div className="verification-preview">
@@ -374,11 +418,25 @@ const TournamentWizard = () => {
             </div>
           </div>
         )}
+        {/* Étape Spéciale: Invitation Manager */}
+        {currentStep === 'invitation' && (
+          <div className="wizard-step slide-in">
+            <InvitationManager 
+              tournamentId={null}
+              players={Array.from({ length: formData.players_count }, (_, i) => ({
+                name: formData.players_names[i] || `Joueur ${i + 1}`,
+                email: `player${i+1}@example.com`
+              }))}
+              onComplete={handleSubmit}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Navigation buttons */}
-      <div className="wizard-navigation">
-        {currentStep > 1 && (
+      {/* Navigation buttons - Hide in Invitation Manager */}
+      {currentStep !== 'invitation' && (
+        <div className="wizard-navigation">
+          {currentStep > 1 && (
           <button
             className="btn-nav btn-previous"
             onClick={() => goToStep(currentStep - 1)}
@@ -390,7 +448,7 @@ const TournamentWizard = () => {
         
         <div className="btn-placeholder"></div>
 
-        {currentStep < 4 && (
+        {currentStep < 5 && (
           <button
             className="btn-nav btn-next"
             onClick={() => goToStep(currentStep + 1)}
@@ -399,7 +457,7 @@ const TournamentWizard = () => {
           </button>
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 5 && (
           <button
             className="btn-nav btn-submit"
             onClick={handleSubmit}
@@ -417,6 +475,7 @@ const TournamentWizard = () => {
           </button>
         )}
       </div>
+      )}
     </div>
   )
 }

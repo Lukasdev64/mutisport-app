@@ -11,12 +11,13 @@ interface WizardState {
   customAgeRules: { min?: number; max?: number };
   isRanked: boolean;
   rankingRange: { min?: string; max?: string };
-  players: Player[];
+  mode: 'instant' | 'planned';
   
   // Actions
   setStep: (step: number) => void;
   nextStep: () => void;
   prevStep: () => void;
+  setMode: (mode: 'instant' | 'planned') => void;
   setTournamentName: (name: string) => void;
   setFormat: (format: TournamentFormat) => void;
   setAgeCategory: (category: string) => void;
@@ -31,7 +32,8 @@ interface WizardState {
 
 export const useWizardStore = create<WizardState>((set) => ({
   step: 1,
-  totalSteps: 3,
+  totalSteps: 4, // Increased to 4 to include Mode Selection
+  mode: 'instant',
   tournamentName: '',
   format: null,
   ageCategory: 'open',
@@ -44,6 +46,7 @@ export const useWizardStore = create<WizardState>((set) => ({
   nextStep: () => set((state) => ({ step: Math.min(state.step + 1, state.totalSteps) })),
   prevStep: () => set((state) => ({ step: Math.max(state.step - 1, 1) })),
   
+  setMode: (mode) => set({ mode }),
   setTournamentName: (name) => set({ tournamentName: name }),
   setFormat: (format) => set({ format }),
   setAgeCategory: (category) => set({ ageCategory: category }),
@@ -73,6 +76,7 @@ export const useWizardStore = create<WizardState>((set) => ({
   
   reset: () => set({
     step: 1,
+    mode: 'instant',
     tournamentName: '',
     format: null,
     ageCategory: 'open',
