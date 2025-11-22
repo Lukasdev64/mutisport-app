@@ -9,6 +9,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import CompetitionDetails from './pages/CompetitionDetails'
+import Pricing from './pages/Pricing'
 import './App.css'
 import './accessibility.css'
 
@@ -34,6 +35,7 @@ function App() {
         {/* Routes d'authentification */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/pricing" element={<Pricing />} />
         
         {/* Routes protégées */}
         <Route path="/dashboard/*" element={<Dashboard />} />

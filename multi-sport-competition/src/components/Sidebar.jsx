@@ -7,7 +7,8 @@ import {
   FiTrendingUp, 
   FiSettings,
   FiUsers,
-  FiAward
+  FiAward,
+  FiCreditCard
 } from 'react-icons/fi'
 import './Sidebar.css'
 
@@ -55,6 +56,12 @@ function Sidebar({ user, onSignOut }) {
       label: 'Messages',
       description: 'Communication',
       badge: 3
+    },
+    { 
+      path: '/pricing', 
+      icon: <FiCreditCard />, 
+      label: 'Tarifs',
+      description: 'Plans et abonnements'
     },
     { 
       path: '/dashboard/settings', 

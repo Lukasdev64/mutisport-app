@@ -51,6 +51,9 @@ function Header() {
             <a href="#sports" role="menuitem">Fonctionnalités</a>
           </li>
           <li role="none">
+            <Link to="/pricing" role="menuitem">Tarifs</Link>
+          </li>
+          <li role="none">
             <a href="#evenements" role="menuitem">Événements</a>
           </li>
           <li role="none">

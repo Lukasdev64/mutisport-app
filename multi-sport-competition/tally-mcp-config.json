@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tally": {
+      "url": "https://api.tally.so/mcp",
+      "type": "sse",
+      "headers": {
+        "Authorization": "Bearer VOTRE_CLE_API_TALLY"
+      }
+    }
+  }
+}
