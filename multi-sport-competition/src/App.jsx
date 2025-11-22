@@ -10,6 +10,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import CompetitionDetails from './pages/CompetitionDetails'
 import Pricing from './pages/Pricing'
+import Payment from './pages/Payment'
 import './App.css'
 import './accessibility.css'
 
@@ -36,6 +37,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/payment" element={<Payment />} />
         
         {/* Routes protégées */}
         <Route path="/dashboard/*" element={<Dashboard />} />

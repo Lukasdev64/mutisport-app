@@ -1,11 +1,32 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import './Pricing.css'
 
 function Pricing() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+  }, [])
+
+  const handlePlanClick = (e, plan) => {
+    if (plan.name === 'Premium') {
+      e.preventDefault()
+      if (user) {
+        navigate('/payment')
+      } else {
+        navigate('/register?plan=premium')
+      }
+    }
+  }
+
   const plans = [
     {
       name: 'Découverte',
@@ -41,7 +62,7 @@ function Pricing() {
       ],
       notIncluded: [],
       cta: 'Passer au Premium',
-      ctaLink: '/register?plan=premium',
+      ctaLink: '/payment', // Sera intercepté par handlePlanClick
       isPopular: true
     }
   ]
@@ -85,12 +106,19 @@ function Pricing() {
               </ul>
 
               <div className="card-action">
-                <Link 
-                  to={plan.ctaLink} 
-                  className={`btn-plan ${plan.isPopular ? 'primary' : 'outline'}`}
-                >
-                  {plan.cta}
-                </Link>
+                {plan.name === 'Découverte' && user ? (
+                  <button className="btn-plan outline" disabled>
+                    Plan actuel
+                  </button>
+                ) : (
+                  <Link 
+                    to={plan.ctaLink} 
+                    className={`btn-plan ${plan.isPopular ? 'primary' : 'outline'}`}
+                    onClick={(e) => handlePlanClick(e, plan)}
+                  >
+                    {plan.cta}
+                  </Link>
+                )}
               </div>
             </div>
           ))}

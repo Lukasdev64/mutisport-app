@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase, auth } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
+import Loader from '../components/Loader'
 import { createCompetitionWithFiles, getUserCompetitions } from '../services/competitionService'
 import { ensureUserProfile } from '../services/profileService'
 import { Calendar, MapPin, Users, Target } from 'lucide-react'
@@ -14,41 +15,82 @@ import './Dashboard.css'
 function Dashboard() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [session, setSession] = useState(null)
   const [isPending, setIsPending] = useState(true)
+  const [initError, setInitError] = useState(null)
 
   useEffect(() => {
+    let mounted = true
+    
+    // Timeout de sécurité pour ne pas rester bloqué en chargement infini
+    const safetyTimeout = setTimeout(() => {
+      if (mounted && isPending) {
+        setIsPending(false)
+        setInitError("Le chargement prend plus de temps que prévu. Veuillez rafraîchir la page.")
+      }
+    }, 10000) // 10 secondes max
+
     // Récupérer la session au chargement
     const fetchSession = async () => {
-      const { session: currentSession, error } = await auth.getSession()
-      
-      if (error || !currentSession) {
-        navigate('/login')
-        return
-      }
+      try {
+        const { session: currentSession, error } = await auth.getSession()
+        
+        if (!mounted) return
 
-      setSession(currentSession)
-      setUser(currentSession.user)
-      
-      // Vérifier/créer le profil utilisateur
-      await ensureUserProfile()
-      
-      setIsPending(false)
+        if (error || !currentSession) {
+          navigate('/login')
+          return
+        }
+
+        setSession(currentSession)
+        setUser(currentSession.user)
+        
+        // Vérifier/créer le profil utilisateur
+        const { data: userProfile, error: profileError } = await ensureUserProfile()
+        
+        if (profileError) {
+          console.error("Erreur profil:", profileError)
+          // On continue quand même, le profil sera null mais l'utilisateur est connecté
+        }
+        
+        if (mounted) {
+          setProfile(userProfile)
+          setIsPending(false)
+        }
+      } catch (err) {
+        console.error("Erreur initialisation dashboard:", err)
+        if (mounted) {
+          setInitError("Une erreur est survenue lors du chargement.")
+          setIsPending(false)
+        }
+      } finally {
+        clearTimeout(safetyTimeout)
+      }
     }
 
     fetchSession()
 
     // Écouter les changements d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return
+      
       if (!session) {
         navigate('/login')
       } else {
         setSession(session)
         setUser(session.user)
+        // Recharger le profil si la session change
+        const { data: userProfile } = await ensureUserProfile()
+        if (mounted) setProfile(userProfile)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+      clearTimeout(safetyTimeout)
+    }
   }, [navigate])
 
   const handleSignOut = async () => {
@@ -59,10 +101,24 @@ function Dashboard() {
   }
 
   if (isPending) {
+    return <Loader />
+  }
+
+  if (initError) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Chargement...</p>
+      <div className="dashboard-error-container" style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100vh',
+        gap: '1rem'
+      }}>
+        <h2>Oups !</h2>
+        <p>{initError}</p>
+        <button onClick={() => window.location.reload()} className="btn-primary">
+          Rafraîchir la page
+        </button>
       </div>
     )
   }
@@ -73,7 +129,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar user={user} onSignOut={handleSignOut} />
+      <Sidebar user={user} profile={profile} onSignOut={handleSignOut} />
       
       <main className="dashboard-content">
         <Routes>

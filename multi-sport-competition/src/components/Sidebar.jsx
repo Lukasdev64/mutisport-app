@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import { 
   FiUser, 
   FiCalendar, 
@@ -12,7 +12,7 @@ import {
 } from 'react-icons/fi'
 import './Sidebar.css'
 
-function Sidebar({ user, onSignOut }) {
+function Sidebar({ user, profile, onSignOut }) {
   const navItems = [
     { 
       path: '/dashboard/profile', 
@@ -89,6 +89,15 @@ function Sidebar({ user, onSignOut }) {
               {user?.user_metadata?.full_name || 'Utilisateur'}
             </p>
             <p className="user-email">{user?.email}</p>
+            <div className="user-plan">
+              {profile?.subscription_plan === 'premium' ? (
+                <span className="badge-premium">Premium 🏆</span>
+              ) : (
+                <Link to="/pricing" className="badge-free">
+                  Gratuit • Passer Premium
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>

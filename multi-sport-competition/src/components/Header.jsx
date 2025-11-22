@@ -1,9 +1,26 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import './Header.css'
 
 function Header() {
   const location = useLocation()
+  const [user, setUser] = useState(null)
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register'
+
+  useEffect(() => {
+    // Vérifier la session actuelle
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
   
   // Header simplifié pour les pages d'authentification
   if (isAuthPage) {
@@ -64,19 +81,27 @@ function Header() {
           </li>
         </ul>
         <div className="nav-cta">
-          <Link 
-            to="/register"
-            className="btn-primary"
-            aria-describedby="access-desc"
-          >
-            Accès gratuit
-          </Link>
-          <span id="access-desc" className="sr-only">
-            Commencer à utiliser la plateforme gratuitement sans inscription
-          </span>
-          <Link to="/login" className="btn-secondary">
-            Se connecter
-          </Link>
+          {user ? (
+            <Link to="/dashboard" className="btn-primary">
+              Mon Espace
+            </Link>
+          ) : (
+            <>
+              <Link 
+                to="/register"
+                className="btn-primary"
+                aria-describedby="access-desc"
+              >
+                Accès gratuit
+              </Link>
+              <span id="access-desc" className="sr-only">
+                Commencer à utiliser la plateforme gratuitement sans inscription
+              </span>
+              <Link to="/login" className="btn-secondary">
+                Se connecter
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </header>
