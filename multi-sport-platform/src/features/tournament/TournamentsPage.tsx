@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
-import { MOCK_TOURNAMENTS } from '@/lib/mockData';
+import { ALL_MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Trophy, Calendar, Users, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useSportStore } from '@/store/sportStore';
+import { SPORTS } from '@/types/sport';
 
 export function TournamentsPage() {
   const navigate = useNavigate();
-  // In a real app, we might merge store tournaments with mock ones or just fetch from API
-  // For now, let's combine them to show both created and mock data
-  const storeTournaments = useTournamentStore(state => state.tournaments);
-  const allTournaments = [...storeTournaments, ...MOCK_TOURNAMENTS.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
+  const activeSport = useSportStore((state) => state.activeSport);
+  const activeSportInfo = SPORTS[activeSport];
+  
+  // Get store tournaments and mock tournaments, both filtered by sport
+  const storeTournaments = useTournamentStore(state => state.tournaments).filter(t => t.sport === activeSport);
+  const mockTournamentsForSport = ALL_MOCK_TOURNAMENTS.filter(mt => mt.sport === activeSport);
+  const allTournaments = [...storeTournaments, ...mockTournamentsForSport.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft'>('all');
   const [search, setSearch] = useState('');
@@ -28,8 +33,11 @@ export function TournamentsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Tournaments</h1>
-          <p className="text-slate-400">Manage and track all your competitions</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-3xl">{activeSportInfo.emoji}</span>
+            <h1 className="text-3xl font-heading font-bold text-white">{activeSportInfo.name} Tournaments</h1>
+          </div>
+          <p className="text-slate-400">Manage and track your {activeSportInfo.name.toLowerCase()} competitions</p>
         </div>
         <Button onClick={() => navigate('/tournaments/new')} className="bg-blue-600 hover:bg-blue-500">
           <Plus className="w-4 h-4 mr-2" />

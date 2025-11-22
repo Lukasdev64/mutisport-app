@@ -14,13 +14,13 @@
 .format-selector-header h2 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-main);
   margin-bottom: 0.5rem;
 }
 
 .format-selector-subtitle {
   font-size: 0.95rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
 }
 
 .format-cards {
@@ -32,9 +32,9 @@
 
 .format-card {
   position: relative;
-  background: #FFFFFF;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
   padding: 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -45,30 +45,30 @@
 }
 
 .format-card:hover {
-  border-color: #cbd5e1;
-  background-color: #f8fafc;
+  border-color: var(--color-border-hover);
+  background-color: var(--color-background);
   transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 .format-card:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .format-card.selected {
-  border-color: #3b82f6;
+  border-color: var(--color-accent);
   border-width: 2px;
-  background: #eff6ff;
+  background: rgba(37, 99, 235, 0.05);
 }
 
 .format-badge {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  background: #10b981;
-  color: #FFFFFF;
+  background: var(--color-success);
+  color: white;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.5rem;
@@ -76,27 +76,30 @@
 }
 
 .format-icon {
-  font-size: 2.5rem;
+  color: var(--color-accent);
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .format-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text-main);
   margin-bottom: 0.5rem;
 }
 
 .format-description {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #3b82f6;
+  color: var(--color-accent);
   margin-bottom: 0.5rem;
 }
 
 .format-details {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   line-height: 1.5;
   margin-bottom: 1rem;
   flex-grow: 1;
@@ -105,8 +108,8 @@
 .format-stats {
   width: 100%;
   padding: 0.5rem;
-  background: #f1f5f9;
-  border-radius: 6px;
+  background: var(--color-background);
+  border-radius: 0.375rem;
   margin-top: auto;
 }
 
@@ -118,13 +121,13 @@
 
 .stat-label {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .stat-value {
   font-size: 0.9rem;
-  color: #1e293b;
+  color: var(--color-text-main);
   font-weight: 600;
 }
 
@@ -133,20 +136,22 @@
   bottom: -0.75rem;
   left: 50%;
   transform: translateX(-50%);
-  background: #3b82f6;
-  color: #FFFFFF;
+  background: var(--color-accent);
+  color: white;
   font-size: 0.75rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
 .format-confirmation {
   background: #f0fdf4;
-  border: 1px solid #86efac;
-  border-radius: 8px;
+  border: 1px solid var(--color-success);
+  border-radius: 0.5rem;
   padding: 1rem;
   text-align: center;
 }
@@ -155,6 +160,9 @@
   font-size: 0.95rem;
   color: #166534;
   margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .format-confirmation strong {

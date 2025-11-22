@@ -8,14 +8,27 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import FormatSelector from './FormatSelector'
 import BracketDisplay from './BracketDisplay'
+import Skeleton from '../common/Skeleton'
 import {
   generateSingleEliminationBracket,
   generateDoubleEliminationBracket,
   generateRoundRobinBracket,
   generateSwissBracket,
 } from '../../utils/bracketAlgorithms'
-import { createAnonymousTournament } from '../../services/anonymousTournamentService'
-import { FiCheck, FiChevronRight, FiChevronLeft, FiMinus, FiPlus } from 'react-icons/fi'
+import { createTournamentWithBracket } from '../../services/tournamentService.unified'
+import { 
+  Check, 
+  ChevronRight, 
+  ChevronLeft, 
+  Minus, 
+  Plus, 
+  AlertTriangle, 
+  Trophy, 
+  MapPin, 
+  Calendar,
+  Users,
+  Loader2
+} from 'lucide-react'
 import './TournamentWizard.css'
 
 const TournamentWizard = () => {
@@ -24,11 +37,18 @@ const TournamentWizard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [user, setUser] = useState(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
+      } catch (e) {
+        console.error('Error fetching user:', e)
+      } finally {
+        setIsLoadingUser(false)
+      }
     }
     getUser()
   }, [])
@@ -37,8 +57,8 @@ const TournamentWizard = () => {
   const [formData, setFormData] = useState({
     name: '',
     location: '',
-    tournament_date: '',
-    format: 'single_elimination',
+    tournament_date: new Date().toISOString().split('T')[0],
+    format: 'single-elimination',
     players_count: 8,
     players_names: [],
   })
@@ -53,7 +73,7 @@ const TournamentWizard = () => {
   const goToStep = (step) => {
     // Validation avant de passer à l'étape suivante
     if (step > currentStep) {
-      if (currentStep === 1 && !formData.name) {
+      if (currentStep === 1 && !formData.name.trim()) {
         setError('Veuillez entrer un nom pour le tournoi')
         return
       }
@@ -73,6 +93,11 @@ const TournamentWizard = () => {
 
   // Soumettre le tournoi
   const handleSubmit = async () => {
+    if (!user) {
+      setError("Vous devez être connecté pour créer un tournoi.")
+      return
+    }
+
     setIsSubmitting(true)
     setError(null)
 
@@ -80,51 +105,42 @@ const TournamentWizard = () => {
       // Générer les noms si pas encore fait
       const players = formData.players_names.length === formData.players_count
         ? formData.players_names
-        : generateDefaultPlayerNames(formData.players_count)
+        : Array.from({ length: formData.players_count }, (_, i) => formData.players_names[i] || `Joueur ${i + 1}`)
 
-      // Générer le bracket selon le format
-      let bracket_data
-      switch (formData.format) {
-        case 'single_elimination':
-          bracket_data = generateSingleEliminationBracket(players)
-          break
-        case 'double_elimination':
-          bracket_data = generateDoubleEliminationBracket(players)
-          break
-        case 'round_robin':
-          bracket_data = generateRoundRobinBracket(players)
-          break
-        case 'swiss':
-          bracket_data = generateSwissBracket(players)
-          break
-        default:
-          throw new Error('Format non supporté')
-      }
-
-      // Créer le tournoi
-      const { data, error } = await createAnonymousTournament({
-        name: formData.name,
-        location: formData.location,
-        tournament_date: formData.tournament_date,
-        format: formData.format,
-        players_count: formData.players_count,
-        players_names: players,
-        bracket_data,
-        organizer_id: user?.id,
-      })
+      // Créer le tournoi avec bracket généré automatiquement
+      const { data, error } = await createTournamentWithBracket(
+        {
+          name: formData.name,
+          location: formData.location,
+          date: formData.tournament_date,
+          format: formData.format,
+          sport: 'Tennis', // Default sport - can be made configurable later
+          user_id: user.id
+        },
+        players
+      )
 
       if (error) {
-        throw new Error(error)
+        throw new Error(error.message || 'Erreur lors de la création')
       }
 
-      // Rediriger vers la page de gestion du tournoi pour l'organisateur
-      navigate(`/tournament/${data.unique_url_code}/manage`)
+      // Rediriger vers la page de gestion du tournoi unifié
+      navigate(`/dashboard/tournaments/${data.id}`)
     } catch (err) {
       console.error('Erreur lors de la création du tournoi:', err)
       setError(err.message || 'Une erreur est survenue lors de la création du tournoi')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isLoadingUser) {
+    return (
+      <div className="tournament-wizard-loading">
+        <Skeleton type="rect" height="60px" className="mb-4" />
+        <Skeleton type="rect" height="400px" />
+      </div>
+    )
   }
 
   return (
@@ -140,20 +156,19 @@ const TournamentWizard = () => {
           }
         </div>
         <div className="progress-steps">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3, 4].map((step) => (
             <div
               key={step}
               className={`progress-step ${currentStep === step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
             >
               <div className="step-number">
-                {currentStep > step ? <FiCheck /> : step}
+                {currentStep > step ? <Check size={16} /> : step}
               </div>
               <div className="step-label">
                 {step === 1 && 'Infos'}
                 {step === 2 && 'Format'}
                 {step === 3 && 'Joueurs'}
                 {step === 4 && 'Aperçu'}
-                {step === 5 && 'Fin'}
               </div>
             </div>
           ))}
@@ -163,7 +178,7 @@ const TournamentWizard = () => {
       {/* Error message */}
       {error && (
         <div className="wizard-error" role="alert">
-          <span aria-hidden="true">⚠️</span> {error}
+          <AlertTriangle size={20} /> {error}
         </div>
       )}
 
@@ -171,51 +186,60 @@ const TournamentWizard = () => {
       <div className="wizard-content">
         {/* Étape 1: Informations de base */}
         {currentStep === 1 && (
-          <div className="wizard-step">
+          <div className="wizard-step slide-in">
             <h2>Informations générales</h2>
             <p className="step-subtitle">Configurez les détails de base de votre tournoi</p>
 
             <div className="form-group-large">
               <label htmlFor="name">Nom du tournoi *</label>
-              <input
-                type="text"
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="Ex: Tournoi d'été 2025"
-                className="input-large"
-                autoFocus
-              />
+              <div className="input-with-icon">
+                <Trophy className="input-icon" size={20} />
+                <input
+                  type="text"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Ex: Tournoi d'été 2025"
+                  className="input-large"
+                  autoFocus
+                />
+              </div>
             </div>
 
             <div className="form-group-large">
               <label htmlFor="location">Lieu (optionnel)</label>
-              <input
-                type="text"
-                id="location"
-                value={formData.location}
-                onChange={(e) => handleChange('location', e.target.value)}
-                placeholder="Ex: Stade Municipal"
-                className="input-large"
-              />
+              <div className="input-with-icon">
+                <MapPin className="input-icon" size={20} />
+                <input
+                  type="text"
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => handleChange('location', e.target.value)}
+                  placeholder="Ex: Stade Municipal"
+                  className="input-large"
+                />
+              </div>
             </div>
 
             <div className="form-group-large">
               <label htmlFor="tournament_date">Date (optionnel)</label>
-              <input
-                type="date"
-                id="tournament_date"
-                value={formData.tournament_date}
-                onChange={(e) => handleChange('tournament_date', e.target.value)}
-                className="input-large"
-              />
+              <div className="input-with-icon">
+                <Calendar className="input-icon" size={20} />
+                <input
+                  type="date"
+                  id="tournament_date"
+                  value={formData.tournament_date}
+                  onChange={(e) => handleChange('tournament_date', e.target.value)}
+                  className="input-large"
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* Étape 2: Format */}
         {currentStep === 2 && (
-          <div className="wizard-step">
+          <div className="wizard-step slide-in">
             <FormatSelector
               selectedFormat={formData.format}
               onSelect={(format) => handleChange('format', format)}
@@ -226,7 +250,7 @@ const TournamentWizard = () => {
 
         {/* Étape 3: Joueurs */}
         {currentStep === 3 && (
-          <div className="wizard-step">
+          <div className="wizard-step slide-in">
             <h2>Participants</h2>
             <p className="step-subtitle">Définissez le nombre de joueurs et leurs noms</p>
 
@@ -237,7 +261,7 @@ const TournamentWizard = () => {
                 disabled={formData.players_count <= 2}
                 aria-label="Diminuer le nombre de joueurs"
               >
-                <FiMinus aria-hidden="true" />
+                <Minus size={24} aria-hidden="true" />
               </button>
               <div className="count-display" aria-live="polite" aria-atomic="true">
                 {formData.players_count}
@@ -249,7 +273,7 @@ const TournamentWizard = () => {
                 disabled={formData.players_count >= 64}
                 aria-label="Augmenter le nombre de joueurs"
               >
-                <FiPlus aria-hidden="true" />
+                <Plus size={24} aria-hidden="true" />
               </button>
             </div>
 
@@ -289,7 +313,7 @@ const TournamentWizard = () => {
 
         {/* Étape 4: Vérification */}
         {currentStep === 4 && (
-          <div className="wizard-step">
+          <div className="wizard-step slide-in">
             <h2>Récapitulatif</h2>
             <p className="step-subtitle">Vérifiez les informations avant de créer le tournoi</p>
 
@@ -319,9 +343,9 @@ const TournamentWizard = () => {
               <div className="verification-item">
                 <span className="verification-label">Format</span>
                 <span className="verification-value">
-                  {formData.format === 'single_elimination' && 'Élimination Simple'}
-                  {formData.format === 'double_elimination' && 'Double Élimination'}
-                  {formData.format === 'round_robin' && 'Round-Robin'}
+                  {formData.format === 'single-elimination' && 'Élimination Simple'}
+                  {formData.format === 'double-elimination' && 'Double Élimination'}
+                  {formData.format === 'round-robin' && 'Round-Robin'}
                   {formData.format === 'swiss' && 'Système Suisse'}
                 </span>
               </div>
@@ -333,18 +357,20 @@ const TournamentWizard = () => {
 
             <div className="verification-preview">
               <h3>Aperçu du tableau</h3>
-              <BracketDisplay
-                bracket={
-                  formData.format === 'single_elimination'
-                    ? generateSingleEliminationBracket(generateDefaultPlayerNames(formData.players_count))
-                    : formData.format === 'round_robin'
-                      ? generateRoundRobinBracket(generateDefaultPlayerNames(formData.players_count))
-                      : formData.format === 'swiss'
-                        ? generateSwissBracket(generateDefaultPlayerNames(formData.players_count))
-                        : generateDoubleEliminationBracket(generateDefaultPlayerNames(formData.players_count))
-                }
-                format={formData.format}
-              />
+              <div className="bracket-preview-container">
+                <BracketDisplay
+                  bracket={
+                    formData.format === 'single-elimination'
+                      ? generateSingleEliminationBracket(generateDefaultPlayerNames(formData.players_count))
+                      : formData.format === 'round-robin'
+                        ? generateRoundRobinBracket(generateDefaultPlayerNames(formData.players_count))
+                        : formData.format === 'swiss'
+                          ? generateSwissBracket(generateDefaultPlayerNames(formData.players_count))
+                          : generateDoubleEliminationBracket(generateDefaultPlayerNames(formData.players_count))
+                  }
+                  format={formData.format}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -358,7 +384,7 @@ const TournamentWizard = () => {
             onClick={() => goToStep(currentStep - 1)}
             disabled={isSubmitting}
           >
-            <FiChevronLeft /> Retour
+            <ChevronLeft size={20} /> Retour
           </button>
         )}
         
@@ -369,7 +395,7 @@ const TournamentWizard = () => {
             className="btn-nav btn-next"
             onClick={() => goToStep(currentStep + 1)}
           >
-            Suivant <FiChevronRight />
+            Suivant <ChevronRight size={20} />
           </button>
         )}
 
@@ -379,7 +405,15 @@ const TournamentWizard = () => {
             onClick={handleSubmit}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Création...' : 'Créer le tournoi'} <FiCheck />
+            {isSubmitting ? (
+              <>
+                <Loader2 size={20} className="animate-spin" /> Création...
+              </>
+            ) : (
+              <>
+                Créer le tournoi <Check size={20} />
+              </>
+            )}
           </button>
         )}
       </div>

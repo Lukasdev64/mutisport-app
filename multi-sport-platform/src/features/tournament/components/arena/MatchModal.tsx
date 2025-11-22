@@ -5,6 +5,7 @@ import { useTournamentStore } from '../../store/tournamentStore';
 import { Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/toast';
+import { TennisMatchModal } from '@/sports/tennis/TennisMatchModal';
 
 interface MatchModalProps {
   isOpen: boolean;
@@ -14,6 +15,21 @@ interface MatchModalProps {
 }
 
 export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalProps) {
+  // Delegate to sport-specific modals
+  if (tournament.sport === 'tennis') {
+    return (
+      <TennisMatchModal
+        isOpen={isOpen}
+        onClose={onClose}
+        matchId={match.id}
+        player1Id={match.player1Id!}
+        player2Id={match.player2Id!}
+        tournament={tournament}
+      />
+    );
+  }
+
+  // Generic modal for other sports
   const { updateMatch } = useTournamentStore();
   const { toast } = useToast();
   const [score1, setScore1] = useState(match.result?.player1Score ?? 0);

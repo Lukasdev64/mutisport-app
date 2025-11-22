@@ -56,30 +56,6 @@ export async function getTournamentUrls(baseUrl) {
 }
 
 /**
- * Get all public competition URLs for sitemap
- * @param {string} baseUrl - Base URL of the site
- * @returns {Promise<Array>}
- */
-export async function getCompetitionUrls(baseUrl) {
-  try {
-    // In production, this would fetch from your API
-    const competitions = [] // await competitionService.getAllCompetitions()
-
-    return competitions.map((competition) => ({
-      loc: `${baseUrl}/competition/${competition.id}`,
-      lastmod: competition.updatedAt
-        ? new Date(competition.updatedAt).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0],
-      changefreq: 'weekly',
-      priority: '0.7'
-    }))
-  } catch (error) {
-    console.error('Error fetching competition URLs:', error)
-    return []
-  }
-}
-
-/**
  * Generate complete sitemap with all public URLs
  * @param {string} baseUrl - Base URL of the site
  * @returns {Promise<string>} Complete sitemap XML
@@ -107,9 +83,8 @@ export async function generateCompleteSitemap(baseUrl) {
   ]
 
   const tournamentUrls = await getTournamentUrls(baseUrl)
-  const competitionUrls = await getCompetitionUrls(baseUrl)
 
-  const allUrls = [...staticUrls, ...tournamentUrls, ...competitionUrls]
+  const allUrls = [...staticUrls, ...tournamentUrls]
 
   return generateSitemap(allUrls)
 }
@@ -173,7 +148,6 @@ export function injectStructuredData(data) {
 export default {
   generateSitemap,
   getTournamentUrls,
-  getCompetitionUrls,
   generateCompleteSitemap,
   downloadSitemap,
   generateTournamentStructuredData,

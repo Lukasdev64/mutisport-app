@@ -1,91 +1,87 @@
 import { NavLink } from 'react-router-dom'
 import { 
-  FiUser, 
-  FiCalendar, 
-  FiMessageSquare, 
-  FiCheckSquare, 
-  FiTrendingUp, 
-  FiSettings,
-  FiUsers,
-  FiAward,
-  FiPlusCircle,
-  FiList
-} from 'react-icons/fi'
+  User, 
+  Trophy, 
+  Users, 
+  Calendar, 
+  BarChart2, 
+  MessageSquare, 
+  Settings, 
+  LogOut,
+  Award,
+  CheckSquare
+} from 'lucide-react'
 import './Sidebar.css'
 
 function Sidebar({ user, onSignOut }) {
   const navItems = [
     {
       path: '/dashboard/profile',
-      icon: <FiUser />,
+      icon: <User size={20} />,
       label: 'Mon Profil',
-      description: 'Informations personnelles'
     },
     {
       path: '/dashboard/tournaments',
-      icon: <FiCalendar />,
+      icon: <Trophy size={20} />,
       label: 'Tournois',
-      description: 'Tous vos tournois',
-      badge: null // Peut être dynamique plus tard
     },
     {
       path: '/dashboard/participants',
-      icon: <FiUsers />,
+      icon: <Users size={20} />,
       label: 'Participants',
-      description: 'Inscriptions et équipes'
     },
     { 
       path: '/dashboard/availability', 
-      icon: <FiCheckSquare />, 
+      icon: <CheckSquare size={20} />, 
       label: 'Disponibilités',
-      description: 'Présences confirmées'
     },
     { 
       path: '/dashboard/results', 
-      icon: <FiAward />, 
+      icon: <Award size={20} />, 
       label: 'Résultats',
-      description: 'Classements et scores'
     },
     { 
       path: '/dashboard/stats', 
-      icon: <FiTrendingUp />, 
+      icon: <BarChart2 size={20} />, 
       label: 'Statistiques',
-      description: 'Analyses et graphiques'
     },
     { 
       path: '/dashboard/messages', 
-      icon: <FiMessageSquare />, 
+      icon: <MessageSquare size={20} />, 
       label: 'Messages',
-      description: 'Communication',
       badge: 3
     },
     { 
       path: '/dashboard/settings', 
-      icon: <FiSettings />, 
+      icon: <Settings size={20} />, 
       label: 'Paramètres',
-      description: 'Configuration'
     },
   ]
+
+  // Get initials for avatar
+  const getInitials = () => {
+    const name = user?.user_metadata?.full_name || user?.email || 'U'
+    return name.charAt(0).toUpperCase()
+  }
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <div className="logo-icon">🏆</div>
+          <Trophy className="logo-icon" size={28} />
           <h2>SportChampions</h2>
         </div>
-        
-        <div className="sidebar-user">
-          <div className="user-avatar">
-            {user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
-             user?.email?.charAt(0)?.toUpperCase() || '?'}
-          </div>
-          <div className="user-info">
-            <p className="user-name">
-              {user?.user_metadata?.full_name || 'Utilisateur'}
-            </p>
-            <p className="user-email">{user?.email}</p>
-          </div>
+      </div>
+
+      <div className="sidebar-user">
+        <div className="user-avatar">
+          {getInitials()}
+        </div>
+        <div className="user-info">
+          <p className="user-name">
+            {user?.user_metadata?.full_name || 'Utilisateur'}
+          </p>
+          <p className="user-email">{user?.email}</p>
         </div>
       </div>
 
@@ -98,10 +94,7 @@ function Sidebar({ user, onSignOut }) {
                 className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
               >
                 <span className="nav-icon">{item.icon}</span>
-                <div className="nav-content">
-                  <span className="nav-label">{item.label}</span>
-                  <span className="nav-description">{item.description}</span>
-                </div>
+                <span className="nav-label">{item.label}</span>
                 {item.badge && (
                   <span className="nav-badge">{item.badge}</span>
                 )}
@@ -113,9 +106,7 @@ function Sidebar({ user, onSignOut }) {
 
       <div className="sidebar-footer">
         <button onClick={onSignOut} className="signout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
+          <LogOut size={18} />
           Déconnexion
         </button>
       </div>

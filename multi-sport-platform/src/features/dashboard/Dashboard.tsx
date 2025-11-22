@@ -3,23 +3,36 @@ import { Trophy, Users, Calendar, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/toast';
-
-const stats = [
-  { label: 'Active Tournaments', value: '3', icon: Trophy, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  { label: 'Total Players', value: '128', icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { label: 'Matches Today', value: '12', icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-];
+import { useSportStats, useSportFilteredTournaments } from '@/hooks/useSportFilter';
+import { useSportStore } from '@/store/sportStore';
+import { SPORTS } from '@/types/sport';
 
 export function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const activeSport = useSportStore((state) => state.activeSport);
+  const activeSportInfo = SPORTS[activeSport];
+  
+  // Get sport-filtered data
+  const stats = useSportStats();
+  const tournaments = useSportFilteredTournaments();
+  const recentTournaments = tournaments.slice(0, 3);
+
+  const statsCards = [
+    { label: 'Active Tournaments', value: stats.activeTournaments.toString(), icon: Trophy, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: 'Total Players', value: stats.totalPlayers.toString(), icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { label: 'Completed', value: stats.completedTournaments.toString(), icon: Calendar, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  ];
 
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-heading font-bold text-white">Dashboard</h1>
-          <p className="text-slate-400 mt-1">Welcome back to MultiSport Manager</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-3xl">{activeSportInfo.emoji}</span>
+            <h1 className="text-3xl font-heading font-bold text-white">{activeSportInfo.name} Dashboard</h1>
+          </div>
+          <p className="text-slate-400 mt-1">Welcome back to your {activeSportInfo.name.toLowerCase()} tournaments</p>
         </div>
         <Link to="/tournaments/new">
           <Button className="bg-blue-600 hover:bg-blue-500">
@@ -29,7 +42,7 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
@@ -62,24 +75,31 @@ export function Dashboard() {
             <Button variant="ghost" size="sm" className="text-slate-400" onClick={() => navigate('/tournaments')}>View All</Button>
           </div>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div 
-                key={i} 
-                onClick={() => toast(`Opening Summer Championship ${i}...`, 'info')}
-                className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 font-bold">
-                    T{i}
+            {recentTournaments.length > 0 ? (
+              recentTournaments.map((tournament) => (
+                <div 
+                  key={tournament.id} 
+                  onClick={() => navigate(`/tournaments/${tournament.id}`)}
+                  className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-blue-400 font-bold">
+                      {activeSportInfo.emoji}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-medium group-hover:text-blue-400 transition-colors">{tournament.name}</h4>
+                      <p className="text-xs text-slate-500 capitalize">{tournament.format.replace('_', ' ')} • {tournament.players.length} Players</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white font-medium group-hover:text-blue-400 transition-colors">Summer Championship {i}</h4>
-                    <p className="text-xs text-slate-500">Single Elimination • 16 Players</p>
-                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
                 </div>
-                <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-white transition-colors" />
+              ))
+            ) : (
+              <div className="text-center py-8 text-slate-500">
+                <Trophy className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                <p>No {activeSportInfo.name.toLowerCase()} tournaments yet</p>
               </div>
-            ))}
+            )}
           </div>
         </motion.div>
 

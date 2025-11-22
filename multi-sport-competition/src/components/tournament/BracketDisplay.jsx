@@ -16,12 +16,12 @@ const BracketDisplay = ({ bracket, format }) => {
   }
 
   // Rendu pour élimination simple
-  if (format === 'single_elimination') {
+  if (format === 'single_elimination' || format === 'single-elimination') {
     return <SingleEliminationBracket rounds={bracket.rounds} />
   }
 
   // Rendu pour round-robin
-  if (format === 'round_robin') {
+  if (format === 'round_robin' || format === 'round-robin') {
     return <RoundRobinBracket rounds={bracket.rounds} standings={bracket.standings} />
   }
 
@@ -31,7 +31,7 @@ const BracketDisplay = ({ bracket, format }) => {
   }
 
   // Rendu pour double élimination
-  if (format === 'double_elimination') {
+  if (format === 'double_elimination' || format === 'double-elimination') {
     return <DoubleEliminationBracket bracket={bracket} />
   }
 

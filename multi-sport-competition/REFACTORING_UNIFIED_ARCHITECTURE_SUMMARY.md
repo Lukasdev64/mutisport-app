@@ -304,9 +304,41 @@ Queries de validation incluses dans `DATABASE_MIGRATION_DATA.sql`:
 
 ---
 
+## 🔧 Phase 2.5: Service Integration Fix (100%)
+
+### Problem Identified
+After Phase 2 completion, components were still importing from old `anonymousTournamentService` causing 406 errors:
+```
+GET .../anonymous_tournaments?select=id&unique_url_code=eq.v74hhumr 406 (Not Acceptable)
+```
+
+### Files Fixed
+**✅ TournamentWizard.jsx** (src/components/tournament/)
+- Changed import from `anonymousTournamentService` to `tournamentService.unified`
+- Replaced `createAnonymousTournament` with `createTournamentWithBracket`
+- Simplified code by removing manual bracket generation (handled by service)
+- Updated field mapping: `tournament_date` → `date`
+- Updated redirect path: `/tournament/${code}/manage` → `/dashboard/tournaments/${id}`
+
+**✅ TournamentDashboard.jsx** (src/pages/tournament/)
+- Changed import to use unified service
+- Updated params: `const { code }` → `const { id }`
+- Replaced `getTournamentByCode(code)` with `getTournamentById(id)`
+- All other functions (`updateMatchResult`, `undoLastMatchResult`, `generateNextRound`) already compatible
+
+### Dead Code Identified
+Files still importing old service but **NOT used anywhere** (Phase 3 cleanup):
+- `src/pages/tournament/TournamentView.jsx`
+- `src/pages/tournament/TournamentManage.jsx`
+- `src/pages/tournament/TournamentList.jsx` (old one)
+
+All old public routes redirect to dashboard, making these files obsolete.
+
+---
+
 ## 🚀 État Actuel
 
-### ✅ Complété (70%)
+### ✅ Complété (80%)
 
 **Backend:**
 - [x] Migration base de données (tables + données)
@@ -321,8 +353,9 @@ Queries de validation incluses dans `DATABASE_MIGRATION_DATA.sql`:
 - [x] Redirections anciennes routes
 - [x] React Query provider configuré
 - [x] Dark mode support
+- [x] **Service integration fixed** (TournamentWizard + TournamentDashboard)
 
-### ⏳ Phase 3 - À Faire (30%)
+### ⏳ Phase 3 - À Faire (20%)
 
 **Pages restantes à créer/adapter:**
 1. **TournamentCreate.jsx** (simple wrapper vers TournamentWizard existant)
@@ -436,6 +469,12 @@ Cette refonte majeure transforme une architecture dupliquée et confuse en un **
 
 **Version:** 2.0.0
 **Branche:** `refactor/unified-architecture`
-**Status:** ✅ **70% COMPLETE** - Ready for testing & Phase 3
+**Status:** ✅ **80% COMPLETE** - Service integration fixed, ready for Phase 3 cleanup
 
-🚀 **Architecture unifiée opérationnelle!**
+🚀 **Architecture unifiée opérationnelle et fonctionnelle!**
+
+### Latest Updates (Phase 2.5)
+- ✅ Fixed 406 errors from old service imports
+- ✅ TournamentWizard & TournamentDashboard now using unified service
+- ✅ All active components migrated successfully
+- ⏳ Dead code cleanup remaining (Phase 3)

@@ -106,24 +106,6 @@ function Dashboard() {
   )
 }
 
-// Composant TournamentCreateView
-function TournamentCreateView() {
-  return (
-    <div className="view-container">
-      <div className="view-header">
-        <div>
-          <h1>Créer un tournoi</h1>
-          <p className="view-description">Configurez votre nouveau tournoi rapide</p>
-        </div>
-      </div>
-      
-      <div className="card" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <TournamentWizard />
-      </div>
-    </div>
-  )
-}
-
 // Composant ProfileView
 function ProfileView({ user }) {
   const firstName = user.user_metadata?.first_name || ''
@@ -196,8 +178,8 @@ function ProfileView({ user }) {
             </div>
             <div className="info-item">
               <strong>Email vérifié</strong>
-              <span className={user.email_confirmed_at ? 'status-success' : 'status-warning'}>
-                {user.email_confirmed_at ? '✓ Vérifié' : '✗ Non vérifié'}
+              <span className={`status-badge ${user.email_confirmed_at ? 'status-success' : 'status-warning'}`}>
+                {user.email_confirmed_at ? 'Vérifié' : 'Non vérifié'}
               </span>
             </div>
             <div className="info-item">
@@ -212,8 +194,8 @@ function ProfileView({ user }) {
         <div className="card">
           <h3>Statistiques rapides</h3>
           {isLoadingStats ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div className="loading-spinner" style={{ margin: '0 auto' }}></div>
+            <div className="loading-container-small">
+              <div className="loading-spinner"></div>
             </div>
           ) : (
             <div className="stats-quick">
@@ -237,494 +219,6 @@ function ProfileView({ user }) {
   )
 }
 
-// Composant CompetitionsView
-function CompetitionsView() {
-  const [showForm, setShowForm] = useState(false)
-  const [competitions, setCompetitions] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    sport: '',
-    date: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    maxParticipants: '',
-    ageCategory: 'both',
-    isOfficial: false,
-    description: '',
-    files: []
-  })
-
-  // Charger les compétitions au montage du composant
-  useEffect(() => {
-    loadCompetitions()
-  }, [])
-
-  const loadCompetitions = async () => {
-    setIsLoading(true)
-    setError(null)
-    
-    const { data, error: fetchError } = await getUserCompetitions()
-    
-    if (fetchError) {
-      setError('Erreur lors du chargement des compétitions')
-      console.error(fetchError)
-    } else {
-      setCompetitions(data || [])
-    }
-    
-    setIsLoading(false)
-  }
-
-  const sports = [
-    'Tennis', 'Football', 'Basketball', 'Volleyball', 
-    'Badminton', 'Rugby', 'Handball', 'Natation',
-    'Athlétisme', 'Cyclisme', 'Escalade', 'Boxe'
-  ]
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
-  }
-
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files)
-    const validFiles = files.filter(file => {
-      const isImage = file.type.startsWith('image/')
-      const isPDF = file.type === 'application/pdf'
-      const isValidSize = file.size <= 5 * 1024 * 1024 // 5MB max
-      return (isImage || isPDF) && isValidSize
-    })
-
-    setFormData(prev => ({
-      ...prev,
-      files: [...prev.files, ...validFiles.map(file => ({
-        file,
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
-      }))]
-    }))
-  }
-
-  const removeFile = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      files: prev.files.filter((_, i) => i !== index)
-    }))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
-
-    console.log('📝 Soumission du formulaire...', formData)
-
-    try {
-      // Créer la compétition avec les fichiers
-      console.log('📤 Envoi vers Supabase...')
-      const { data, error: createError } = await createCompetitionWithFiles(
-        formData,
-        formData.files
-      )
-
-      if (createError) {
-        console.error('❌ Erreur création:', createError)
-        setError(typeof createError === 'string' ? createError : 'Erreur lors de la création')
-        return
-      }
-
-      console.log('✅ Compétition créée:', data)
-
-      // Recharger la liste des compétitions
-      await loadCompetitions()
-
-      // Réinitialiser le formulaire
-      setFormData({
-        name: '',
-        sport: '',
-        date: '',
-        address: '',
-        city: '',
-        postalCode: '',
-        maxParticipants: '',
-        ageCategory: 'both',
-        isOfficial: false,
-        description: '',
-        files: []
-      })
-      setShowForm(false)
-      
-      // Message de succès
-      alert('✅ Compétition créée avec succès !')
-    } catch (err) {
-      console.error('❌ Erreur inattendue:', err)
-      setError('Une erreur inattendue s\'est produite: ' + (err.message || err))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  if (showForm) {
-    return (
-      <div className="view-container">
-        <div className="view-header">
-          <div>
-            <h1>Nouvelle Compétition</h1>
-            <p className="view-description">Remplissez les informations de la compétition</p>
-          </div>
-          <button className="btn-secondary" onClick={() => setShowForm(false)}>
-            ← Retour
-          </button>
-        </div>
-
-        <div className="form-card">
-          {error && (
-            <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
-              ⚠️ {error}
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit}>
-            <div className="form-section">
-              <h3>Informations générales</h3>
-              
-              <div className="form-group">
-                <label htmlFor="name">Nom de la compétition *</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Ex: Tournoi de Tennis Open 2025"
-                  required
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="sport">Sport *</label>
-                  <select
-                    id="sport"
-                    name="sport"
-                    value={formData.sport}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Sélectionnez un sport</option>
-                    {sports.map(sport => (
-                      <option key={sport} value={sport}>{sport}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="date">Date de la compétition *</label>
-                  <input
-                    type="date"
-                    id="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleInputChange}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Décrivez la compétition, les règles spécifiques, les prix, etc."
-                  rows="4"
-                />
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h3>Lieu</h3>
-              
-              <div className="form-group">
-                <label htmlFor="address">Adresse *</label>
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Ex: 12 Rue du Stade"
-                  required
-                />
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="city">Ville *</label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="Ex: Paris"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="postalCode">Code Postal *</label>
-                  <input
-                    type="text"
-                    id="postalCode"
-                    name="postalCode"
-                    value={formData.postalCode}
-                    onChange={handleInputChange}
-                    placeholder="Ex: 75001"
-                    pattern="[0-9]{5}"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h3>Participants</h3>
-              
-              <div className="form-group">
-                <label htmlFor="maxParticipants">Nombre maximum de participants *</label>
-                <input
-                  type="number"
-                  id="maxParticipants"
-                  name="maxParticipants"
-                  value={formData.maxParticipants}
-                  onChange={handleInputChange}
-                  placeholder="Ex: 32"
-                  min="2"
-                  max="1000"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Catégorie d'âge *</label>
-                <div className="radio-group">
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="ageCategory"
-                      value="minors"
-                      checked={formData.ageCategory === 'minors'}
-                      onChange={handleInputChange}
-                    />
-                    <span>Mineurs uniquement (-18 ans)</span>
-                  </label>
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="ageCategory"
-                      value="adults"
-                      checked={formData.ageCategory === 'adults'}
-                      onChange={handleInputChange}
-                    />
-                    <span>Majeurs uniquement (+18 ans)</span>
-                  </label>
-                  <label className="radio-option">
-                    <input
-                      type="radio"
-                      name="ageCategory"
-                      value="both"
-                      checked={formData.ageCategory === 'both'}
-                      onChange={handleInputChange}
-                    />
-                    <span>Toutes catégories</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="checkbox-option">
-                  <input
-                    type="checkbox"
-                    name="isOfficial"
-                    checked={formData.isOfficial}
-                    onChange={handleInputChange}
-                  />
-                  <span>Compétition officielle</span>
-                </label>
-                <p className="form-help">Les compétitions officielles apparaîtront avec un badge spécial</p>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <h3>Documents et Images</h3>
-              
-              <div className="form-group">
-                <label htmlFor="files">Fichiers joints (images ou PDF)</label>
-                <div className="file-upload-area">
-                  <input
-                    type="file"
-                    id="files"
-                    multiple
-                    accept="image/*,.pdf"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <label htmlFor="files" className="file-upload-button">
-                    <span className="upload-icon">📎</span>
-                    <span>Choisir des fichiers</span>
-                  </label>
-                  <p className="form-help" style={{ marginLeft: 0, marginTop: '0.5rem' }}>
-                    Images (JPG, PNG, GIF) ou PDF - Maximum 5 MB par fichier
-                  </p>
-                </div>
-
-                {formData.files.length > 0 && (
-                  <div className="files-preview">
-                    {formData.files.map((fileObj, index) => (
-                      <div key={index} className="file-item">
-                        {fileObj.preview ? (
-                          <img src={fileObj.preview} alt={fileObj.name} className="file-thumbnail" />
-                        ) : (
-                          <div className="file-icon">📄</div>
-                        )}
-                        <div className="file-info">
-                          <div className="file-name">{fileObj.name}</div>
-                          <div className="file-size">{(fileObj.size / 1024).toFixed(1)} KB</div>
-                        </div>
-                        <button
-                          type="button"
-                          className="file-remove"
-                          onClick={() => removeFile(index)}
-                          title="Supprimer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="form-actions">
-              <button 
-                type="button" 
-                className="btn-cancel" 
-                onClick={() => setShowForm(false)}
-                disabled={isSubmitting}
-              >
-                Annuler
-              </button>
-              <button 
-                type="submit" 
-                className="btn-primary"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Création en cours...' : 'Créer la compétition'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="view-container">
-      <div className="view-header">
-        <div>
-          <h1>Compétitions</h1>
-          <p className="view-description">Créez et gérez vos compétitions sportives</p>
-        </div>
-        <button className="btn-primary" onClick={() => setShowForm(true)}>
-          + Nouvelle Compétition
-        </button>
-      </div>
-
-      {error && (
-        <div className="alert alert-error" style={{ marginBottom: '1.5rem' }}>
-          ⚠️ {error}
-        </div>
-      )}
-      
-      {isLoading ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Chargement des compétitions...</p>
-        </div>
-      ) : competitions.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">🏆</div>
-          <h3>Aucune compétition</h3>
-          <p>Commencez par créer votre première compétition</p>
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
-            Créer une compétition
-          </button>
-        </div>
-      ) : (
-        <div className="competitions-grid">
-          {competitions.map(comp => (
-            <div key={comp.id} className="competition-card">
-              <div className="competition-header">
-                <div className="competition-sport">{comp.sport}</div>
-                {comp.is_official && <span className="badge-official">Officiel</span>}
-              </div>
-              <h3>{comp.name}</h3>
-              <div className="competition-details">
-                <div className="detail-item">
-                  <Calendar className="detail-icon" size={18} />
-                  <span>{new Date(comp.competition_date).toLocaleDateString('fr-FR', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
-                  })}</span>
-                </div>
-                <div className="detail-item">
-                  <MapPin className="detail-icon" size={18} />
-                  <span>{comp.city}</span>
-                </div>
-                <div className="detail-item">
-                  <Users className="detail-icon" size={18} />
-                  <span>{comp.current_participants} / {comp.max_participants} participants</span>
-                </div>
-                <div className="detail-item">
-                  <Target className="detail-icon" size={18} />
-                  <span>
-                    {comp.age_category === 'minors' && 'Mineurs'}
-                    {comp.age_category === 'adults' && 'Majeurs'}
-                    {comp.age_category === 'both' && 'Toutes catégories'}
-                  </span>
-                </div>
-              </div>
-              <div className="competition-actions">
-                <button 
-                  className="btn-secondary"
-                  onClick={() => window.location.href = `/competition/${comp.id}`}
-                >
-                  Voir détails
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // Composant ParticipantsView
 function ParticipantsView() {
   return (
@@ -735,12 +229,13 @@ function ParticipantsView() {
           <p className="view-description">Gérez les inscriptions et les équipes</p>
         </div>
         <button className="btn-primary">
-          + Ajouter participant
+          <Users size={18} style={{ marginRight: '0.5rem' }} />
+          Ajouter participant
         </button>
       </header>
 
       <div className="empty-state">
-        <div className="empty-icon">👥</div>
+        <Users size={48} className="empty-state-icon" />
         <h3>Aucun participant</h3>
         <p>Les participants inscrits apparaîtront ici</p>
       </div>
@@ -758,7 +253,7 @@ function AvailabilityView() {
       </header>
 
       <div className="empty-state">
-        <div className="empty-icon">✅</div>
+        <Calendar size={48} className="empty-state-icon" />
         <h3>Aucune disponibilité</h3>
         <p>Les confirmations de présence s'afficheront ici</p>
       </div>
@@ -776,7 +271,7 @@ function ResultsView() {
       </header>
 
       <div className="empty-state">
-        <div className="empty-icon">🏅</div>
+        <Target size={48} className="empty-state-icon" />
         <h3>Aucun résultat</h3>
         <p>Les résultats des compétitions apparaîtront ici</p>
       </div>
@@ -796,7 +291,7 @@ function StatsView() {
       <div className="cards-grid">
         <div className="card">
           <h3>Vue d'ensemble</h3>
-          <p>Statistiques globales à venir</p>
+          <p className="text-muted">Statistiques globales à venir</p>
         </div>
       </div>
     </div>
@@ -813,12 +308,13 @@ function MessagesView() {
           <p className="view-description">Communication avec les participants</p>
         </div>
         <button className="btn-primary">
-          + Nouveau message
+          <Users size={18} style={{ marginRight: '0.5rem' }} />
+          Nouveau message
         </button>
       </header>
 
       <div className="empty-state">
-        <div className="empty-icon">💬</div>
+        <Users size={48} className="empty-state-icon" />
         <h3>Aucun message</h3>
         <p>Votre boîte de réception est vide</p>
       </div>
@@ -842,7 +338,7 @@ function SettingsView({ user }) {
             <div className="setting-item">
               <div>
                 <strong>Notifications email</strong>
-                <p>Recevoir des emails pour les nouvelles inscriptions</p>
+                <p className="text-muted">Recevoir des emails pour les nouvelles inscriptions</p>
               </div>
               <label className="toggle">
                 <input type="checkbox" defaultChecked />
@@ -852,7 +348,7 @@ function SettingsView({ user }) {
             <div className="setting-item">
               <div>
                 <strong>Notifications push</strong>
-                <p>Recevoir des notifications dans le navigateur</p>
+                <p className="text-muted">Recevoir des notifications dans le navigateur</p>
               </div>
               <label className="toggle">
                 <input type="checkbox" />

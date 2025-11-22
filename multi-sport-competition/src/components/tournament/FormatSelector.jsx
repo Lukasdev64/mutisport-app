@@ -4,31 +4,32 @@
  */
 
 import { useState } from 'react'
-import { getFormatName, getFormatDescription, calculateMatchCount } from '../../utils/bracketAlgorithms'
+import { Trophy, Swords, RotateCw, BarChart2, Check } from 'lucide-react'
+import { getFormatName, calculateMatchCount } from '../../utils/bracketAlgorithms'
 import './FormatSelector.css'
 
 const FormatSelector = ({ selectedFormat, onSelect, playerCount = 8 }) => {
   const formats = [
     {
-      id: 'single_elimination',
+      id: 'single-elimination',
       name: 'Élimination Simple',
-      icon: '🏆',
+      icon: <Trophy size={40} />,
       description: 'Une défaite = élimination',
       details: 'Le format le plus simple et rapide. Chaque match perdu élimine le joueur.',
       recommended: true,
     },
     {
-      id: 'double_elimination',
+      id: 'double-elimination',
       name: 'Double Élimination',
-      icon: '⚔️',
+      icon: <Swords size={40} />,
       description: 'Deux défaites pour être éliminé',
       details: 'Plus de matchs, seconde chance pour les perdants via le bracket des perdants.',
       recommended: false,
     },
     {
-      id: 'round_robin',
+      id: 'round-robin',
       name: 'Round-Robin',
-      icon: '🔄',
+      icon: <RotateCw size={40} />,
       description: 'Tous contre tous',
       details: 'Chaque joueur affronte tous les autres. Classement au nombre de victoires.',
       recommended: false,
@@ -36,7 +37,7 @@ const FormatSelector = ({ selectedFormat, onSelect, playerCount = 8 }) => {
     {
       id: 'swiss',
       name: 'Système Suisse',
-      icon: '📊',
+      icon: <BarChart2 size={40} />,
       description: 'Appariements dynamiques',
       details: 'Les joueurs affrontent des adversaires de niveau similaire à chaque tour.',
       recommended: false,
@@ -97,7 +98,7 @@ const FormatSelector = ({ selectedFormat, onSelect, playerCount = 8 }) => {
 
               {isSelected && (
                 <div className="format-selected-indicator">
-                  ✓ Sélectionné
+                  <Check size={14} style={{ marginRight: 4 }} /> Sélectionné
                 </div>
               )}
             </div>
@@ -108,7 +109,8 @@ const FormatSelector = ({ selectedFormat, onSelect, playerCount = 8 }) => {
       {selectedFormat && (
         <div className="format-confirmation">
           <p>
-            ✓ Format sélectionné: <strong>{getFormatName(selectedFormat)}</strong>
+            <Check size={18} style={{ marginRight: 8, display: 'inline-block', verticalAlign: 'text-bottom' }} />
+            Format sélectionné: <strong>{getFormatName(selectedFormat)}</strong>
           </p>
           <p className="format-match-info">
             Ce tournoi comprendra <strong>{calculateMatchCount(selectedFormat, playerCount)} matchs</strong> au total.

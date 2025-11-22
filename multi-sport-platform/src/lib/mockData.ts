@@ -15,7 +15,8 @@ export const MOCK_PLAYERS: Player[] = [
 export const MOCK_TOURNAMENTS: Tournament[] = [
   {
     id: 't1',
-    name: 'Summer Championship 2025',
+    name: 'Roland Garros 2025',
+    sport: 'tennis',
     format: 'single_elimination',
     status: 'active',
     players: MOCK_PLAYERS.slice(0, 8),
@@ -52,7 +53,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
   },
   {
     id: 't2',
-    name: 'Friday Night Ping Pong',
+    name: 'Wimbledon 2025',
+    sport: 'tennis',
     format: 'round_robin',
     status: 'completed',
     players: MOCK_PLAYERS.slice(0, 4),
@@ -88,7 +90,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
   },
   {
     id: 't3',
-    name: 'Office FIFA League',
+    name: 'US Open 2025',
+    sport: 'tennis',
     format: 'round_robin',
     status: 'active',
     players: MOCK_PLAYERS.slice(0, 6),
@@ -118,7 +121,8 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
   },
   {
     id: 't4',
-    name: 'Chess Club Swiss',
+    name: 'Australian Open 2025',
+    sport: 'tennis',
     format: 'swiss',
     status: 'active',
     players: MOCK_PLAYERS.slice(0, 7),
@@ -149,3 +153,4 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     settings: { pointsForWin: 1, pointsForDraw: 0.5, pointsForLoss: 0 }
   }
 ];
+export const ALL_MOCK_TOURNAMENTS = [...MOCK_TOURNAMENTS];

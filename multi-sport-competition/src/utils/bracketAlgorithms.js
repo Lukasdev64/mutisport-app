@@ -340,33 +340,42 @@ export const generateSwissRoundPairings = (standings, roundNumber) => {
  * Fonction utilitaire: obtenir le nom du format en français
  */
 export const getFormatName = (format) => {
+  // Normalize format to handle both dashes and underscores
+  const normalizedFormat = format?.replace(/-/g, '_')
+
   const names = {
     single_elimination: 'Élimination Simple',
     double_elimination: 'Double Élimination',
     round_robin: 'Round-Robin (Poules)',
     swiss: 'Système Suisse',
   }
-  return names[format] || format
+  return names[normalizedFormat] || format
 }
 
 /**
  * Fonction utilitaire: obtenir la description du format
  */
 export const getFormatDescription = (format) => {
+  // Normalize format to handle both dashes and underscores
+  const normalizedFormat = format?.replace(/-/g, '_')
+
   const descriptions = {
     single_elimination: 'Une défaite = élimination. Format classique et rapide.',
     double_elimination: 'Deux défaites nécessaires pour être éliminé. Plus de matchs.',
     round_robin: 'Tous les joueurs s\'affrontent. Classement au nombre de victoires.',
     swiss: 'Appariements dynamiques selon les résultats. Équitable et efficace.',
   }
-  return descriptions[format] || ''
+  return descriptions[normalizedFormat] || ''
 }
 
 /**
  * Fonction utilitaire: calculer le nombre de matchs pour un format
  */
 export const calculateMatchCount = (format, playerCount) => {
-  switch (format) {
+  // Normalize format to handle both dashes and underscores
+  const normalizedFormat = format?.replace(/-/g, '_')
+
+  switch (normalizedFormat) {
     case 'single_elimination':
       return playerCount - 1
 
