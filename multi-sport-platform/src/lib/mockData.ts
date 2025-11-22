@@ -1,16 +1,88 @@
 import type { Tournament, Player } from '@/types/tournament';
 import { v4 as uuidv4 } from 'uuid';
 
-export const MOCK_PLAYERS: Player[] = [
-  { id: 'p1', name: 'Alex Rivera', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex', email: 'alex@example.com' },
-  { id: 'p2', name: 'Sarah Chen', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah', email: 'sarah@example.com' },
-  { id: 'p3', name: 'Mike Johnson', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike', email: 'mike@example.com' },
-  { id: 'p4', name: 'Emma Wilson', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma', email: 'emma@example.com' },
-  { id: 'p5', name: 'David Kim', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David', email: 'david@example.com' },
-  { id: 'p6', name: 'Lisa Park', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa', email: 'lisa@example.com' },
-  { id: 'p7', name: 'James Bond', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James', email: 'james@example.com' },
-  { id: 'p8', name: 'Diana Prince', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Diana', email: 'diana@example.com' },
+import { RANKINGS } from '@/config/rankings';
+
+const FIRST_NAMES = [
+  'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
+  'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen',
+  'Christopher', 'Nancy', 'Daniel', 'Lisa', 'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra',
+  'Donald', 'Ashley', 'Steven', 'Kimberly', 'Paul', 'Emily', 'Andrew', 'Donna', 'Joshua', 'Michelle',
+  'Lucas', 'Emma', 'Nathan', 'Olivia', 'Leo', 'Ava', 'Gabriel', 'Isabella', 'Louis', 'Sophia',
+  'Arthur', 'Mia', 'Jules', 'Charlotte', 'Raphael', 'Amelia', 'Maël', 'Harper', 'Liam', 'Evelyn'
 ];
+
+const LAST_NAMES = [
+  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+  'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+  'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
+  'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
+  'Dubois', 'Laurent', 'Lefebvre', 'Michel', 'Moreau', 'Simon', 'Leroy', 'Roux', 'David', 'Bertrand',
+  'Petit', 'Garnier', 'Legrand', 'Muller', 'Guerin', 'Fontaine', 'Chevalier', 'Francois', 'Clement', 'Morin'
+];
+
+// Deterministic random generator for consistent mock data
+let seed = 123;
+function random() {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateMockPlayers(count: number): Player[] {
+  const players: Player[] = [
+    { id: 'p1', name: 'Alex Rivera', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p1&backgroundColor=b6e3f4', email: 'alex@example.com', age: 19, ranking: '15/1' },
+    { id: 'p2', name: 'Sarah Chen', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p2&backgroundColor=c0aede', email: 'sarah@example.com', age: 17, ranking: '15/3' },
+    { id: 'p3', name: 'Mike Johnson', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p3&backgroundColor=d1d4f9', email: 'mike@example.com', age: 14, ranking: '30/1' },
+    { id: 'p4', name: 'Emma Wilson', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p4&backgroundColor=ffdfbf', email: 'emma@example.com', age: 13, ranking: '30/3' },
+    { id: 'p5', name: 'David Kim', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p5&backgroundColor=ffd5dc', email: 'david@example.com', age: 12, ranking: '30/5' },
+    { id: 'p6', name: 'Lisa Park', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p6&backgroundColor=c0aede', email: 'lisa@example.com', age: 11, ranking: '40' },
+    { id: 'p7', name: 'James Bond', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p7&backgroundColor=b6e3f4', email: 'james@example.com', age: 25, ranking: 'NC' },
+    { id: 'p8', name: 'Diana Prince', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p8&backgroundColor=ffdfbf', email: 'diana@example.com', age: 28, ranking: 'NC' },
+  ];
+
+  for (let i = players.length; i < count; i++) {
+    const firstName = FIRST_NAMES[Math.floor(random() * FIRST_NAMES.length)];
+    const lastName = LAST_NAMES[Math.floor(random() * LAST_NAMES.length)];
+    const name = `${firstName} ${lastName}`;
+    
+    // Age distribution: mostly 18-40, some younger, some older
+    let age;
+    const r = random();
+    if (r < 0.1) age = Math.floor(10 + random() * 8); // 10-17 (Juniors)
+    else if (r < 0.7) age = Math.floor(18 + random() * 23); // 18-40 (Adults)
+    else age = Math.floor(41 + random() * 20); // 41-60 (Seniors)
+
+    // Ranking distribution
+    // Weighted towards lower rankings (NC, 4th series)
+    let rankingIndex;
+    const rRank = random();
+    if (rRank < 0.3) rankingIndex = 0; // 30% NC
+    else if (rRank < 0.6) rankingIndex = Math.floor(1 + random() * 6); // 30% 4th Series (40 to 30/1)
+    else if (rRank < 0.85) rankingIndex = Math.floor(7 + random() * 6); // 25% 3rd Series (30 to 15/1)
+    else if (rRank < 0.98) rankingIndex = Math.floor(13 + random() * 11); // 13% 2nd Series (15 to -30)
+    else rankingIndex = 24; // 2% Promotion
+
+    const ranking = RANKINGS[rankingIndex];
+
+    // Random background color from the list
+    const bgColors = ['b6e3f4', 'c0aede', 'd1d4f9'];
+    const bg = bgColors[Math.floor(random() * bgColors.length)];
+
+    players.push({
+      id: `p${i + 1}`,
+      name,
+      // Use ID as seed for guaranteed uniqueness and v9 API
+      avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(`p${i + 1}`)}&backgroundColor=${bg}`,
+      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+      age,
+      ranking
+    });
+  }
+
+  return players;
+}
+
+export const MOCK_PLAYERS: Player[] = generateMockPlayers(200);
 
 export const MOCK_TOURNAMENTS: Tournament[] = [
   {

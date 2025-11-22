@@ -9,6 +9,8 @@ export interface Player {
   name: string;
   email?: string; // Optional for quick tournaments
   avatar?: string;
+  age?: number; // New: Player age
+  ranking?: string; // New: Player ranking (default 'NC')
 }
 
 export interface MatchResult {
@@ -42,6 +44,9 @@ export interface Tournament {
   id: string;
   name: string;
   sport?: SportType; // optional for mock data
+  ageCategory?: string; // New: Tournament age category
+  isRanked?: boolean; // New: Ranked tournament
+  rankingRange?: { min?: string; max?: string }; // New: Ranking restrictions
   format: TournamentFormat;
   status: TournamentStatus;
   players: Player[];

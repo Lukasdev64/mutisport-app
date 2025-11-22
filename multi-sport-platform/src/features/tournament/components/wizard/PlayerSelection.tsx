@@ -3,9 +3,16 @@ import { useWizardStore } from '../../store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { Plus, X, User, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MOCK_PLAYERS } from '@/lib/mockData';
+import { isPlayerEligible, AGE_CATEGORIES } from '@/config/categories';
+import { isRankingEligible } from '@/config/rankings';
+import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 
 export function PlayerSelection() {
-  const { players, addPlayer, removePlayer } = useWizardStore();
+  const { 
+    players, addPlayer, addExistingPlayer, removePlayer, 
+    ageCategory, isRanked, rankingRange 
+  } = useWizardStore();
   const [inputValue, setInputValue] = useState('');
 
   const handleAdd = (e?: React.FormEvent) => {
@@ -15,6 +22,45 @@ export function PlayerSelection() {
       setInputValue('');
     }
   };
+
+  const handleAddExisting = (player: typeof MOCK_PLAYERS[0]) => {
+    // Check if already added
+    if (players.find(p => p.id === player.id)) return;
+    
+    addExistingPlayer(player);
+  };
+
+  // Filter available players
+  const availablePlayers = MOCK_PLAYERS.filter(p => {
+    // Filter out already added players (by name for now as IDs might differ)
+    const isAdded = players.some(added => added.name === p.name);
+    if (isAdded) return false;
+
+    // Filter by age category
+    let isAgeEligible = true;
+    if (ageCategory === 'custom') {
+      const { min, max } = useWizardStore.getState().customAgeRules;
+      if (p.age === undefined) isAgeEligible = true;
+      else if (min && p.age < min) isAgeEligible = false;
+      else if (max && p.age > max) isAgeEligible = false;
+    } else {
+      isAgeEligible = isPlayerEligible(p.age, ageCategory);
+    }
+    if (!isAgeEligible) return false;
+
+    // Filter by ranking
+    if (isRanked) {
+      if (!isRankingEligible(p.ranking, rankingRange.min, rankingRange.max)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  const currentCategory = ageCategory === 'custom' 
+    ? { name: 'Custom Rules' } 
+    : AGE_CATEGORIES.find(c => c.id === ageCategory);
 
   return (
     <div className="space-y-8">
@@ -44,6 +90,37 @@ export function PlayerSelection() {
         </Button>
       </div>
 
+      {/* Available Players from Database */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-slate-400">
+          Available Players ({currentCategory?.name})
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {availablePlayers.length > 0 ? (
+            availablePlayers.map(player => (
+              <button
+                key={player.id}
+                onClick={() => handleAddExisting(player)}
+                className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 hover:bg-slate-700 border border-white/5 rounded-full transition-colors group"
+              >
+                <PlayerAvatar 
+                  src={player.avatar} 
+                  name={player.name} 
+                  className="w-5 h-5" 
+                  fallbackClassName="text-[8px]"
+                />
+                <span className="text-sm text-slate-300">{player.name}</span>
+                {player.age && <span className="text-xs text-slate-500">({player.age})</span>}
+                {player.ranking && <span className="text-xs text-emerald-500 font-medium">[{player.ranking}]</span>}
+                <Plus className="w-3 h-3 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500 italic">No eligible players found for this category.</p>
+          )}
+        </div>
+      </div>
+
       <div className="space-y-4">
         <div className="flex items-center justify-between text-sm text-slate-400">
           <span>Participants ({players.length})</span>
@@ -64,10 +141,11 @@ export function PlayerSelection() {
                 className="flex items-center justify-between p-3 bg-slate-800/50 border border-white/5 rounded-lg group hover:border-white/10 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <img 
+                  <PlayerAvatar 
                     src={player.avatar} 
-                    alt={player.name}
-                    className="w-8 h-8 rounded-full bg-slate-700" 
+                    name={player.name} 
+                    className="w-8 h-8" 
+                    fallbackClassName="text-[10px]"
                   />
                   <span className="font-medium text-slate-200">{player.name}</span>
                 </div>

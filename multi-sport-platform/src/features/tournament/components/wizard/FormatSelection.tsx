@@ -2,6 +2,8 @@ import { useWizardStore } from '../../store/wizardStore';
 import { Trophy, Users, GitMerge, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { AGE_CATEGORIES } from '@/config/categories';
+import { RANKINGS } from '@/config/rankings';
 
 const formats = [
   {
@@ -47,7 +49,14 @@ const formats = [
 ] as const;
 
 export function FormatSelection() {
-  const { format, setFormat, tournamentName, setTournamentName } = useWizardStore();
+  const { 
+    format, setFormat, 
+    tournamentName, setTournamentName, 
+    ageCategory, setAgeCategory,
+    customAgeRules, setCustomAgeRules,
+    isRanked, setIsRanked,
+    rankingRange, setRankingRange
+  } = useWizardStore();
 
   return (
     <div className="space-y-8">
@@ -61,6 +70,120 @@ export function FormatSelection() {
           className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
           autoFocus
         />
+      </div>
+
+      <div className="space-y-4">
+        <label className="text-sm font-medium text-slate-300">Age Category</label>
+        <select
+          value={ageCategory}
+          onChange={(e) => setAgeCategory(e.target.value)}
+          className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all appearance-none"
+        >
+          {AGE_CATEGORIES.map((cat) => (
+            <option key={cat.id} value={cat.id} className="bg-slate-900 text-white">
+              {cat.name} {cat.description ? `- ${cat.description}` : ''}
+            </option>
+          ))}
+          <option value="custom" className="bg-slate-900 text-white">Custom Age Rules</option>
+        </select>
+
+        {ageCategory === 'custom' && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="grid grid-cols-2 gap-4 mt-4"
+          >
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Min Age</label>
+              <input
+                type="number"
+                min="1"
+                max="99"
+                placeholder="Min"
+                value={customAgeRules.min || ''}
+                onChange={(e) => setCustomAgeRules({ ...customAgeRules, min: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Max Age</label>
+              <input
+                type="number"
+                min="1"
+                max="99"
+                placeholder="Max"
+                value={customAgeRules.max || ''}
+                onChange={(e) => setCustomAgeRules({ ...customAgeRules, max: e.target.value ? parseInt(e.target.value) : undefined })}
+                className="w-full bg-slate-900/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              />
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        <label className="text-sm font-medium text-slate-300">Tournament Type</label>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setIsRanked(false)}
+            className={cn(
+              "flex-1 p-4 rounded-xl border text-center transition-all",
+              !isRanked 
+                ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400" 
+                : "bg-slate-900/50 border-white/5 text-slate-400 hover:bg-slate-800"
+            )}
+          >
+            <div className="font-bold mb-1">Friendly</div>
+            <div className="text-xs opacity-70">No ranking restrictions</div>
+          </button>
+          <button
+            onClick={() => setIsRanked(true)}
+            className={cn(
+              "flex-1 p-4 rounded-xl border text-center transition-all",
+              isRanked 
+                ? "bg-blue-500/10 border-blue-500/50 text-blue-400" 
+                : "bg-slate-900/50 border-white/5 text-slate-400 hover:bg-slate-800"
+            )}
+          >
+            <div className="font-bold mb-1">Ranked (Official)</div>
+            <div className="text-xs opacity-70">FFT Ranking System</div>
+          </button>
+        </div>
+
+        {isRanked && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="grid grid-cols-2 gap-4 mt-4 p-4 bg-slate-900/50 rounded-xl border border-white/5"
+          >
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Min Ranking</label>
+              <select
+                value={rankingRange.min || ''}
+                onChange={(e) => setRankingRange({ ...rankingRange, min: e.target.value || undefined })}
+                className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              >
+                <option value="">Any</option>
+                {RANKINGS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-400 mb-1 block">Max Ranking</label>
+              <select
+                value={rankingRange.max || ''}
+                onChange={(e) => setRankingRange({ ...rankingRange, max: e.target.value || undefined })}
+                className="w-full bg-slate-800 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              >
+                <option value="">Any</option>
+                {RANKINGS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <div className="space-y-4">
