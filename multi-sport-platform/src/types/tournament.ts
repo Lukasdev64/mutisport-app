@@ -7,10 +7,16 @@ export type TournamentStatus = 'draft' | 'active' | 'completed';
 export interface Player {
   id: string;
   name: string;
-  email?: string; // Optional for quick tournaments
+  email?: string;
   avatar?: string;
-  age?: number; // New: Player age
-  ranking?: string; // New: Player ranking (default 'NC')
+  age?: number;
+  rank?: string;
+  ranking?: string;
+  registrationDate?: string;
+  constraints?: {
+    unavailableDates: string[];
+    maxMatchesPerDay: number;
+  };
 }
 
 export interface MatchResult {
@@ -22,33 +28,37 @@ export interface MatchResult {
 
 export interface Match {
   id: string;
-  tournamentId?: string; // optional for mock data
-  roundId?: string; // optional for mock data
-  player1Id?: string; // Undefined if TBD
-  player2Id?: string; // Undefined if TBD
+  tournamentId?: string;
+  roundId?: string;
+  player1Id?: string;
+  player2Id?: string;
   result?: MatchResult;
-  status: 'pending' | 'scheduled' | 'in_progress' | 'completed' | 'active'; // include active for compatibility
-  nextMatchId?: string; // optional for mock data
+  status: 'pending' | 'scheduled' | 'in_progress' | 'completed' | 'active';
+  nextMatchId?: string;
+  scheduledAt?: string;
+  location?: string;
+  resourceId?: string;
 }
 
 export interface Round {
   id: string;
-  tournamentId?: string; // optional for mock data
-  number?: number; // optional for mock data
-  name: string; // "Round 1", "Quarter-Finals", etc.
+  tournamentId?: string;
+  number?: number;
+  name: string;
   matches: Match[];
-  status?: 'pending' | 'active' | 'completed'; // optional for mock data
+  status?: 'pending' | 'active' | 'completed';
 }
 
 export interface Tournament {
   id: string;
   name: string;
-  sport?: SportType; // optional for mock data
-  ageCategory?: string; // New: Tournament age category
-  isRanked?: boolean; // New: Ranked tournament
-  rankingRange?: { min?: string; max?: string }; // New: Ranking restrictions
+  sport?: SportType;
+  ageCategory?: string;
+  isRanked?: boolean;
+  rankingRange?: { min?: string; max?: string };
   format: TournamentFormat;
   status: TournamentStatus;
+  archived?: boolean; // NEW: Archive flag
   players: Player[];
   rounds: Round[];
   createdAt: string;
@@ -67,5 +77,5 @@ export interface Standing {
   drawn: number;
   lost: number;
   points: number;
-  buchholz?: number; // For Swiss
+  buchholz?: number;
 }

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
 import { ALL_MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Filter, Trophy, Calendar, Users, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Plus, Search, Filter, Trophy, Calendar, Users, Archive, ArchiveRestore, MoreVertical } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
@@ -13,17 +13,23 @@ export function TournamentsPage() {
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];
+  const { archiveTournament, unarchiveTournament } = useTournamentStore();
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
   
   // Get store tournaments and mock tournaments, both filtered by sport
   const storeTournaments = useTournamentStore(state => state.tournaments).filter(t => t.sport === activeSport);
   const mockTournamentsForSport = ALL_MOCK_TOURNAMENTS.filter(mt => mt.sport === activeSport);
   const allTournaments = [...storeTournaments, ...mockTournamentsForSport.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
   
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'archived'>('all');
   const [search, setSearch] = useState('');
 
   const filteredTournaments = allTournaments.filter(t => {
-    const matchesFilter = filter === 'all' || t.status === filter;
+    // Exclude archived unless explicitly viewing archived
+    if (filter !== 'archived' && t.archived) return false;
+    if (filter === 'archived' && !t.archived) return false;
+    
+    const matchesFilter = filter === 'all' || filter === 'archived' || t.status === filter;
     const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
@@ -58,7 +64,7 @@ export function TournamentsPage() {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-          {(['all', 'active', 'completed', 'draft'] as const).map((f) => (
+          {(['all', 'active', 'completed', 'draft', 'archived'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
@@ -69,7 +75,7 @@ export function TournamentsPage() {
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               )}
             >
-              {f}
+              {f === 'archived' ? 'Archived' : f}
             </button>
           ))}
         </div>
@@ -83,14 +89,65 @@ export function TournamentsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            onClick={() => navigate(`/tournaments/${tournament.id}`)}
-            className="group relative bg-slate-900/50 border border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer overflow-hidden"
+            className="group relative bg-slate-900/50 border border-white/10 rounded-xl p-6 hover:border-blue-500/50 transition-all overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <Trophy className="w-24 h-24 text-blue-500 rotate-12" />
             </div>
 
-            <div className="relative z-10 space-y-4">
+            {/* Actions Menu */}
+            <div className="absolute top-4 right-4 z-20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenu(activeMenu === tournament.id ? null : tournament.id);
+                }}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <MoreVertical className="w-4 h-4 text-slate-400" />
+              </button>
+              
+              <AnimatePresence>
+                {activeMenu === tournament.id && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    className="absolute right-0 top-10 bg-slate-800 border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[160px]"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {tournament.archived ? (
+                      <button
+                        onClick={() => {
+                          unarchiveTournament(tournament.id);
+                          setActiveMenu(null);
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <ArchiveRestore className="w-4 h-4" />
+                        Unarchive
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          archiveTournament(tournament.id);
+                          setActiveMenu(null);
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-2"
+                      >
+                        <Archive className="w-4 h-4" />
+                        Archive
+                      </button>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div 
+              onClick={() => navigate(`/tournaments/${tournament.id}`)}
+              className="relative z-10 space-y-4 cursor-pointer"
+            >
               <div className="flex justify-between items-start">
                 <span className={cn(
                   "px-2 py-1 rounded text-xs font-medium uppercase tracking-wider border",

@@ -234,7 +234,7 @@ export function RegistrationDashboard() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {candidates.map(c => (
-                      <div key={c.playerId} className="bg-slate-800/50 p-3 rounded-lg border border-white/5">
+                      <div key={c.id} className="bg-slate-800/50 p-3 rounded-lg border border-white/5">
                         <div className="font-medium text-white">{c.name}</div>
                         <div className="text-xs text-slate-400">Inscrit le {c.registrationDate.toLocaleDateString()}</div>
                       </div>

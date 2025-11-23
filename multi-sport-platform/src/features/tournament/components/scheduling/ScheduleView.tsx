@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calendar, Clock, MapPin, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { ScheduledMatch, Resource } from '../../logic/schedulingEngine';
+import type { ScheduledMatch, Resource } from '../../logic/schedulingEngine';
 import { cn } from '@/lib/utils';
 
 interface ScheduleViewProps {

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from '../../store/tournamentStore';
+import { useSportStore } from '@/store/sportStore';
 import { TournamentEngine } from '../../logic/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { Tournament } from '@/types/tournament';
@@ -15,28 +16,44 @@ interface WizardLayoutProps {
 }
 
 export function WizardLayout({ children, title, description }: WizardLayoutProps) {
-  const { step, totalSteps, prevStep, nextStep, players, format, tournamentName } = useWizardStore();
+  const { step, totalSteps, prevStep, nextStep, players, selectedPlayers, format, tournamentName } = useWizardStore();
   const { createTournament } = useTournamentStore();
+  const activeSport = useSportStore((state) => state.activeSport);
   const navigate = useNavigate();
 
   const canProceed = () => {
-    if (step === 1) return true; // Mode is always selected (default)
-    if (step === 2) return !!format && !!tournamentName;
-    if (step === 3) return players.length >= 2;
+    if (step === 1) return true; // Mode selection
+    
+    // Step 2: Tournament Setup - requires name and date
+    if (step === 2) return !!tournamentName;
+    
+    // Step 3: Format & Rules - requires format
+    if (step === 3) return !!format;
+    
+    // Step 4: Campaign Setup (planned) or Player Selection (instant)
+    if (step === 4) return true; // Campaign setup doesn't block
+    
+    // Step 5: Schedule Preview or Player Selection (instant) - no validation needed
+    // Player selection is done in step 4 for planned mode
+    
+    // Other steps
     return true;
   };
 
   const handleCreateTournament = () => {
     if (!format || !tournamentName) return;
 
-    const rounds = TournamentEngine.generateBracket(players, format);
+    // CRITICAL: Use selectedPlayers (those validated in CampaignSetup), not all registered players
+    const finalPlayers = selectedPlayers.length > 0 ? selectedPlayers : players;
+    const rounds = TournamentEngine.generateBracket(finalPlayers, format);
 
     const newTournament: Tournament = {
       id: uuidv4(),
       name: tournamentName,
       format: format,
+      sport: activeSport, // CRITICAL: Add sport so tournament appears in filtered list
       status: 'active',
-      players: players,
+      players: finalPlayers, // Only selected players!
       rounds: rounds,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

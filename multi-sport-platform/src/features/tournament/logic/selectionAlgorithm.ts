@@ -1,7 +1,7 @@
-import { Player } from '@/types/tournament';
+import type { Player } from '@/types/tournament';
 
 export interface RegistrationData {
-  playerId: string;
+  id: string; // Changed from playerId for consistency with Player interface
   name: string;
   email: string;
   registrationDate: Date;
@@ -72,7 +72,7 @@ export class SelectionAlgorithm {
     const waitlist: RegistrationData[] = [];
     const rejected: { data: RegistrationData; reason: string }[] = [];
 
-    scoredCandidates.forEach((item, index) => {
+    scoredCandidates.forEach((item) => {
       // Reject if score is too low (e.g., too many constraints)
       if (item.score < 50) {
         rejected.push({

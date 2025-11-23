@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Tournament, Match } from '@/types/tournament';
 import { MOCK_TOURNAMENTS } from '@/lib/mockData';
+import { TournamentEngine } from '../logic/engine';
 
 interface TournamentStore {
   tournaments: Tournament[];
@@ -12,16 +14,23 @@ interface TournamentStore {
   updateMatch: (tournamentId: string, matchId: string, data: Partial<Match>) => void;
   generateNextRound: (tournamentId: string) => void;
   getTournament: (id: string) => Tournament | undefined;
+  archiveTournament: (id: string) => void; // NEW
+  unarchiveTournament: (id: string) => void; // NEW
 }
 
-export const useTournamentStore = create<TournamentStore>((set, get) => ({
-  tournaments: MOCK_TOURNAMENTS,
-  activeTournamentId: null,
+export const useTournamentStore = create<TournamentStore>()(
+  persist(
+    (set, get) => ({
+      tournaments: MOCK_TOURNAMENTS,
+      activeTournamentId: null,
 
-  createTournament: (tournament) => set((state) => ({
-    tournaments: [...state.tournaments, tournament],
-    activeTournamentId: tournament.id
-  })),
+      createTournament: (tournament) => {
+        console.log('Creating tournament:', tournament.name, 'with', tournament.players.length, 'players');
+        set((state) => ({
+          tournaments: [...state.tournaments, tournament],
+          activeTournamentId: tournament.id
+        }));
+      },
 
   setActiveTournament: (id) => set({ activeTournamentId: id }),
 
@@ -76,8 +85,6 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
     tournaments: state.tournaments.map((t) => {
       if (t.id !== tournamentId || t.format !== 'swiss') return t;
       
-      // Import TournamentEngine dynamically to avoid circular dependency
-      const { TournamentEngine } = require('../logic/engine');
       const nextRoundNumber = t.rounds.length + 1;
       const newRound = TournamentEngine.generateSwissRound(t, nextRoundNumber);
       
@@ -88,5 +95,22 @@ export const useTournamentStore = create<TournamentStore>((set, get) => ({
     })
   })),
 
+  archiveTournament: (id) => set((state) => ({
+    tournaments: state.tournaments.map((t) => 
+      t.id === id ? { ...t, archived: true, updatedAt: new Date().toISOString() } : t
+    )
+  })),
+
+  unarchiveTournament: (id) => set((state) => ({
+    tournaments: state.tournaments.map((t) => 
+      t.id === id ? { ...t, archived: false, updatedAt: new Date().toISOString() } : t
+    )
+  })),
+
   getTournament: (id) => get().tournaments.find((t) => t.id === id)
-}));
+}),
+    {
+      name: 'tournament-storage' // LocalStorage key
+    }
+  )
+);

@@ -1,4 +1,4 @@
-import { RegistrationData } from '../features/tournament/logic/selectionAlgorithm';
+import type { RegistrationData } from '../features/tournament/logic/selectionAlgorithm';
 
 export type EmailType = 'confirmation' | 'rejection' | 'waitlist';
 
