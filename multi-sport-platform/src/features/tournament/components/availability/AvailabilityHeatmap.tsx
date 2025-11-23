@@ -1,4 +1,4 @@
-import { RegistrationData } from '../../logic/selectionAlgorithm';
+import type { RegistrationData } from '../../logic/selectionAlgorithm';
 import { cn } from '@/lib/utils';
 
 interface AvailabilityHeatmapProps {
@@ -16,7 +16,7 @@ export function AvailabilityHeatmap({ players, startDate, days = 3 }: Availabili
     return d;
   });
 
-  const isAvailable = (player: RegistrationData, date: Date, hour: number) => {
+  const isAvailable = (player: RegistrationData, date: Date, _hour: number) => {
     const dateStr = date.toISOString().split('T')[0];
     // Check full day unavailability
     if (player.constraints.unavailableDates.includes(dateStr)) return false;
@@ -48,7 +48,7 @@ export function AvailabilityHeatmap({ players, startDate, days = 3 }: Availabili
 
               {/* Player Rows */}
               {players.map(player => (
-                <div key={player.playerId} className="contents group">
+                <div key={player.id} className="contents group">
                   <div className="text-sm text-slate-300 py-1 truncate pr-4 group-hover:text-white transition-colors">
                     {player.name}
                   </div>

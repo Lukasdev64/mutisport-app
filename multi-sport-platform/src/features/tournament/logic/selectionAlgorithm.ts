@@ -1,4 +1,4 @@
-import type { Player } from '@/types/tournament';
+// import type { Player } from '@/types/tournament';
 
 export interface RegistrationData {
   id: string; // Changed from playerId for consistency with Player interface
@@ -24,7 +24,7 @@ export class SelectionAlgorithm {
    * Calculates a score for a candidate based on registration time and constraints.
    * Higher score is better.
    */
-  static calculateScore(candidate: RegistrationData, tournamentStartDate: Date): number {
+  static calculateScore(candidate: RegistrationData, _tournamentStartDate: Date): number {
     let score = 100;
 
     // 1. Registration Time (Early bird bonus)

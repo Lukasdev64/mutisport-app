@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 // Lazy load pages
+const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const TournamentWizardPage = lazy(() => import('@/features/tournament/TournamentWizardPage').then(module => ({ default: module.TournamentWizardPage })));
 const TournamentArenaPage = lazy(() => import('@/features/tournament/TournamentArenaPage').then(module => ({ default: module.TournamentArenaPage })));
@@ -16,18 +17,36 @@ function App() {
   return (
     <ToastProvider>
       <Router>
-        <Layout>
-          <Suspense fallback={<LoadingSpinner fullScreen />}>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/tournaments/new" element={<TournamentWizardPage />} />
-              <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
-              <Route path="/tournaments" element={<TournamentsPage />} />
-              <Route path="/players" element={<PlayersPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </Suspense>
-        </Layout>
+        <Routes>
+          {/* Public Route - Landing Page */}
+          <Route 
+            path="/" 
+            element={
+              <Suspense fallback={<LoadingSpinner fullScreen />}>
+                <LandingPage />
+              </Suspense>
+            } 
+          />
+
+          {/* App Routes - With Sidebar */}
+          <Route
+            path="/*"
+            element={
+              <Layout>
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/tournaments/new" element={<TournamentWizardPage />} />
+                    <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
+                    <Route path="/tournaments" element={<TournamentsPage />} />
+                    <Route path="/players" element={<PlayersPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </Suspense>
+              </Layout>
+            }
+          />
+        </Routes>
       </Router>
     </ToastProvider>
   );

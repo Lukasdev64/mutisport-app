@@ -1,4 +1,4 @@
-import type { SportType } from '@/types/sport';
+// import type { SportType } from '@/types/sport';
 
 export type TennisSurface = 'clay' | 'hard' | 'grass' | 'indoor';
 export type TennisFormat = 'best_of_3' | 'best_of_5';

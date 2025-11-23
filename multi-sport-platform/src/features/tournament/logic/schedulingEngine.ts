@@ -16,6 +16,7 @@ export interface ScheduledMatch extends Match {
   scheduledAt?: string; // ISO string
   resourceId?: string;
   location?: string;
+  players?: Array<{ id: string; name: string }>; // For display purposes in UI
 }
 
 export class SchedulingEngine {
@@ -42,6 +43,21 @@ export class SchedulingEngine {
       }
 
       // Get player availability data
+      if (!match.player1Id || !match.player2Id) {
+        console.warn(`Match ${match.id} missing player IDs, scheduling without constraints`);
+        const resource = resources[scheduledMatches.length % resources.length];
+        const batchIndex = Math.floor(scheduledMatches.length / resources.length);
+        const matchTime = new Date(scheduleStart.getTime() + (batchIndex * matchDurationMinutes * 60000));
+        
+        scheduledMatches.push({
+          ...match,
+          scheduledAt: matchTime.toISOString(),
+          resourceId: resource.id,
+          location: resource.name
+        });
+        continue;
+      }
+
       const p1 = availabilities.get(match.player1Id);
       const p2 = availabilities.get(match.player2Id);
 

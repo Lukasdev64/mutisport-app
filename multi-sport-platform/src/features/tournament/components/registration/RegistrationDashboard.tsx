@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Upload, Users, CheckCircle, XCircle, Clock, Play, Mail, Calendar, Activity } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { SelectionAlgorithm, RegistrationData, SelectionResult } from '../../logic/selectionAlgorithm';
-import { SchedulingEngine, ScheduledMatch, Resource } from '../../logic/schedulingEngine';
+// import { motion } from 'framer-motion'; // Not used
+import { SelectionAlgorithm, type RegistrationData, type SelectionResult } from '../../logic/selectionAlgorithm';
+import { SchedulingEngine, type ScheduledMatch, type Resource } from '../../logic/schedulingEngine';
 import { NotificationService } from '@/services/notificationService';
 import { ScheduleView } from '../scheduling/ScheduleView';
 import { AvailabilityHeatmap } from '../availability/AvailabilityHeatmap';
@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 // Mock Data Generator
 const generateMockRegistrations = (count: number): RegistrationData[] => {
   return Array.from({ length: count }).map((_, i) => ({
-    playerId: `p-${i}`,
+    id: `p-${i}`,
     name: `Joueur ${i + 1}`,
     email: `joueur${i + 1}@example.com`,
     registrationDate: new Date(Date.now() - Math.random() * 100000000),
@@ -62,8 +62,8 @@ export function RegistrationDashboard() {
         matches.push({
           id: `m-${i}`,
           players: [
-            { id: selected[i].playerId, name: selected[i].name },
-            { id: selected[i + 1].playerId, name: selected[i + 1].name }
+            { id: selected[i].id, name: selected[i].name },
+            { id: selected[i + 1].id, name: selected[i + 1].name }
           ],
           status: 'pending' as const
         });
@@ -178,7 +178,7 @@ export function RegistrationDashboard() {
                     </h3>
                     <div className="space-y-2">
                       {selectionResult.selected.map(p => (
-                        <div key={p.playerId} className="bg-slate-900/50 p-3 rounded-lg border border-emerald-500/10">
+                        <div key={p.id} className="bg-slate-900/50 p-3 rounded-lg border border-emerald-500/10">
                           <div className="text-white font-medium">{p.name}</div>
                           <div className="text-xs text-emerald-400/70">Score élevé</div>
                         </div>
@@ -196,7 +196,7 @@ export function RegistrationDashboard() {
                     </h3>
                     <div className="space-y-2">
                       {selectionResult.waitlist.map((p, i) => (
-                        <div key={p.playerId} className="bg-slate-900/50 p-3 rounded-lg border border-amber-500/10">
+                        <div key={p.id} className="bg-slate-900/50 p-3 rounded-lg border border-amber-500/10">
                           <div className="flex justify-between">
                             <div className="text-white font-medium">{p.name}</div>
                             <div className="text-xs font-bold text-amber-400">#{i + 1}</div>
@@ -216,7 +216,7 @@ export function RegistrationDashboard() {
                     </h3>
                     <div className="space-y-2">
                       {selectionResult.rejected.map(p => (
-                        <div key={p.data.playerId} className="bg-slate-900/50 p-3 rounded-lg border border-red-500/10">
+                        <div key={p.data.id} className="bg-slate-900/50 p-3 rounded-lg border border-red-500/10">
                           <div className="text-white font-medium">{p.data.name}</div>
                           <div className="text-xs text-red-400/70">{p.reason}</div>
                         </div>

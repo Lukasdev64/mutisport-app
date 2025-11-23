@@ -2,13 +2,13 @@ import { motion } from 'framer-motion';
 import { Trophy, Users, Calendar, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/toast';
+// import { useToast } from '@/components/ui/toast';
 import { useSportStats, useSportFilteredTournaments } from '@/hooks/useSportFilter';
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
 
 export function Dashboard() {
-  const { toast } = useToast();
+  // const { toast } = useToast();
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];

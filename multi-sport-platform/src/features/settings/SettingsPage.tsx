@@ -1,4 +1,4 @@
-import { Moon, Sun, Bell, BellOff, Trash2, Shield } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { SportSelector } from '@/components/sport/SportSelector';

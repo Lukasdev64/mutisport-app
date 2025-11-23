@@ -10,7 +10,7 @@ interface ScheduleViewProps {
   startDate: Date;
 }
 
-export function ScheduleView({ matches, resources, startDate }: ScheduleViewProps) {
+export function ScheduleView({ matches, resources, startDate: _startDate }: ScheduleViewProps) {
   const [viewMode, setViewMode] = useState<'timeline' | 'list'>('timeline');
 
   // Group matches by resource
@@ -83,7 +83,7 @@ export function ScheduleView({ matches, resources, startDate }: ScheduleViewProp
                       </div>
                       
                       <div className="space-y-1">
-                        {match.players.map(player => (
+                        {match.players?.map(player => (
                           <div key={player.id} className="flex items-center gap-2 text-sm text-slate-300">
                             <User className="w-3 h-3 text-slate-500" />
                             {player.name}
@@ -120,7 +120,7 @@ export function ScheduleView({ matches, resources, startDate }: ScheduleViewProp
                   <td className="p-4 text-slate-400">#{match.id.slice(0, 6)}</td>
                   <td className="p-4">
                     <div className="flex gap-2">
-                      {match.players.map(p => (
+                      {match.players?.map(p => (
                         <span key={p.id} className="bg-slate-800 text-slate-300 px-2 py-1 rounded text-xs border border-white/10">
                           {p.name}
                         </span>

@@ -1,7 +1,7 @@
 import type {
   TennisMatchScore,
   TennisGameScore,
-  TennisSetScore,
+  // TennisSetScore,
   TennisMatchConfig
 } from '@/types/tennis';
 
@@ -15,7 +15,7 @@ export class TennisScoringEngine {
   ): TennisMatchScore {
     const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
     const game = newScore.currentGame;
-    const otherPlayerId = playerId === 1 ? 2 : 1;
+    // const otherPlayerId = playerId === 1 ? 2 : 1;
 
     // Increment player's points
     if (playerId === 1) {
@@ -176,8 +176,8 @@ export class TennisScoringEngine {
   /**
    * Initialize a new tennis match score
    */
-  static initializeMatch(config: TennisMatchConfig): TennisMatchScore {
-    const numSets = config.format === 'best_of_5' ? 5 : 3;
+  static initializeMatch(_config: TennisMatchConfig): TennisMatchScore {
+    // const numSets = config.format === 'best_of_5' ? 5 : 3;
     
     return {
       player1Sets: 0,
