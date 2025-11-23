@@ -7,6 +7,7 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { supabase, auth } from '../lib/supabase'
 import Sidebar from '../components/Sidebar'
 import Loader from '../components/Loader'
+import TeamManagement from './TeamManagement'
 import { createCompetitionWithFiles, getUserCompetitions } from '../services/competitionService'
 import { ensureUserProfile } from '../services/profileService'
 import { Calendar, MapPin, Users, Target } from 'lucide-react'
@@ -106,14 +107,7 @@ function Dashboard() {
 
   if (initError) {
     return (
-      <div className="dashboard-error-container" style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        height: '100vh',
-        gap: '1rem'
-      }}>
+      <div className="dashboard-error-container">
         <h2>Oups !</h2>
         <p>{initError}</p>
         <button onClick={() => window.location.reload()} className="btn-primary">
@@ -137,6 +131,7 @@ function Dashboard() {
           <Route path="/profile" element={<ProfileView user={user} />} />
           <Route path="/competitions" element={<CompetitionsView />} />
           <Route path="/participants" element={<ParticipantsView />} />
+          <Route path="/team" element={<TeamManagement />} />
           <Route path="/availability" element={<AvailabilityView />} />
           <Route path="/results" element={<ResultsView />} />
           <Route path="/stats" element={<StatsView />} />
@@ -236,8 +231,8 @@ function ProfileView({ user }) {
         <div className="card">
           <h3>Statistiques rapides</h3>
           {isLoadingStats ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div className="loading-spinner" style={{ margin: '0 auto' }}></div>
+            <div className="loading-container-center">
+              <div className="loading-spinner"></div>
             </div>
           ) : (
             <div className="stats-quick">
@@ -852,6 +847,30 @@ function MessagesView() {
 
 // Composant SettingsView
 function SettingsView({ user }) {
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      setProfile(data)
+      setLoading(false)
+    }
+    fetchProfile()
+  }, [user.id])
+
+  const getPlanLabel = (plan) => {
+    switch(plan) {
+      case 'team': return 'Team 🚀'
+      case 'premium': return 'Pro 🏆'
+      default: return 'Gratuit'
+    }
+  }
+
   return (
     <div className="view-container">
       <header className="view-header">
@@ -860,6 +879,58 @@ function SettingsView({ user }) {
       </header>
 
       <div className="cards-grid">
+        <div className="card">
+          <h3>Abonnement</h3>
+          {loading ? (
+            <div className="loading-spinner"></div>
+          ) : (
+            <div className="settings-list">
+              <div className="setting-item">
+                <div>
+                  <strong>Plan actuel</strong>
+                  <p>Votre niveau d'accès</p>
+                </div>
+                <span className={`badge-${profile?.subscription_plan || 'free'}`}>
+                  {getPlanLabel(profile?.subscription_plan)}
+                </span>
+              </div>
+              
+              <div className="setting-item">
+                <div>
+                  <strong>Statut</strong>
+                  <p>État de votre souscription</p>
+                </div>
+                <span className={profile?.subscription_status === 'active' ? 'status-text-active' : 'status-text-inactive'}>
+                  {profile?.subscription_status === 'active' ? 'Actif' : 'Inactif'}
+                </span>
+              </div>
+
+              {profile?.subscription_plan === 'team' && (
+                <div className="setting-item">
+                  <div>
+                    <strong>Membres d'équipe</strong>
+                    <p>Inclus dans votre plan</p>
+                  </div>
+                  <span>
+                    {/* Note: Pour l'instant on affiche la base. Si on stocke les membres extra, on l'ajoutera ici */}
+                    5 membres inclus
+                  </span>
+                </div>
+              )}
+
+              <div style={{ marginTop: '1rem' }}>
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => window.location.href = '/pricing'}
+                  style={{ width: '100%' }}
+                >
+                  Gérer mon abonnement
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="card">
           <h3>Préférences</h3>
           <div className="settings-list">

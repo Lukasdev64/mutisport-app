@@ -1,16 +1,97 @@
-# React + Vite
+# 🏆 Multi-Sport Competition Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Une application web moderne pour la gestion de compétitions sportives multi-disciplinaires.
 
-Currently, two official plugins are available:
+## 🚀 Technologies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Langage**: JavaScript (ESModules)
+- **Styling**: CSS Variables (Dark Theme System)
+- **Backend / Auth / DB**: [Supabase](https://supabase.com/)
+- **Paiements**: [Stripe](https://stripe.com/) (via Supabase Edge Functions)
+- **Icônes**: [Lucide React](https://lucide.dev/)
 
-## React Compiler
+## 🛠️ Prérequis
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [Node.js](https://nodejs.org/) (v18+)
+- [Supabase CLI](https://supabase.com/docs/guides/cli) (pour le développement backend local)
 
-## Expanding the ESLint configuration
+## 📥 Installation
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/Lukasdev64/mutisport-app.git
+   cd mutisport-app/multi-sport-competition
+   ```
+
+2. **Installer les dépendances**
+   ```bash
+   npm install
+   ```
+
+3. **Configuration de l'environnement**
+   Créez un fichier `.env` à la racine du projet (basé sur `.env.example` mais avec les clés Supabase) :
+   ```env
+   VITE_SUPABASE_URL=votre_url_supabase
+   VITE_SUPABASE_ANON_KEY=votre_cle_anon_supabase
+   ```
+
+4. **Lancer le serveur de développement**
+   ```bash
+   npm run dev
+   ```
+   L'application sera accessible sur `http://localhost:5173`.
+
+## 📂 Structure du Projet
+
+```
+src/
+├── assets/          # Images et ressources statiques
+├── components/      # Composants React réutilisables (Header, Sidebar, etc.)
+├── lib/             # Configuration des bibliothèques (supabase.js)
+├── pages/           # Pages principales (Dashboard, Login, Register, etc.)
+├── services/        # Logique métier et appels API
+├── utils/           # Fonctions utilitaires
+├── App.jsx          # Composant racine et routing
+├── index.css        # Styles globaux et variables CSS (Thème Sombre)
+└── main.jsx         # Point d'entrée de l'application
+```
+
+## 🎨 Système de Design
+
+Le projet utilise un système de variables CSS pour assurer une cohérence visuelle (Thème Sombre).
+
+**Fichiers clés :**
+- `src/index.css` : Définition des variables (`--bg-primary`, `--accent-blue`, etc.) et styles globaux.
+- `src/pages/Dashboard.css` : Styles spécifiques au tableau de bord utilisant les variables.
+- `src/pages/Auth.css` : Styles partagés pour les pages de connexion/inscription.
+
+**Règles de contribution CSS :**
+- Ne jamais utiliser de couleurs hexadécimales en dur (ex: `#1e293b`). Utilisez toujours les variables (ex: `var(--bg-secondary)`).
+- Privilégiez les classes CSS aux styles en ligne.
+
+## ⚡ Scripts Disponibles
+
+- `npm run dev` : Lance le serveur de développement.
+- `npm run build` : Compile l'application pour la production.
+- `npm run lint` : Vérifie la qualité du code avec ESLint.
+- `npm run preview` : Prévisualise la version de production localement.
+
+## ☁️ Backend (Supabase)
+
+Le backend est géré par Supabase. Les fonctions Edge (pour Stripe, etc.) se trouvent dans le dossier `supabase/functions`.
+
+Pour déployer les fonctions (nécessite Supabase CLI) :
+```bash
+npx supabase functions deploy nom-de-la-fonction --no-verify-jwt
+```
+
+## 🤝 Contribution
+
+1. Créez une branche pour votre fonctionnalité (`git checkout -b feature/ma-feature`).
+2. Committez vos changements (`git commit -m 'Ajout de ma feature'`).
+3. Poussez vers la branche (`git push origin feature/ma-feature`).
+4. Ouvrez une Pull Request.
+
+---
+Développé par Lukasdev64

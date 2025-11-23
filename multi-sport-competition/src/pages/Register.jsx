@@ -162,12 +162,12 @@ function Register() {
   const getPasswordStrengthColor = () => {
     switch (passwordStrength) {
       case 0:
-      case 1: return '#ef4444'
+      case 1: return 'var(--status-error)'
       case 2: return '#f97316'
-      case 3: return '#eab308'
+      case 3: return 'var(--status-warning)'
       case 4: return '#22c55e'
-      case 5: return '#059669'
-      default: return '#e5e7eb'
+      case 5: return 'var(--status-success)'
+      default: return 'var(--bg-tertiary)'
     }
   }
 

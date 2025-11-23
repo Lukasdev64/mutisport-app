@@ -17,21 +17,23 @@ function Pricing() {
   }, [])
 
   const handlePlanClick = (e, plan) => {
-    if (plan.name === 'Premium') {
+    if (plan.name === 'Pro' || plan.name === 'Team') {
       e.preventDefault()
+      const planType = plan.name.toLowerCase()
       if (user) {
-        navigate('/payment')
+        navigate(`/payment?plan=${planType}`)
       } else {
-        navigate('/register?plan=premium')
+        navigate(`/register?plan=${planType}`)
       }
     }
   }
 
   const plans = [
     {
-      name: 'Découverte',
+      name: 'Free',
       price: '0',
       features: [
+        '1 Compte Admin',
         'Création de compétitions illimitée',
         'Gestion des participants basique',
         'Page publique de compétition',
@@ -39,6 +41,7 @@ function Pricing() {
         'Publicités sur les pages'
       ],
       notIncluded: [
+        'Membres d\'équipe',
         'Statistiques avancées',
         'Export des données',
         'Personnalisation de la marque',
@@ -49,21 +52,40 @@ function Pricing() {
       isPopular: false
     },
     {
-      name: 'Premium',
+      name: 'Pro',
       price: '9.99',
       features: [
-        'Tout ce qui est inclus dans Découverte',
+        '1 Compte Admin',
+        'Tout ce qui est inclus dans Free',
         'Statistiques détaillées',
         'Export Excel/PDF des résultats',
         'Sans publicité',
         'Personnalisation (Logo, Couleurs)',
-        'Support prioritaire 24/7',
-        'Gestion d\'équipe avancée'
+        'Support prioritaire 24/7'
       ],
-      notIncluded: [],
-      cta: 'Passer au Premium',
+      notIncluded: [
+        'Membres d\'équipe',
+        'Gestion des permissions'
+      ],
+      cta: 'Passer au Pro',
       ctaLink: '/payment', // Sera intercepté par handlePlanClick
       isPopular: true
+    },
+    {
+      name: 'Team',
+      price: '29.99',
+      features: [
+        '1 Admin + 4 Membres inclus',
+        'Gestion des permissions par membre',
+        'Option membres supplémentaires',
+        'Tout ce qui est inclus dans Pro',
+        'Support dédié',
+        'API Access'
+      ],
+      notIncluded: [],
+      cta: 'Passer au Team',
+      ctaLink: '/payment', // Sera intercepté par handlePlanClick
+      isPopular: false
     }
   ]
 

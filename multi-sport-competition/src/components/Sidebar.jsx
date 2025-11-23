@@ -8,7 +8,8 @@ import {
   FiSettings,
   FiUsers,
   FiAward,
-  FiCreditCard
+  FiCreditCard,
+  FiShield
 } from 'react-icons/fi'
 import './Sidebar.css'
 
@@ -31,6 +32,12 @@ function Sidebar({ user, profile, onSignOut }) {
       icon: <FiUsers />, 
       label: 'Participants',
       description: 'Inscriptions et équipes'
+    },
+    { 
+      path: '/dashboard/team', 
+      icon: <FiShield />, 
+      label: 'Mon Équipe',
+      description: 'Gestion des membres'
     },
     { 
       path: '/dashboard/availability', 
@@ -76,30 +83,12 @@ function Sidebar({ user, profile, onSignOut }) {
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="logo-icon">🏆</div>
-          <h2>SportChampions</h2>
+          <h2>MultiSport</h2>
         </div>
         
-        <div className="sidebar-user">
-          <div className="user-avatar">
-            {user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
-             user?.email?.charAt(0)?.toUpperCase() || '?'}
-          </div>
-          <div className="user-info">
-            <p className="user-name">
-              {user?.user_metadata?.full_name || 'Utilisateur'}
-            </p>
-            <p className="user-email">{user?.email}</p>
-            <div className="user-plan">
-              {profile?.subscription_plan === 'premium' ? (
-                <span className="badge-premium">Premium 🏆</span>
-              ) : (
-                <Link to="/pricing" className="badge-free">
-                  Gratuit • Passer Premium
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
+        <Link to="/dashboard/competitions" className="new-tournament-btn">
+          <span className="plus-icon">+</span> New Tournament
+        </Link>
       </div>
 
       <nav className="sidebar-nav">
@@ -113,7 +102,6 @@ function Sidebar({ user, profile, onSignOut }) {
                 <span className="nav-icon">{item.icon}</span>
                 <div className="nav-content">
                   <span className="nav-label">{item.label}</span>
-                  <span className="nav-description">{item.description}</span>
                 </div>
                 {item.badge && (
                   <span className="nav-badge">{item.badge}</span>
@@ -125,11 +113,22 @@ function Sidebar({ user, profile, onSignOut }) {
       </nav>
 
       <div className="sidebar-footer">
-        <button onClick={onSignOut} className="signout-btn">
+        <div className="sidebar-user">
+          <div className="user-avatar">
+            {user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() || 
+             user?.email?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+          <div className="user-info">
+            <p className="user-name">
+              {user?.user_metadata?.full_name || 'Utilisateur'}
+            </p>
+            <p className="user-email">{user?.email}</p>
+          </div>
+        </div>
+        <button onClick={onSignOut} className="signout-btn" title="Déconnexion">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Déconnexion
         </button>
       </div>
     </aside>

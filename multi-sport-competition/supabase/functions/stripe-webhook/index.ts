@@ -33,16 +33,58 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '' // Utiliser la clé Service Role pour écrire sans restriction
     )
 
+    // ID du plan Pro (Premium) - Tout autre ID sera considéré comme Team
+    const PRO_PRICE_ID = 'price_1SWOsbCa5azamjTQV4nwkCty'
+
+    const getPlanFromEvent = (obj: any) => {
+      // 1. Priorité aux métadonnées si disponibles (plus fiable)
+      // Dans invoice.payment_succeeded, les métadonnées sont parfois dans subscription_details ou faut aller chercher la souscription
+      // Mais si on a passé metadata à la création de la souscription, elles sont sur l'objet subscription.
+      
+      // Si l'objet est une invoice, on regarde si on a accès à la souscription expandée ou on utilise le fallback prix
+      // Si l'objet est une subscription, on regarde metadata.plan_type
+      
+      if (obj.object === 'subscription' && obj.metadata?.plan_type) {
+        console.log(`Detected Plan Type from Metadata: ${obj.metadata.plan_type}`)
+        return obj.metadata.plan_type
+      }
+
+      // Fallback sur l'ID du prix si pas de métadonnées (ex: anciens abonnements)
+      let priceId = ''
+      
+      // Cas Invoice
+      if (obj.object === 'invoice' && obj.lines?.data?.length > 0) {
+        priceId = obj.lines.data[0].price.id
+      }
+      // Cas Subscription
+      else if (obj.object === 'subscription' && obj.items?.data?.length > 0) {
+        priceId = obj.items.data[0].price.id
+      }
+
+      console.log(`Detected Price ID: ${priceId}`)
+      
+      if (!priceId) return 'premium' // Fallback ultime
+      return priceId === PRO_PRICE_ID ? 'premium' : 'team'
+    }
+
     switch (event.type) {
       case 'checkout.session.completed': // Gardé pour compatibilité si vous utilisez encore Checkout
       case 'invoice.payment_succeeded': { // Pour les abonnements via Elements
         console.log(`Processing ${event.type}`)
         const data = event.data.object
-        // Pour invoice, le customer est dans data.customer, et metadata peut être dans data.subscription_details.metadata ou faut le récupérer
-        // Mais le plus simple est de se fier au customer_id stocké dans Supabase
         
         const customerId = data.customer
-        const subscriptionId = data.subscription
+        
+        // Pour invoice, on n'a pas toujours les métadonnées de la souscription directement ici sans expand
+        // Mais on peut essayer de deviner via le prix
+        let planType = getPlanFromEvent(data)
+        
+        // Si c'est une invoice et qu'on a un subscription ID, on pourrait fetcher la souscription pour être sûr des métadonnées
+        // Mais pour l'instant on va faire confiance au fallback prix ou si Stripe envoie les métadonnées de la ligne
+        
+        // Petite astuce: si on vient de créer la souscription via create-subscription, on a mis les métadonnées sur la souscription.
+        // L'événement invoice.payment_succeeded ne contient pas toujours les métadonnées de la souscription parente au premier niveau.
+        // C'est pourquoi le fallback sur le Price ID est important ici.
         
         console.log(`Looking for profile with stripe_customer_id: ${customerId}`)
 
@@ -58,12 +100,12 @@ serve(async (req) => {
         }
 
         if (profile) {
-          console.log(`Profile found: ${profile.id}. Updating subscription status...`)
+          console.log(`Profile found: ${profile.id}. Updating subscription status to ${planType}...`)
           const { error: updateError } = await supabaseClient
             .from('profiles')
             .update({
               subscription_status: 'active',
-              subscription_plan: 'premium',
+              subscription_plan: planType,
               subscription_updated_at: new Date().toISOString(),
             })
             .eq('id', profile.id)
@@ -80,7 +122,8 @@ serve(async (req) => {
         console.log(`Processing ${event.type}`)
         const subscription = event.data.object
         const status = subscription.status
-        console.log(`Subscription status is: ${status}`)
+        const planType = getPlanFromEvent(subscription)
+        console.log(`Subscription status is: ${status}, Plan: ${planType}`)
         
         // Si l'abonnement devient actif (après un paiement réussi par exemple)
         if (status === 'active') {
@@ -91,12 +134,12 @@ serve(async (req) => {
             .single()
             
            if (profile) {
-            console.log(`Profile found: ${profile.id}. Updating to active...`)
+            console.log(`Profile found: ${profile.id}. Updating to active (${planType})...`)
             await supabaseClient
               .from('profiles')
               .update({
                 subscription_status: 'active',
-                subscription_plan: 'premium',
+                subscription_plan: planType,
                 subscription_updated_at: new Date().toISOString(),
               })
               .eq('id', profile.id)

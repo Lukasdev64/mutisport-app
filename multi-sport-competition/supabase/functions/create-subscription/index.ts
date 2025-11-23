@@ -42,7 +42,7 @@ serve(async (req) => {
       throw new Error('Utilisateur non authentifié')
     }
 
-    const { priceId } = await req.json()
+    const { priceId, planType, extraMembers, extraMemberPriceId } = await req.json()
 
     // 1. Get or create customer
     const { data: profile } = await supabaseClient
@@ -75,13 +75,26 @@ serve(async (req) => {
 
     // 2. Create subscription
     console.log("Creating subscription for customer:", customerId)
+    
+    const items = [{ price: priceId }]
+    if (extraMembers && extraMemberPriceId) {
+      items.push({ price: extraMemberPriceId, quantity: extraMembers })
+    }
+
+    // On normalise le planType pour qu'il corresponde aux valeurs attendues en DB ('premium' ou 'team')
+    // 'pro' devient 'premium'
+    const normalizedPlanType = planType === 'pro' ? 'premium' : (planType === 'team' ? 'team' : 'premium')
+
     const subscription = await stripe.subscriptions.create({
       customer: customerId,
-      items: [{ price: priceId }],
+      items: items,
       payment_behavior: 'default_incomplete',
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
-      metadata: { supabase_user_id: user.id },
+      metadata: { 
+        supabase_user_id: user.id,
+        plan_type: normalizedPlanType 
+      },
     })
 
     return new Response(

@@ -20,9 +20,31 @@ function Payment() {
   const [clientSecret, setClientSecret] = useState('')
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
+  const [extraMembers, setExtraMembers] = useState(0)
+  const EXTRA_MEMBER_PRICE = 5 // Prix par membre supplémentaire
+  const EXTRA_MEMBER_PRICE_ID = 'price_1SWasfCa5azamjTQoCAWYh7o' // ID Stripe
   
   // Vérifier le statut du paiement après redirection
   const redirectStatus = searchParams.get('redirect_status')
+  const planParam = searchParams.get('plan') || 'pro'
+
+  const plans = {
+    pro: {
+      name: 'Plan Pro',
+      price: 9.99,
+      priceId: 'price_1SWOsbCa5azamjTQV4nwkCty',
+      features: ['Statistiques détaillées', 'Export des données', 'Support prioritaire']
+    },
+    team: {
+      name: 'Plan Team',
+      price: 29.99,
+      priceId: 'price_1SWOsbCa5azamjTQV4nwkCty', 
+      features: ['1 Admin + 4 Membres', 'Gestion permissions', 'Support dédié']
+    }
+  }
+
+  const selectedPlan = plans[planParam] || plans.pro
+  const totalPrice = selectedPlan.price + (extraMembers * EXTRA_MEMBER_PRICE)
 
   useEffect(() => {
     checkUser()
@@ -31,7 +53,7 @@ function Payment() {
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      navigate('/login?redirect=/payment')
+      navigate(`/login?redirect=/payment?plan=${planParam}`)
       return
     }
     setUser(user)
@@ -49,7 +71,10 @@ function Payment() {
       setError(null)
       const { data, error } = await supabase.functions.invoke('create-subscription', {
         body: {
-          priceId: 'price_1SWOsbCa5azamjTQV4nwkCty', // Votre ID de prix
+          priceId: selectedPlan.priceId,
+          planType: planParam, // 'pro' ou 'team'
+          extraMembers: extraMembers > 0 ? extraMembers : undefined,
+          extraMemberPriceId: extraMembers > 0 ? EXTRA_MEMBER_PRICE_ID : undefined
         },
       })
 
@@ -123,25 +148,45 @@ function Payment() {
             <h2>Récapitulatif</h2>
             <div className="plan-details">
               <div>
-                <div className="plan-name">Plan Premium</div>
+                <div className="plan-name">{selectedPlan.name}</div>
                 <div style={{ fontSize: '0.9rem', color: '#718096' }}>Facturation mensuelle</div>
               </div>
-              <div className="plan-price">9.99 €</div>
+              <div className="plan-price">{selectedPlan.price} €</div>
             </div>
+
+            {planParam === 'team' && (
+              <div className="extra-members-section" style={{ marginTop: '1rem', padding: '1rem', background: '#f7fafc', borderRadius: '8px' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: '500' }}>
+                  Membres supplémentaires (+{EXTRA_MEMBER_PRICE}€/membre)
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <button 
+                    onClick={() => setExtraMembers(Math.max(0, extraMembers - 1))}
+                    style={{ padding: '0.25rem 0.75rem', border: '1px solid #cbd5e0', borderRadius: '4px', background: 'white' }}
+                  >
+                    -
+                  </button>
+                  <span style={{ fontWeight: 'bold' }}>{extraMembers}</span>
+                  <button 
+                    onClick={() => setExtraMembers(extraMembers + 1)}
+                    style={{ padding: '0.25rem 0.75rem', border: '1px solid #cbd5e0', borderRadius: '4px', background: 'white' }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="total-row">
               <span>Total à payer</span>
-              <span>9.99 €</span>
+              <span>{totalPrice.toFixed(2)} €</span>
             </div>
             <ul style={{ marginTop: '1.5rem', listStyle: 'none', padding: 0 }}>
-              <li style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-                <CheckCircle size={16} color="#48bb78" /> Statistiques détaillées
-              </li>
-              <li style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-                <CheckCircle size={16} color="#48bb78" /> Export des données
-              </li>
-              <li style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-                <CheckCircle size={16} color="#48bb78" /> Support prioritaire
-              </li>
+              {selectedPlan.features.map((feature, index) => (
+                <li key={index} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem' }}>
+                  <CheckCircle size={16} color="#48bb78" /> {feature}
+                </li>
+              ))}
             </ul>
           </div>
 
