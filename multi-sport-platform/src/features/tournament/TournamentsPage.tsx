@@ -18,7 +18,7 @@ export function TournamentsPage() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   
   // Use React Query hook for data fetching
-  const { data: tournaments = [], isLoading } = useTournaments();
+  const { data: tournaments = [] } = useTournaments();
   
   // Filter by sport
   const storeTournaments = tournaments.filter(t => t.sport === activeSport);

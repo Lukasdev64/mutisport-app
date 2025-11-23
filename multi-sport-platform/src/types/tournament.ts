@@ -59,6 +59,8 @@ export interface Tournament {
   format: TournamentFormat;
   status: TournamentStatus;
   archived?: boolean; // NEW: Archive flag
+  location?: string; // NEW: Location field
+  tournamentDate?: string; // NEW: Date field
   players: Player[];
   rounds: Round[];
   createdAt: string;

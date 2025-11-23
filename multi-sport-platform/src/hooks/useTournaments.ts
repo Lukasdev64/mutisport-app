@@ -85,9 +85,7 @@ export const useCreateTournament = () => {
     mutationFn: async (tournament: Tournament) => {
       if (isSupabaseConfigured()) {
         // 1. Create tournament record
-        const { data: tournamentData, error: tournamentError } = await supabase
-          .from('tournaments')
-          .insert({
+        const insertData: Database['public']['Tables']['tournaments']['Insert'] = {
             id: tournament.id,
             name: tournament.name,
             format: tournament.format,
@@ -96,18 +94,17 @@ export const useCreateTournament = () => {
             players_count: tournament.players.length,
             unique_url_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
             settings: tournament.settings,
-            // Default required fields
-            location: 'TBD', 
-            tournament_date: new Date().toISOString(),
-          })
+            location: tournament.location || 'TBD', 
+            tournament_date: tournament.tournamentDate || new Date().toISOString(),
+        };
+
+        const { data: tournamentData, error: tournamentError } = await supabase
+          .from('tournaments')
+          .insert(insertData)
           .select()
           .single();
 
         if (tournamentError) throw tournamentError;
-
-        // 2. Create players if they don't exist and link them
-        // This is complex because we need to handle existing players vs new ones
-        // For Phase 2, we might simplify or just focus on the tournament record
         
         return mapSupabaseToTournament(tournamentData);
       } else {
