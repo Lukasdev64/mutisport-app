@@ -7,7 +7,8 @@ import {
   Settings, 
   ChevronLeft, 
   ChevronRight,
-  PlusCircle
+  PlusCircle,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Trophy, label: 'Tournaments', path: '/tournaments' },
   { icon: Users, label: 'Players', path: '/players' },
+  { icon: Shield, label: 'Teams', path: '/teams' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 

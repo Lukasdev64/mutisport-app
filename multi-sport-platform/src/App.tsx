@@ -12,6 +12,7 @@ const TournamentArenaPage = lazy(() => import('@/features/tournament/TournamentA
 const TournamentsPage = lazy(() => import('@/features/tournament/TournamentsPage').then(module => ({ default: module.TournamentsPage })));
 const PlayersPage = lazy(() => import('@/features/players/PlayersPage').then(module => ({ default: module.PlayersPage })));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
+const TeamManagement = lazy(() => import('@/features/teams/TeamManagement'));
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
                     <Route path="/tournaments" element={<TournamentsPage />} />
                     <Route path="/players" element={<PlayersPage />} />
+                    <Route path="/teams" element={<TeamManagement />} />
                     <Route path="/settings" element={<SettingsPage />} />
                   </Routes>
                 </Suspense>
