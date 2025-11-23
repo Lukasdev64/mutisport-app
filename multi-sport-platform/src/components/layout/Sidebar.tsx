@@ -9,14 +9,15 @@ import {
   ChevronRight,
   PlusCircle,
   Shield,
-  CreditCard
+  CreditCard,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Trophy, label: 'Tournaments', path: '/tournaments' },
   { icon: Users, label: 'Players', path: '/players' },
   { icon: Shield, label: 'Teams', path: '/teams' },
@@ -191,6 +192,49 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Landing Page Link */}
+      <div className="px-4 pb-2">
+        <NavLink to="/">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button 
+              variant="outline"
+              className={cn(
+                "w-full border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800",
+                collapsed ? "px-0" : ""
+              )}
+              size={collapsed ? "icon" : "default"}
+            >
+              <AnimatePresence mode="wait">
+                {collapsed ? (
+                  <motion.div
+                    key="icon"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Home size={20} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="full"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center"
+                  >
+                    <Home size={18} className="mr-2" />
+                    Back to Landing
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
+        </NavLink>
+      </div>
 
       {/* User Profile */}
       <div className="p-4 border-t border-white/10">
