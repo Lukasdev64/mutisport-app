@@ -223,6 +223,41 @@ export interface Database {
           updated_at?: string
         }
       }
+      team_members: {
+        Row: {
+          id: string
+          team_owner_id: string
+          user_id: string | null
+          email: string
+          role: 'admin' | 'editor' | 'viewer'
+          status: 'pending' | 'active' | 'declined'
+          permissions: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          team_owner_id: string
+          user_id?: string | null
+          email: string
+          role?: 'admin' | 'editor' | 'viewer'
+          status?: 'pending' | 'active' | 'declined'
+          permissions?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          team_owner_id?: string
+          user_id?: string | null
+          email?: string
+          role?: 'admin' | 'editor' | 'viewer'
+          status?: 'pending' | 'active' | 'declined'
+          permissions?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
