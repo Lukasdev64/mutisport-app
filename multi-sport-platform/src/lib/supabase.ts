@@ -27,7 +27,26 @@ export const supabase = isSupabaseConfigured()
         }
       }
     })
-  : ({} as ReturnType<typeof createClient<Database>>); // Fallback dummy object (should not be used due to isSupabaseConfigured check)
+  : ({
+      functions: {
+        invoke: async () => ({ 
+          data: null, 
+          error: new Error('Supabase not configured. Please check your environment variables.') 
+        })
+      },
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: new Error('Supabase not configured') }),
+            maybeSingle: async () => ({ data: null, error: new Error('Supabase not configured') }),
+          }),
+        }),
+      }),
+    } as unknown as ReturnType<typeof createClient<Database>>);
 
 // Helper for anonymous tournament creation with edit tokens
 export const generateEditToken = (): string => {
