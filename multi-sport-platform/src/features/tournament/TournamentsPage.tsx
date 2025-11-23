@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
+import { useTournaments } from '@/hooks/useTournaments';
 import { ALL_MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Trophy, Calendar, Users, Archive, ArchiveRestore, MoreVertical } from 'lucide-react';
@@ -16,9 +17,14 @@ export function TournamentsPage() {
   const { archiveTournament, unarchiveTournament } = useTournamentStore();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   
-  // Get store tournaments and mock tournaments, both filtered by sport
-  const storeTournaments = useTournamentStore(state => state.tournaments).filter(t => t.sport === activeSport);
+  // Use React Query hook for data fetching
+  const { data: tournaments = [] } = useTournaments();
+  
+  // Filter by sport
+  const storeTournaments = tournaments.filter(t => t.sport === activeSport);
   const mockTournamentsForSport = ALL_MOCK_TOURNAMENTS.filter(mt => mt.sport === activeSport);
+  
+  // Combine store tournaments and mock tournaments (deduplicating by ID)
   const allTournaments = [...storeTournaments, ...mockTournamentsForSport.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'archived'>('all');
