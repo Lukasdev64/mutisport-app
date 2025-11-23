@@ -6,6 +6,11 @@ import type { Database } from '@/types/supabase';
 
 // Helper to map Supabase row to Tournament type
 const mapSupabaseToTournament = (row: any): Tournament => {
+  // Map DB status to App status
+  const appStatus = row.status === 'setup' ? 'draft'
+    : row.status === 'in_progress' ? 'active'
+    : 'completed';
+
   return {
     id: row.id,
     name: row.name,
@@ -13,7 +18,7 @@ const mapSupabaseToTournament = (row: any): Tournament => {
     tournamentDate: row.tournament_date,
     format: row.format,
     sport: row.sport,
-    status: row.status,
+    status: appStatus,
     players: row.players || [], // Need to join with players table
     rounds: row.rounds || [],   // Need to join with rounds table
     createdAt: row.created_at,
@@ -85,12 +90,17 @@ export const useCreateTournament = () => {
     mutationFn: async (tournament: Tournament) => {
       if (isSupabaseConfigured()) {
         // 1. Create tournament record
+        // Map application status to Supabase status
+        const dbStatus = tournament.status === 'draft' ? 'setup' 
+          : tournament.status === 'active' ? 'in_progress' 
+          : 'completed';
+
         const insertData: Database['public']['Tables']['tournaments']['Insert'] = {
             id: tournament.id,
             name: tournament.name,
             format: tournament.format,
             sport: tournament.sport,
-            status: tournament.status,
+            status: dbStatus,
             players_count: tournament.players.length,
             unique_url_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
             settings: tournament.settings,

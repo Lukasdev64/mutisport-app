@@ -17,7 +17,7 @@ export interface Database {
           tournament_date: string
           description: string | null
           format: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss'
-          sport: 'tennis' | 'badminton' | 'squash'
+          sport: string
           players_count: number
           status: 'setup' | 'in_progress' | 'completed' | 'cancelled'
           current_round: number
@@ -41,7 +41,7 @@ export interface Database {
           tournament_date: string
           description?: string | null
           format: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss'
-          sport?: 'tennis' | 'badminton' | 'squash'
+          sport?: string
           players_count: number
           status?: 'setup' | 'in_progress' | 'completed' | 'cancelled'
           current_round?: number
@@ -65,7 +65,7 @@ export interface Database {
           tournament_date?: string
           description?: string | null
           format?: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss'
-          sport?: 'tennis' | 'badminton' | 'squash'
+          sport?: string
           players_count?: number
           status?: 'setup' | 'in_progress' | 'completed' | 'cancelled'
           current_round?: number
