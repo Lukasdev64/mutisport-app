@@ -6,6 +6,7 @@ import { Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/toast';
 import { TennisMatchModal } from '@/sports/tennis/TennisMatchModal';
+import { BasketballMatchModal } from '@/sports/basketball/BasketballMatchModal';
 
 interface MatchModalProps {
   isOpen: boolean;
@@ -25,6 +26,23 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
         player1Id={match.player1Id!}
         player2Id={match.player2Id!}
         tournament={tournament}
+      />
+    );
+  }
+
+  if (tournament.sport === 'basketball') {
+    const { updateMatch } = useTournamentStore();
+    return (
+      <BasketballMatchModal
+        isOpen={isOpen}
+        onClose={onClose}
+        match={match}
+        onUpdateResult={(matchId, result) => {
+          updateMatch(tournament.id, matchId, {
+            status: 'completed',
+            result
+          });
+        }}
       />
     );
   }

@@ -37,7 +37,7 @@ export const SPORTS: Record<SportType, Sport> = {
   basketball: {
     id: 'basketball',
     name: 'Basketball',
-    icon: 'Circle',
+    icon: 'Circle', // Using Lucide icon 'Circle' as placeholder or change to specific if available
     color: 'orange',
     emoji: '🏀',
     scoringSystem: 'points'
