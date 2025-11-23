@@ -110,7 +110,7 @@ export const useCreateTournament = () => {
 
         const { data: tournamentData, error: tournamentError } = await supabase
           .from('tournaments')
-          .insert(insertData)
+          .insert(insertData as any)
           .select()
           .single();
 
