@@ -8,7 +8,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   PlusCircle,
-  Shield
+  Shield,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ const navItems = [
   { icon: Trophy, label: 'Tournaments', path: '/tournaments' },
   { icon: Users, label: 'Players', path: '/players' },
   { icon: Shield, label: 'Teams', path: '/teams' },
+  { icon: CreditCard, label: 'Billing', path: '/billing' },
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
