@@ -4,17 +4,35 @@ import { Button } from '@/components/ui/button';
 import { useCreateCheckoutSession } from '@/hooks/useStripe';
 import { Check, Zap, Shield, Star, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { CheckoutModal } from './components/CheckoutModal';
 
 export default function BillingPage() {
   const checkoutMutation = useCreateCheckoutSession();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const handleUpgrade = async (priceId: string) => {
     try {
-      const { url } = await checkoutMutation.mutateAsync({
+      console.log('Starting upgrade process for price:', priceId);
+      const response = await checkoutMutation.mutateAsync({
         priceId,
-        returnUrl: window.location.origin + '/settings', // Redirect back to settings after payment
+        returnUrl: window.location.origin + '/settings',
       });
-      if (url) window.location.href = url;
+      
+      console.log('Checkout response:', response);
+
+      if (response?.clientSecret) {
+        setClientSecret(response.clientSecret);
+        setIsCheckoutOpen(true);
+      } else if (response?.url) {
+        // Fallback for older backend version
+        console.warn('Backend returned URL instead of clientSecret. Redirecting...');
+        window.location.href = response.url;
+      } else {
+        console.error('Invalid response format:', response);
+        alert('Erreur de configuration du paiement. Veuillez contacter le support.');
+      }
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Une erreur est survenue. Veuillez réessayer.');
@@ -119,7 +137,7 @@ export default function BillingPage() {
             <CardFooter>
               <Button 
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20"
-                onClick={() => handleUpgrade('price_12345')} // Replace with actual Stripe Price ID
+                onClick={() => handleUpgrade(import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY || '')}
                 disabled={checkoutMutation.isPending}
               >
                 {checkoutMutation.isPending ? (
@@ -146,6 +164,12 @@ export default function BillingPage() {
           </div>
         </div>
       </div>
+
+      <CheckoutModal 
+        isOpen={isCheckoutOpen} 
+        onClose={() => setIsCheckoutOpen(false)} 
+        clientSecret={clientSecret} 
+      />
     </div>
   );
 }

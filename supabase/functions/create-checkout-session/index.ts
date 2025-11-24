@@ -57,29 +57,30 @@ serve(async (req) => {
         .eq('id', user.id)
     }
 
-    // 3. Créer la session de paiement
-    const { priceId, returnUrl } = await req.json()
+    // 3. Créer l'abonnement (Subscription) avec PaymentIntent
+    const { priceId } = await req.json()
 
-    const session = await stripe.checkout.sessions.create({
+    const subscription = await stripe.subscriptions.create({
       customer: customerId,
-      line_items: [
-        {
-          price: priceId, // ID du prix Stripe (ex: price_12345)
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription', // ou 'payment' pour un paiement unique
-      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${returnUrl}?canceled=true`,
-      subscription_data: {
-        metadata: {
-          supabase_user_id: user.id,
-        },
+      items: [{
+        price: priceId,
+      }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+      metadata: {
+        supabase_user_id: user.id,
       },
     })
 
+    const invoice = subscription.latest_invoice
+    const paymentIntent = invoice.payment_intent
+
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        subscriptionId: subscription.id, 
+        clientSecret: paymentIntent.client_secret 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
