@@ -20,7 +20,15 @@ export const DEFAULT_TENNIS_CONFIG: TennisMatchConfig = {
   format: 'best_of_3',
   surface: 'hard',
   tiebreakAt: 6,
-  finalSetTiebreak: true
+  finalSetTiebreak: true,
+  finalSetTiebreakPoints: 10,
+  decidingPointAtDeuce: false,
+  letRule: true,
+  coachingAllowed: false,
+  challengesPerSet: 3,
+  warmupMinutes: 5,
+  changeoverSeconds: 90,
+  betweenPointsSeconds: 25
 };
 
 // Famous tennis tournaments configuration

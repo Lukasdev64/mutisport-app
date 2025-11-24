@@ -6,8 +6,26 @@ export type TennisFormat = 'best_of_3' | 'best_of_5';
 export interface TennisMatchConfig {
   format: TennisFormat;
   surface: TennisSurface;
+  
+  // Tie-break rules
   tiebreakAt: number; // Games count to trigger tiebreak (usually 6)
   finalSetTiebreak: boolean; // Some tournaments don't use tiebreak in final set
+  finalSetTiebreakPoints?: number; // 7 for regular, 10 for super tie-break
+  
+  // Scoring variations
+  decidingPointAtDeuce: boolean; // No-Ad scoring (sudden death at deuce)
+  
+  // Service rules
+  letRule: boolean; // false = No-Let (service let is played)
+  
+  // Match rules
+  coachingAllowed: boolean; // On-court coaching permitted
+  challengesPerSet?: number; // Hawk-Eye video review challenges (usually 3)
+  
+  // Time rules (in seconds/minutes)
+  warmupMinutes: number; // Pre-match warm-up time
+  changeoverSeconds: number; // Time between odd games
+  betweenPointsSeconds: number; // Shot clock between points
 }
 
 export interface TennisGameScore {

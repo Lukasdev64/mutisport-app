@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { TournamentFormat, Player } from '@/types/tournament';
+import type { TennisMatchConfig } from '@/types/tennis';
 import { v4 as uuidv4 } from 'uuid';
 
 interface WizardState {
@@ -35,6 +36,10 @@ interface WizardState {
   selectedPlayers: Player[]; // Only the selected participants for the tournament
   maxParticipants: number | null; // Final confirmed count
   
+  // Tennis-specific configuration
+  tennisPresetId?: string;
+  tennisConfig?: TennisMatchConfig;
+  
   // Actions - Navigation
   setStep: (step: number) => void;
   nextStep: () => void;
@@ -64,6 +69,10 @@ interface WizardState {
   removePlayer: (id: string) => void;
   setMaxParticipants: (count: number) => void;
   setSelectedPlayers: (players: Player[]) => void; // NEW: Set final selected players
+  
+  // Actions - Tennis Configuration
+  setTennisPreset: (presetId: string) => void;
+  setTennisConfig: (config: TennisMatchConfig) => void;
   
   reset: () => void;
 }
@@ -146,6 +155,10 @@ export const useWizardStore = create<WizardState>((set) => ({
 
   setMaxParticipants: (maxParticipants) => set({ maxParticipants }),
   setSelectedPlayers: (selectedPlayers) => set({ selectedPlayers }), // NEW: Set selected players
+  
+  // Actions - Tennis Configuration
+  setTennisPreset: (tennisPresetId) => set({ tennisPresetId }),
+  setTennisConfig: (tennisConfig) => set({ tennisConfig }),
   
   reset: () => set({
     step: 1,
