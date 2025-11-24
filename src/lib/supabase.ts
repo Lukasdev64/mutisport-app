@@ -37,6 +37,7 @@ export const supabase = isSupabaseConfigured()
       auth: {
         getSession: async () => ({ data: { session: null }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error('Supabase not configured') }),
       },
       from: () => ({
         select: () => ({

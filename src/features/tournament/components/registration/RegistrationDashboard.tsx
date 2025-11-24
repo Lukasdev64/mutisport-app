@@ -7,6 +7,7 @@ import { NotificationService } from '@/services/notificationService';
 import { ScheduleView } from '../scheduling/ScheduleView';
 import { AvailabilityHeatmap } from '../availability/AvailabilityHeatmap';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 // Mock Data Generator
 const generateMockRegistrations = (count: number): RegistrationData[] => {
@@ -34,6 +35,7 @@ export function RegistrationDashboard() {
   const [selectionResult, setSelectionResult] = useState<SelectionResult | null>(null);
   const [schedule, setSchedule] = useState<ScheduledMatch[]>([]);
   const [isSimulating, setIsSimulating] = useState(false);
+  const { toast } = useToast();
 
   const handleSimulateImport = () => {
     setIsSimulating(true);
@@ -85,7 +87,7 @@ export function RegistrationDashboard() {
     selectionResult.selected.forEach(p => NotificationService.sendAcceptanceEmail(p, "Tournoi d'Été"));
     selectionResult.waitlist.forEach((p, i) => NotificationService.sendWaitlistEmail(p, "Tournoi d'Été", i + 1));
     selectionResult.rejected.forEach(p => NotificationService.sendRejectionEmail(p.data, "Tournoi d'Été", p.reason));
-    alert(`${candidates.length} emails envoyés (Simulation) !`);
+    toast(`${candidates.length} emails envoyés (Simulation) !`, 'success');
   };
 
   return (

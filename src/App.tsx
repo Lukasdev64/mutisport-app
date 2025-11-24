@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ToastProvider } from '@/components/ui/toast';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { AutoLogin } from '@/components/auth/AutoLogin';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
@@ -19,6 +20,7 @@ function App() {
   return (
     <ToastProvider>
       <Router>
+        <AutoLogin />
         <Routes>
           {/* Public Route - Landing Page */}
           <Route 

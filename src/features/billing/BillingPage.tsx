@@ -6,11 +6,13 @@ import { Check, Zap, Shield, Star, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { CheckoutModal } from './components/CheckoutModal';
+import { useToast } from '@/components/ui/toast';
 
 export default function BillingPage() {
   const checkoutMutation = useCreateCheckoutSession();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleUpgrade = async (priceId: string) => {
     try {
@@ -31,11 +33,11 @@ export default function BillingPage() {
         window.location.href = response.url;
       } else {
         console.error('Invalid response format:', response);
-        alert('Erreur de configuration du paiement. Veuillez contacter le support.');
+        toast('Erreur de configuration du paiement. Veuillez contacter le support.', 'error');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      alert('Une erreur est survenue. Veuillez réessayer.');
+      toast('Une erreur est survenue. Veuillez réessayer.', 'error');
     }
   };
 
