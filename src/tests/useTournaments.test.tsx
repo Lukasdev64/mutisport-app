@@ -1,52 +1,47 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, mock } from 'bun:test';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useTournaments } from '../hooks/useTournaments';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
 // Mock Supabase
-const { mockSupabase } = vi.hoisted(() => {
-  const mock = {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        order: vi.fn(() => Promise.resolve({
-          data: [],
+const mockSupabase = {
+  from: mock(() => ({
+    select: mock(() => ({
+      order: mock(() => Promise.resolve({
+        data: [],
+        error: null
+      }))
+    })),
+    insert: mock(() => ({
+      select: mock(() => ({
+        single: mock(() => Promise.resolve({
+          data: null,
           error: null
-        }))
-      })),
-      insert: vi.fn(() => ({
-        select: vi.fn(() => ({
-          single: vi.fn(() => Promise.resolve({
-            data: null,
-            error: null
-          }))
         }))
       }))
     }))
-  };
-  return { mockSupabase: mock };
-});
+  }))
+};
 
-vi.mock('../lib/supabase', () => ({
+mock.module('../lib/supabase', () => ({
   supabase: mockSupabase,
-  isSupabaseConfigured: vi.fn(() => true)
+  isSupabaseConfigured: mock(() => true)
 }));
 
 // Mock Tournament Store
-const { mockTournamentStore } = vi.hoisted(() => {
-  return {
-    mockTournamentStore: {
-      tournaments: [],
-      addTournament: vi.fn(),
-      updateTournament: vi.fn(),
-      deleteTournament: vi.fn()
-    }
-  };
-});
+const mockTournamentStore = {
+  tournaments: [],
+  addTournament: mock(),
+  updateTournament: mock(),
+  deleteTournament: mock()
+};
 
-vi.mock('../features/tournament/store/tournamentStore', () => ({
-  useTournamentStore: vi.fn(() => mockTournamentStore)
+mock.module('../features/tournament/store/tournamentStore', () => ({
+  useTournamentStore: mock(() => mockTournamentStore)
 }));
+
+// Import hook AFTER mocks
+import { useTournaments } from '../hooks/useTournaments';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -66,7 +61,9 @@ const createWrapper = () => {
 
 describe('useTournaments', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // Clear mocks if needed, though Bun mocks might need manual reset if reused
+    // mock.restore() or similar if available, or just rely on fresh mocks per test if possible
+    // For now, we just reset the implementation if we change it in tests
   });
 
   it('should fetch tournaments from Supabase when configured', async () => {
@@ -85,14 +82,14 @@ describe('useTournaments', () => {
     ];
 
     // Setup mock return
-    mockSupabase.from.mockImplementation(() => ({
-      select: vi.fn(() => ({
-        order: vi.fn(() => Promise.resolve({
+    (mockSupabase.from as any).mockImplementation(() => ({
+      select: mock(() => ({
+        order: mock(() => Promise.resolve({
           data: mockData,
           error: null
         }))
       }))
-    } as any));
+    }));
 
     const { result } = renderHook(() => useTournaments(), {
       wrapper: createWrapper()
@@ -106,14 +103,14 @@ describe('useTournaments', () => {
 
   it('should handle Supabase errors gracefully', async () => {
     // Setup mock error
-    mockSupabase.from.mockImplementation(() => ({
-      select: vi.fn(() => ({
-        order: vi.fn(() => Promise.resolve({
+    (mockSupabase.from as any).mockImplementation(() => ({
+      select: mock(() => ({
+        order: mock(() => Promise.resolve({
           data: null,
           error: { message: 'Network error' }
         }))
       }))
-    } as any));
+    }));
 
     const { result } = renderHook(() => useTournaments(), {
       wrapper: createWrapper()

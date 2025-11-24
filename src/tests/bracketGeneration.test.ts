@@ -3,7 +3,7 @@
  * Testing all tournament format algorithms
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import {
   generateSingleEliminationBracket,
   generateDoubleEliminationBracket,

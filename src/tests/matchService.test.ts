@@ -3,7 +3,7 @@
  * Testing score parsing and validation
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'bun:test';
 import {
   parseScoreString,
   formatScoreString,
