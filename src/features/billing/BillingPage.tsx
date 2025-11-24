@@ -2,17 +2,19 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
 import { Button } from '@/components/ui/button';
 import { useCreateCheckoutSession } from '@/hooks/useStripe';
-import { Check, Zap, Shield, Star, Loader2 } from 'lucide-react';
+import { Check, Zap, Shield, Star, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { CheckoutModal } from './components/CheckoutModal';
 import { useToast } from '@/components/ui/toast';
+import { useSubscription } from '@/context/SubscriptionContext';
 
 export default function BillingPage() {
   const checkoutMutation = useCreateCheckoutSession();
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { toast } = useToast();
+  const { isPro, togglePro } = useSubscription();
 
   const handleUpgrade = async (priceId: string) => {
     try {
@@ -52,9 +54,25 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-white tracking-tight">Abonnement & Facturation</h1>
-        <p className="text-slate-400">Gérez votre abonnement et accédez aux fonctionnalités premium.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold text-white tracking-tight">Abonnement & Facturation</h1>
+          <p className="text-slate-400">Gérez votre abonnement et accédez aux fonctionnalités premium.</p>
+        </div>
+        
+        {/* Dev Toggle for Testing */}
+        <div className="flex items-center gap-3 bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+          <span className="text-sm text-slate-400">Mode Test:</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={togglePro}
+            className={isPro ? "text-blue-400 hover:text-blue-300" : "text-slate-400 hover:text-slate-300"}
+          >
+            {isPro ? <ToggleRight className="mr-2 h-5 w-5" /> : <ToggleLeft className="mr-2 h-5 w-5" />}
+            {isPro ? 'Premium' : 'Gratuit'}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2 max-w-4xl mx-auto mt-8">
@@ -64,7 +82,7 @@ export default function BillingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="bg-slate-900/50 border-slate-800 h-full flex flex-col">
+          <Card className={`h-full flex flex-col transition-colors ${!isPro ? 'bg-slate-900/50 border-slate-800' : 'bg-slate-950/30 border-slate-800/50 opacity-75'}`}>
             <CardHeader>
               <CardTitle className="text-2xl text-white">Gratuit</CardTitle>
               <CardDescription>Pour découvrir la plateforme</CardDescription>
@@ -90,8 +108,12 @@ export default function BillingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full border-slate-700 text-slate-300 hover:bg-slate-800" disabled>
-                Plan actuel
+              <Button 
+                variant="outline" 
+                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800" 
+                disabled={!isPro}
+              >
+                {!isPro ? 'Plan actuel' : 'Downgrade'}
               </Button>
             </CardFooter>
           </Card>
@@ -104,8 +126,8 @@ export default function BillingPage() {
           transition={{ delay: 0.2 }}
           className="relative"
         >
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl blur opacity-30 animate-pulse" />
-          <Card className="bg-slate-900/80 border-blue-500/50 h-full flex flex-col relative">
+          {!isPro && <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl blur opacity-30 animate-pulse" />}
+          <Card className={`h-full flex flex-col relative ${isPro ? 'bg-slate-900/80 border-blue-500/50' : 'bg-slate-900/80 border-blue-500/50'}`}>
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div>
@@ -137,18 +159,27 @@ export default function BillingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20"
-                onClick={() => handleUpgrade(import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY || '')}
-                disabled={checkoutMutation.isPending}
-              >
-                {checkoutMutation.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Star className="mr-2 h-4 w-4 fill-current" />
-                )}
-                Passer au Pro
-              </Button>
+              {isPro ? (
+                <Button 
+                  className="w-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 cursor-default"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Plan actuel
+                </Button>
+              ) : (
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20"
+                  onClick={() => handleUpgrade(import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY || '')}
+                  disabled={checkoutMutation.isPending}
+                >
+                  {checkoutMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Star className="mr-2 h-4 w-4 fill-current" />
+                  )}
+                  Passer au Pro
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </motion.div>

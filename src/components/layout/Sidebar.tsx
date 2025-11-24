@@ -25,8 +25,11 @@ const navItems = [
   { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
+import { useSubscription } from '@/context/SubscriptionContext';
+
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { isPro } = useSubscription();
 
   return (
     <motion.aside 
@@ -243,11 +246,16 @@ export function Sidebar() {
           whileHover={{ x: collapsed ? 0 : 5 }}
           transition={{ type: "spring", damping: 20 }}
         >
-          <motion.div 
-            className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shrink-0"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            transition={{ type: "spring", damping: 15 }}
-          />
+          <div className="relative">
+            <motion.div 
+              className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shrink-0"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", damping: 15 }}
+            />
+            {isPro && (
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-slate-950" />
+            )}
+          </div>
           <AnimatePresence mode="wait">
             {!collapsed && (
               <motion.div 
@@ -257,7 +265,17 @@ export function Sidebar() {
                 transition={{ duration: 0.15 }}
                 className="overflow-hidden"
               >
-                <p className="text-sm font-medium text-slate-200 truncate">User Name</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-slate-200 truncate">User Name</p>
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider",
+                    isPro 
+                      ? "bg-gradient-to-r from-yellow-400/20 to-orange-400/20 text-yellow-400 border border-yellow-400/20" 
+                      : "bg-slate-800 text-slate-400 border border-slate-700"
+                  )}>
+                    {isPro ? 'PRO' : 'FREE'}
+                  </span>
+                </div>
                 <p className="text-xs text-slate-500 truncate">user@example.com</p>
               </motion.div>
             )}

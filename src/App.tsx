@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ToastProvider } from '@/components/ui/toast';
+import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AutoLogin } from '@/components/auth/AutoLogin';
 
@@ -19,41 +20,43 @@ const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
 function App() {
   return (
     <ToastProvider>
-      <Router>
-        <AutoLogin />
-        <Routes>
-          {/* Public Route - Landing Page */}
-          <Route 
-            path="/" 
-            element={
-              <Suspense fallback={<LoadingSpinner fullScreen />}>
-                <LandingPage />
-              </Suspense>
-            } 
-          />
-
-          {/* App Routes - With Sidebar */}
-          <Route
-            path="/*"
-            element={
-              <Layout>
+      <SubscriptionProvider>
+        <Router>
+          <AutoLogin />
+          <Routes>
+            {/* Public Route - Landing Page */}
+            <Route 
+              path="/" 
+              element={
                 <Suspense fallback={<LoadingSpinner fullScreen />}>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/tournaments/new" element={<TournamentWizardPage />} />
-                    <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
-                    <Route path="/tournaments" element={<TournamentsPage />} />
-                    <Route path="/players" element={<PlayersPage />} />
-                    <Route path="/teams" element={<TeamManagement />} />
-                    <Route path="/billing" element={<BillingPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
-                  </Routes>
+                  <LandingPage />
                 </Suspense>
-              </Layout>
-            }
-          />
-        </Routes>
-      </Router>
+              } 
+            />
+
+            {/* App Routes - With Sidebar */}
+            <Route
+              path="/*"
+              element={
+                <Layout>
+                  <Suspense fallback={<LoadingSpinner fullScreen />}>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/tournaments/new" element={<TournamentWizardPage />} />
+                      <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
+                      <Route path="/tournaments" element={<TournamentsPage />} />
+                      <Route path="/players" element={<PlayersPage />} />
+                      <Route path="/teams" element={<TeamManagement />} />
+                      <Route path="/billing" element={<BillingPage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                    </Routes>
+                  </Suspense>
+                </Layout>
+              }
+            />
+          </Routes>
+        </Router>
+      </SubscriptionProvider>
     </ToastProvider>
   );
 }
