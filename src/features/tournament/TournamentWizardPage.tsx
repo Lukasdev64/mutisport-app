@@ -6,6 +6,7 @@ import { FormatAndRules } from './components/wizard/FormatAndRules';
 import { CampaignSetup } from './components/wizard/CampaignSetup';
 import { PlayerSelection } from './components/wizard/PlayerSelection';
 import { TournamentSummary } from './components/wizard/TournamentSummary';
+import { TennisConfiguration } from './components/wizard/TennisConfiguration';
 import { AnimatePresence } from 'framer-motion';
 
 export function TournamentWizardPage() {
@@ -59,21 +60,27 @@ export function TournamentWizardPage() {
           return { title: "Error", description: "Error", component: <div>Error</div> };
       }
     } else {
-      // INSTANT MODE - Keep original simplified flow
+      // INSTANT MODE - Tennis-focused flow
       switch (step) {
         case 2:
+          return {
+            title: "Configuration Tennis",
+            description: "Sélectionnez le type de tournoi et les règles",
+            component: <TennisConfiguration />
+          };
+        case 3:
           return {
             title: "Format & Règles",
             description: "Choose your tournament format and rules",
             component: <FormatAndRules />
           };
-        case 3:
+        case 4:
           return {
             title: "Add Players",
             description: "Who will be competing?",
             component: <PlayerSelection />
           };
-        case 4:
+        case 5:
           return {
             title: "Review & Launch",
             description: "Double check everything before we start",

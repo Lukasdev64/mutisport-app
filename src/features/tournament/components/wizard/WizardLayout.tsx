@@ -16,7 +16,7 @@ interface WizardLayoutProps {
 }
 
 export function WizardLayout({ children, title, description }: WizardLayoutProps) {
-  const { step, totalSteps, prevStep, nextStep, players, selectedPlayers, format, tournamentName } = useWizardStore();
+  const { step, totalSteps, prevStep, nextStep, players, selectedPlayers, format, tournamentName, tennisPresetId } = useWizardStore();
   const { createTournament } = useTournamentStore();
   const activeSport = useSportStore((state) => state.activeSport);
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
   const canProceed = () => {
     if (step === 1) return true; // Mode selection
     
-    // Step 2: Tournament Setup - requires name and date
-    if (step === 2) return !!tournamentName;
+    // Step 2: Tennis Configuration - requires preset selection
+    if (step === 2) return !!tennisPresetId;
     
     // Step 3: Format & Rules - requires format
     if (step === 3) return !!format;
