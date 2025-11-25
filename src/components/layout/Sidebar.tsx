@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { supabase } from '@/lib/supabase';
 import { 
   Trophy, 
   LayoutDashboard, 
@@ -30,6 +31,37 @@ import { useSubscription } from '@/context/SubscriptionContext';
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { isPro } = useSubscription();
+  const [userProfile, setUserProfile] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        setUserProfile({
+          name: profile?.full_name || user.user_metadata?.full_name || 'User Name',
+          email: user.email || 'user@example.com'
+        });
+      } else {
+        setUserProfile(null);
+      }
+    };
+
+    getProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      getProfile();
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <motion.aside 
@@ -266,7 +298,7 @@ export function Sidebar() {
                 className="overflow-hidden"
               >
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-slate-200 truncate">User Name</p>
+                  <p className="text-sm font-medium text-slate-200 truncate">{userProfile?.name || 'User Name'}</p>
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider",
                     isPro 
@@ -276,7 +308,7 @@ export function Sidebar() {
                     {isPro ? 'PRO' : 'FREE'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 truncate">user@example.com</p>
+                <p className="text-xs text-slate-500 truncate">{userProfile?.email || 'user@example.com'}</p>
               </motion.div>
             )}
           </AnimatePresence>

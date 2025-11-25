@@ -8,6 +8,7 @@ import { AutoLogin } from '@/components/auth/AutoLogin';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
+const PricingPage = lazy(() => import('@/features/landing/PricingPage').then(module => ({ default: module.PricingPage })));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const TournamentWizardPage = lazy(() => import('@/features/tournament/TournamentWizardPage').then(module => ({ default: module.TournamentWizardPage })));
 const QuickStartScreen = lazy(() => import('@/features/tournament/components/wizard/QuickStartScreen').then(module => ({ default: module.QuickStartScreen })));
@@ -31,6 +32,15 @@ function App() {
               element={
                 <Suspense fallback={<LoadingSpinner fullScreen />}>
                   <LandingPage />
+                </Suspense>
+              } 
+            />
+
+            <Route 
+              path="/pricing" 
+              element={
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <PricingPage />
                 </Suspense>
               } 
             />
