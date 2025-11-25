@@ -5,9 +5,9 @@ import { Github, Twitter, Linkedin, Mail, ArrowRight } from 'lucide-react';
 
 const footerLinks = {
   product: [
-    { name: 'Fonctionnalités', href: '#features' },
-    { name: 'Événements', href: '#events' },
-    { name: 'Tarifs', href: '#' },
+    { name: 'Fonctionnalités', href: '/#features' },
+    { name: 'Événements', href: '/#events' },
+    { name: 'Tarifs', href: '/pricing' },
     { name: 'Changelog', href: '#' },
   ],
   resources: [

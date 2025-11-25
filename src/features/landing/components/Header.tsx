@@ -8,9 +8,9 @@ export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { name: 'Produit', href: '#features' },
-    { name: 'Solutions', href: '#solutions' },
-    { name: 'Tarifs', href: '#pricing' },
+    { name: 'Produit', href: '/#features' },
+    { name: 'Solutions', href: '/#solutions' },
+    { name: 'Tarifs', href: '/pricing' },
   ];
 
   return (
@@ -33,13 +33,13 @@ export const Header = () => {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   className="text-sm font-medium text-slate-300 hover:text-blue-400 transition-colors duration-200"
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </nav>
 
@@ -83,14 +83,14 @@ export const Header = () => {
           >
             <div className="flex flex-col space-y-6">
               {navLinks.map((link) => (
-                <a
+                <Link
                   key={link.name}
-                  href={link.href}
+                  to={link.href}
                   className="text-lg font-medium text-slate-300 hover:text-blue-400 border-b border-blue-900/20 pb-4"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
               <div className="pt-4 flex flex-col space-y-3">
                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
