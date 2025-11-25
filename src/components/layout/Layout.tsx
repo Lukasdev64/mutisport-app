@@ -1,10 +1,14 @@
 import { Sidebar } from './Sidebar';
+import { SupportChat } from '@/components/common/SupportChat';
+import { useSubscription } from '@/context/SubscriptionContext';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { isPro } = useSubscription();
+
   return (
     <div className="relative flex min-h-screen bg-[#020617] font-sans antialiased text-slate-100 selection:bg-blue-500/30 overflow-hidden">
       {/* --- STATIC DASHBOARD BACKGROUND --- */}
@@ -32,6 +36,7 @@ export function Layout({ children }: LayoutProps) {
             {children}
           </div>
         </main>
+        {isPro && <SupportChat />}
       </div>
     </div>
   );
