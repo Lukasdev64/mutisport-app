@@ -6,12 +6,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSportStats, useSportFilteredTournaments } from '@/hooks/useSportFilter';
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
+import { useSubscription } from '@/context/SubscriptionContext';
+import { useEffect } from 'react';
 
 export function Dashboard() {
   // const { toast } = useToast();
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];
+  const { checkSubscription } = useSubscription();
+
+  useEffect(() => {
+    checkSubscription();
+  }, [checkSubscription]);
   
   // Get sport-filtered data
   const stats = useSportStats();

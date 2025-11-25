@@ -46,35 +46,34 @@ serve(async (req) => {
       case 'customer.subscription.created': {
         const subscription = event.data.object
         
-        // Récupérer l'utilisateur associé via stripe_customer_id
-        const { data: profile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('id')
-          .eq('stripe_customer_id', subscription.customer)
-          .single()
+        let userId = subscription.metadata?.supabase_user_id
 
-        if (profileError || !profile) {
-          console.error("User not found for this customer ID.")
-          break
+        // Fallback: Try to find user by stripe_customer_id if metadata is missing
+        if (!userId) {
+            console.log("No supabase_user_id in metadata, looking up by stripe_customer_id...")
+            const { data: profile, error: profileError } = await supabaseClient
+            .from('profiles')
+            .select('id')
+            .eq('stripe_customer_id', subscription.customer)
+            .single()
+
+            if (profileError || !profile) {
+                console.error("User not found for this customer ID:", subscription.customer)
+                break
+            }
+            userId = profile.id
         }
 
-        console.log(`Profile found: ${profile.id}. Updating subscription status...`)
+        console.log(`User identified: ${userId}. Processing subscription status: ${subscription.status}`)
 
         let subscription_status = subscription.status
         let planType = 'free'
 
-        // Logique simple pour déterminer le plan (à adapter selon vos produits Stripe)
-        // Par exemple, vérifier subscription.items.data[0].price.product
+        // Check for active or trialing status
         if (subscription.status === 'active' || subscription.status === 'trialing') {
-           // Ici, vous pourriez mapper l'ID du produit Stripe à un nom de plan interne
-           // Pour l'instant, on suppose que tout abonnement actif est 'pro' ou 'premium'
-           // Vous pouvez enrichir cette logique en regardant subscription.items
-           if (subscription.items?.data?.length > 0) {
-             // const priceId = subscription.items.data[0].price.id
-             // planType = mapPriceIdToPlan(priceId)
-             planType = 'premium' // Valeur par défaut pour l'exemple
-           }
+           planType = 'premium'
         } else {
+           // incomplete, incomplete_expired, past_due, canceled, unpaid
            planType = 'free'
         }
 
@@ -83,7 +82,7 @@ serve(async (req) => {
             planType = 'free'
         }
 
-        console.log(`Updating to status: ${subscription_status}, plan: ${planType}`)
+        console.log(`Updating profile ${userId} -> Status: ${subscription_status}, Plan: ${planType}`)
 
         const { error: updateError } = await supabaseClient
           .from('profiles')
@@ -92,7 +91,7 @@ serve(async (req) => {
             subscription_plan: planType,
             subscription_updated_at: new Date().toISOString(),
           })
-          .eq('id', profile.id)
+          .eq('id', userId)
 
         if (updateError) {
             console.error("Error updating profile:", updateError)
