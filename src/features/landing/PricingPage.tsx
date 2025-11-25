@@ -15,7 +15,8 @@ export const PricingPage = () => {
     "Support prioritaire",
     "Personnalisation complète",
     "Export des données",
-    "Badge Premium sur votre profil"
+    "Badge Premium sur votre profil",
+    "verifiation d'identité des participants"
   ];
 
   const faqs = [
