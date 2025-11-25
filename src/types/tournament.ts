@@ -1,4 +1,5 @@
 import type { SportType } from './sport';
+import type { TennisMatchConfig } from './tennis';
 
 export type TournamentFormat = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
 
@@ -53,6 +54,7 @@ export interface Tournament {
   id: string;
   name: string;
   sport?: SportType;
+  tennisConfig?: TennisMatchConfig; // NEW: Tennis specific config
   ageCategory?: string;
   isRanked?: boolean;
   rankingRange?: { min?: string; max?: string };

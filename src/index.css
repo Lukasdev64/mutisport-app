@@ -65,3 +65,47 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-border);
 }
+
+/* Touch Target Utilities - Minimum 48px for accessibility */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.touch-target-lg {
+  min-height: 64px;
+  min-width: 64px;
+}
+
+.touch-target-xl {
+  min-height: 80px;
+  min-width: 80px;
+}
+
+/* Large touch targets for scoring buttons */
+.touch-target-score {
+  min-height: 120px;
+  min-width: 120px;
+  touch-action: manipulation;
+}
+
+/* Prevent zoom on double-tap for interactive elements */
+.no-zoom {
+  touch-action: manipulation;
+}
+
+/* Score display text sizes */
+.score-text-lg {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.score-text-xl {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.score-text-2xl {
+  font-size: 64px;
+  line-height: 1;
+}

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TournamentPreset } from '../tournamentPresets';
 
@@ -7,9 +7,11 @@ interface PresetCardProps {
   preset: TournamentPreset;
   selected: boolean;
   onClick: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: (presetId: string) => void;
 }
 
-export function PresetCard({ preset, selected, onClick }: PresetCardProps) {
+export function PresetCard({ preset, selected, onClick, isFavorite = false, onToggleFavorite }: PresetCardProps) {
   const surfaceColors = {
     clay: 'from-orange-500/20 to-orange-600/10 border-orange-500/30',
     hard: 'from-blue-500/20 to-blue-600/10 border-blue-500/30',
@@ -40,6 +42,25 @@ export function PresetCard({ preset, selected, onClick }: PresetCardProps) {
         >
           <Check className="w-4 h-4 text-white" />
         </motion.div>
+      )}
+
+      {/* Favorite Button */}
+      {onToggleFavorite && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(preset.id);
+          }}
+          className={cn(
+            "absolute top-2 right-2 p-1.5 rounded-full transition-all z-10",
+            selected ? "right-10" : "right-2",
+            isFavorite
+              ? "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
+              : "bg-slate-800/50 text-slate-500 hover:text-yellow-400 hover:bg-slate-700"
+          )}
+        >
+          <Star className={cn("w-4 h-4", isFavorite && "fill-current")} />
+        </button>
       )}
 
       {/* Category Badge */}

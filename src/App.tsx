@@ -10,6 +10,7 @@ import { AutoLogin } from '@/components/auth/AutoLogin';
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
 const TournamentWizardPage = lazy(() => import('@/features/tournament/TournamentWizardPage').then(module => ({ default: module.TournamentWizardPage })));
+const QuickStartScreen = lazy(() => import('@/features/tournament/components/wizard/QuickStartScreen').then(module => ({ default: module.QuickStartScreen })));
 const TournamentArenaPage = lazy(() => import('@/features/tournament/TournamentArenaPage').then(module => ({ default: module.TournamentArenaPage })));
 const TournamentsPage = lazy(() => import('@/features/tournament/TournamentsPage').then(module => ({ default: module.TournamentsPage })));
 const PlayersPage = lazy(() => import('@/features/players/PlayersPage').then(module => ({ default: module.PlayersPage })));
@@ -42,6 +43,7 @@ function App() {
                   <Suspense fallback={<LoadingSpinner fullScreen />}>
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/tournaments/quickstart" element={<QuickStartScreen />} />
                       <Route path="/tournaments/new" element={<TournamentWizardPage />} />
                       <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
                       <Route path="/tournaments" element={<TournamentsPage />} />

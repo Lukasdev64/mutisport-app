@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useSwipeable } from 'react-swipeable';
 import { useWizardStore } from '../../store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,6 +10,8 @@ import { TournamentEngine } from '../../logic/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { Tournament } from '@/types/tournament';
 
+// Force reload fix
+
 interface WizardLayoutProps {
   children: React.ReactNode;
   title: string;
@@ -16,7 +19,11 @@ interface WizardLayoutProps {
 }
 
 export function WizardLayout({ children, title, description }: WizardLayoutProps) {
-  const { step, totalSteps, prevStep, nextStep, players, selectedPlayers, format, tournamentName } = useWizardStore();
+  const { 
+    step, totalSteps, prevStep, nextStep, 
+    players, selectedPlayers, format, tournamentName,
+    sport, tennisConfig, mode // Add mode
+  } = useWizardStore();
   const { createTournament } = useTournamentStore();
   const activeSport = useSportStore((state) => state.activeSport);
   const navigate = useNavigate();
@@ -24,24 +31,41 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
   const canProceed = () => {
     if (step === 1) return true; // Mode selection
     
-    // Step 2: Tournament Setup - requires name and date
-    if (step === 2) return !!tournamentName;
-    
-    // Step 3: Format & Rules - requires format
-    if (step === 3) return !!format;
-    
-    // Step 4: Campaign Setup (planned) or Player Selection (instant)
-    if (step === 4) return true; // Campaign setup doesn't block
-    
-    // Step 5: Schedule Preview or Player Selection (instant) - no validation needed
-    // Player selection is done in step 4 for planned mode
+    if (mode === 'planned') {
+      // PLANNED MODE
+      // Step 2: Tournament Setup - requires name
+      if (step === 2) return !!tournamentName;
+      
+      // Step 3: Format & Rules
+      if (step === 3) {
+        if (sport === 'tennis') {
+          return !!tennisConfig && !!format;
+        }
+        return !!format;
+      }
+    } else {
+      // INSTANT MODE
+      // Step 2: Format & Rules (Skipped Setup)
+      if (step === 2) {
+        if (sport === 'tennis') {
+          return !!tennisConfig && !!format;
+        }
+        return !!format;
+      }
+      
+      // Step 3: Player Selection
+      if (step === 3) return true; // Allow proceeding to summary
+    }
     
     // Other steps
     return true;
   };
 
   const handleCreateTournament = () => {
-    if (!format || !tournamentName) return;
+    // Allow empty name in instant mode
+    if (!format || (mode === 'planned' && !tournamentName)) return;
+
+    const finalName = tournamentName || `Tournoi ${new Date().toLocaleDateString()}`;
 
     // CRITICAL: Use selectedPlayers (those validated in CampaignSetup), not all registered players
     const finalPlayers = selectedPlayers.length > 0 ? selectedPlayers : players;
@@ -49,9 +73,10 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
 
     const newTournament: Tournament = {
       id: uuidv4(),
-      name: tournamentName,
+      name: finalName,
       format: format,
-      sport: activeSport, // CRITICAL: Add sport so tournament appears in filtered list
+      sport: (sport === 'other' ? 'generic' : sport) as any, // Map 'other' to 'generic' or cast to avoid type error
+      tennisConfig: sport === 'tennis' ? tennisConfig : undefined, // Save tennis config
       status: 'active',
       players: finalPlayers, // Only selected players!
       rounds: rounds,
@@ -68,8 +93,29 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
     navigate(`/tournaments/${newTournament.id}`);
   };
 
+  // Swipe handlers for mobile navigation
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      // Swipe left = go to next step (if allowed)
+      if (step < totalSteps && canProceed()) {
+        nextStep();
+      }
+    },
+    onSwipedRight: () => {
+      // Swipe right = go back
+      if (step > 1) {
+        prevStep();
+      }
+    },
+    trackMouse: false, // Only track touch, not mouse
+    trackTouch: true,
+    delta: 50, // Minimum swipe distance
+    swipeDuration: 500,
+    preventScrollOnSwipe: false // Don't prevent vertical scrolling
+  });
+
   return (
-    <div className="max-w-4xl mx-auto py-6 md:py-12 px-4">
+    <div className="max-w-4xl mx-auto py-6 md:py-12 px-4" {...swipeHandlers}>
       {/* Header */}
       <div className="mb-8 text-center">
         <motion.h1 
@@ -90,13 +136,34 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
       </div>
 
       {/* Progress Bar */}
-      <div className="mb-12 relative h-2 bg-slate-800 rounded-full overflow-hidden">
-        <motion.div 
+      <div className="mb-8 relative h-2 bg-slate-800 rounded-full overflow-hidden">
+        <motion.div
           className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-emerald-500"
           initial={{ width: 0 }}
           animate={{ width: `${(step / totalSteps) * 100}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
         />
+      </div>
+
+      {/* Step Indicators */}
+      <div className="flex justify-center gap-2 mb-8">
+        {Array.from({ length: totalSteps }).map((_, idx) => (
+          <div
+            key={idx}
+            className={`w-2 h-2 rounded-full transition-all ${
+              idx + 1 === step
+                ? 'w-6 bg-blue-500'
+                : idx + 1 < step
+                ? 'bg-emerald-500'
+                : 'bg-slate-700'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Swipe Hint (shown on mobile only) */}
+      <div className="md:hidden text-center text-xs text-slate-600 mb-4">
+        Swipez pour naviguer
       </div>
 
       {/* Content */}

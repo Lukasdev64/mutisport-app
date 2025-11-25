@@ -1,10 +1,12 @@
 import { useWizardStore } from '../../store/wizardStore';
-import { Calendar, MapPin, FileText } from 'lucide-react';
+import { Calendar, MapPin, FileText, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 export function TournamentSetup() {
   const { 
     tournamentName, setTournamentName,
+    sport, setSport,
     startDate, setStartDate,
     venue, setVenue,
     description, setDescription
@@ -38,6 +40,45 @@ export function TournamentSetup() {
         />
         <p className="text-xs text-slate-500">
           Ce nom sera visible par tous les participants
+        </p>
+      </div>
+
+      {/* Sport Selection */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <Trophy className="w-4 h-4" />
+          Sport
+          <span className="text-red-400">*</span>
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { id: 'tennis' as const, name: 'Tennis', emoji: '🎾' },
+            { id: 'football' as const, name: 'Football', emoji: '⚽' },
+            { id: 'basketball' as const, name: 'Basketball', emoji: '🏀' },
+            { id: 'other' as const, name: 'Autre', emoji: '🏆' }
+          ].map((sportOption) => (
+            <button
+              key={sportOption.id}
+              onClick={() => setSport(sportOption.id)}
+              className={cn(
+                "p-4 rounded-xl border-2 transition-all text-center",
+                sport === sportOption.id
+                  ? "bg-blue-500/20 border-blue-500 shadow-lg"
+                  : "bg-slate-900/50 border-white/10 hover:border-white/20 hover:bg-slate-800"
+              )}
+            >
+              <div className="text-3xl mb-2">{sportOption.emoji}</div>
+              <div className={cn(
+                "font-medium text-sm",
+                sport === sportOption.id ? "text-blue-400" : "text-slate-300"
+              )}>
+                {sportOption.name}
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-slate-500">
+          Le sport sélectionné déterminera les options de règles disponibles
         </p>
       </div>
 
@@ -107,6 +148,10 @@ export function TournamentSetup() {
             <div className="flex justify-between">
               <span className="text-slate-400">Tournoi:</span>
               <span className="text-white font-medium">{tournamentName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Sport:</span>
+              <span className="text-white font-medium capitalize">{sport}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Début:</span>
