@@ -140,12 +140,12 @@ export function useBroadcastMatchUpdate() {
     try {
       // In a real implementation, this would update the database
       // and Realtime would automatically broadcast to subscribers
-      const { error } = await supabase
-        .from('tournament_matches')
+      const { error } = await (supabase
+        .from('tournament_matches') as ReturnType<typeof supabase.from>)
         .update({
           ...data,
           updated_at: new Date().toISOString()
-        })
+        } as Record<string, unknown>)
         .eq('id', matchId)
         .eq('tournament_id', tournamentId);
 

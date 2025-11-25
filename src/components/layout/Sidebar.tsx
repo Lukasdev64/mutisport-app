@@ -41,10 +41,10 @@ export function Sidebar() {
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
-          .single();
-        
+          .single() as { data: { full_name: string | null } | null };
+
         setUserProfile({
-          name: profile?.full_name || user.user_metadata?.full_name || 'User Name',
+          name: profile?.full_name ?? user.user_metadata?.full_name ?? 'User Name',
           email: user.email || 'user@example.com'
         });
       } else {

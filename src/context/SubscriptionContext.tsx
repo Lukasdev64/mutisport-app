@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface SubscriptionContextType {
@@ -28,12 +28,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .from('profiles')
         .select('subscription_plan')
         .eq('id', user.id)
-        .single();
+        .single() as { data: { subscription_plan: string | null } | null; error: Error | null };
 
       if (error) {
         console.error('Error fetching profile:', error);
       } else if (profile) {
-        const plan = profile.subscription_plan?.toLowerCase();
+        const plan = (profile.subscription_plan ?? '').toLowerCase();
         setIsPro(plan === 'premium');
       }
     } catch (error) {
@@ -63,8 +63,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         },
         async (payload) => {
           const { data: { user } } = await supabase.auth.getUser();
-          if (user && payload.new.id === user.id) {
-             const newPlan = payload.new.subscription_plan?.toLowerCase();
+          const newRecord = payload.new as { id: string; subscription_plan?: string };
+          if (user && newRecord.id === user.id) {
+             const newPlan = newRecord.subscription_plan?.toLowerCase();
              setIsPro(newPlan === 'premium');
           }
         }
@@ -88,9 +89,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       // Optimistic update
       setIsPro(!isPro);
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ subscription_plan: newPlan })
+      const { error } = await (supabase
+        .from('profiles') as ReturnType<typeof supabase.from>)
+        .update({ subscription_plan: newPlan } as Record<string, string>)
         .eq('id', user.id);
 
       if (error) {

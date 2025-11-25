@@ -11,10 +11,14 @@ describe('TennisScoringEngine', () => {
       format: 'best_of_3',
       surface: 'hard',
       decidingPointAtDeuce: false,
-      tiebreakInFinalSet: true,
       finalSetTiebreak: true,
       finalSetTiebreakPoints: 7,
-      letRule: true
+      letRule: true,
+      tiebreakAt: 6,
+      coachingAllowed: false,
+      warmupMinutes: 5,
+      changeoverSeconds: 90,
+      betweenPointsSeconds: 25
     };
     initialScore = TennisScoringEngine.initializeMatch(defaultConfig);
   });

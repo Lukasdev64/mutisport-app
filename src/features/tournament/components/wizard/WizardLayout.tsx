@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from '../../store/tournamentStore';
-import { useSportStore } from '@/store/sportStore';
+// Sport store available if needed
+// import { useSportStore } from '@/store/sportStore';
 import { TournamentEngine } from '../../logic/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { Tournament } from '@/types/tournament';
@@ -25,7 +26,6 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
     sport, tennisConfig, mode // Add mode
   } = useWizardStore();
   const { createTournament } = useTournamentStore();
-  const activeSport = useSportStore((state) => state.activeSport);
   const navigate = useNavigate();
 
   const canProceed = () => {

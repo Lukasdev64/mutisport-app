@@ -223,7 +223,7 @@ describe('TournamentEngine', () => {
         name: 'Test Tournament',
         sport: 'tennis',
         format: 'swiss',
-        status: 'in_progress',
+        status: 'active',
         players: players4,
         rounds: [{
           id: 'r1',
@@ -284,7 +284,7 @@ describe('TournamentEngine', () => {
         name: 'Test Tournament',
         sport: 'tennis',
         format: 'round_robin',
-        status: 'in_progress',
+        status: 'active',
         players: players4,
         rounds: [{
           id: 'r1',
@@ -345,7 +345,7 @@ describe('TournamentEngine', () => {
         name: 'Test Tournament',
         sport: 'tennis',
         format: 'round_robin',
-        status: 'in_progress',
+        status: 'active',
         players: [players4[0], players4[1]],
         rounds: [{
           id: 'r1',
@@ -389,7 +389,7 @@ describe('TournamentEngine', () => {
         name: 'Test Tournament',
         sport: 'tennis',
         format: 'round_robin',
-        status: 'in_progress',
+        status: 'active',
         players: players4,
         rounds: [
           {
