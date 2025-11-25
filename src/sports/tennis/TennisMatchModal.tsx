@@ -30,10 +30,13 @@ export function TennisMatchModal({
   
   const player1 = tournament.players.find(p => p.id === player1Id);
   const player2 = tournament.players.find(p => p.id === player2Id);
-  const bestOf = DEFAULT_TENNIS_CONFIG.format === 'best_of_5' ? 5 : 3;
+
+  /** Récupère le format du tournoi depuis tennisConfig, avec fallback sur DEFAULT_TENNIS_CONFIG */
+  const tennisFormat = tournament.tennisConfig?.format ?? DEFAULT_TENNIS_CONFIG.format;
+  const bestOf = tennisFormat === 'best_of_5' ? 5 : 3;
 
   const [mode, setMode] = useState<'quick' | 'live'>('quick');
-  
+
   // Quick result state
   const [winner, setWinner] = useState<'' | '1' | '2'>('');
   const [setScores, setSetScores] = useState<Array<{p1: string, p2: string}>>([
@@ -44,9 +47,76 @@ export function TennisMatchModal({
     {p1: '', p2: ''},
   ]);
 
+  /**
+   * Valide un score de set selon les règles du tennis
+   * @param p1 - Score du joueur 1
+   * @param p2 - Score du joueur 2
+   * @returns true si le score est valide, false sinon
+   *
+   * Règles de validation :
+   * - 6-x avec x <= 4 (victoire nette)
+   * - 7-5 (victoire avec un break d'avance)
+   * - 7-6 (tie-break)
+   * - Scores symétriques (x-6, 5-7, 6-7) également valides
+   */
+  const isValidSetScore = (p1: number, p2: number): boolean => {
+    // Victoire à 6-x (x <= 4) ou x-6
+    if ((p1 === 6 && p2 <= 4) || (p2 === 6 && p1 <= 4)) {
+      return true;
+    }
+    // Victoire à 7-5 ou 5-7
+    if ((p1 === 7 && p2 === 5) || (p2 === 7 && p1 === 5)) {
+      return true;
+    }
+    // Tie-break : 7-6 ou 6-7
+    if ((p1 === 7 && p2 === 6) || (p2 === 7 && p1 === 6)) {
+      return true;
+    }
+    return false;
+  };
+
+  /**
+   * Valide tous les scores de sets entrés
+   * @returns Un objet avec isValid et un message d'erreur optionnel
+   */
+  const validateSetScores = (): { isValid: boolean; errorMessage?: string } => {
+    for (let i = 0; i < bestOf; i++) {
+      const p1 = parseInt(setScores[i].p1);
+      const p2 = parseInt(setScores[i].p2);
+
+      // Ignorer les sets vides (non renseignés)
+      if (isNaN(p1) && isNaN(p2)) continue;
+      if (setScores[i].p1 === '' && setScores[i].p2 === '') continue;
+
+      // Si un seul score est renseigné
+      if ((isNaN(p1) && !isNaN(p2)) || (!isNaN(p1) && isNaN(p2))) {
+        return {
+          isValid: false,
+          errorMessage: `Set ${i + 1}: Les deux scores doivent être renseignés`
+        };
+      }
+
+      // Valider le score du set
+      if (!isValidSetScore(p1, p2)) {
+        return {
+          isValid: false,
+          errorMessage: `Set ${i + 1}: Score invalide (${p1}-${p2}). Un set se gagne 6-x (x≤4), 7-5 ou 7-6 (tie-break)`
+        };
+      }
+    }
+    return { isValid: true };
+  };
+
   const handleQuickSave = () => {
     if (!winner) {
       toast('Please select a winner', 'error');
+      return;
+    }
+
+    // Valider les scores de sets si renseignés
+    const validation = validateSetScores();
+    if (!validation.isValid) {
+      toast(validation.errorMessage!, 'error');
       return;
     }
 
@@ -57,7 +127,7 @@ export function TennisMatchModal({
     for (let i = 0; i < bestOf; i++) {
       const p1 = parseInt(setScores[i].p1) || 0;
       const p2 = parseInt(setScores[i].p2) || 0;
-      
+
       if (p1 > 0 || p2 > 0) {
         if (p1 > p2) p1SetsWon++;
         else if (p2 > p1) p2SetsWon++;

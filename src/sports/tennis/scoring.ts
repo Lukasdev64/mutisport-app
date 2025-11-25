@@ -5,13 +5,26 @@ import type {
   TennisMatchConfig
 } from '@/types/tennis';
 
+/**
+ * Interface pour passer les IDs réels des joueurs aux méthodes de scoring
+ */
+interface PlayerIds {
+  player1Id: string;
+  player2Id: string;
+}
+
 export class TennisScoringEngine {
   /**
    * Award a point to a player in the current game
+   * @param score - L'état actuel du score du match
+   * @param playerId - Indicateur du joueur (1 ou 2)
+   * @param playerIds - Optionnel: IDs réels des joueurs pour définir winnerId correctement
+   * @returns Le nouvel état du score
    */
   static awardPoint(
     score: TennisMatchScore,
-    playerId: 1 | 2
+    playerId: 1 | 2,
+    playerIds?: PlayerIds
   ): TennisMatchScore {
     const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
     const game = newScore.currentGame;
@@ -31,11 +44,11 @@ export class TennisScoringEngine {
     // Regular game (first to 4 points with 2-point lead)
     if (p1Points >= 4 || p2Points >= 4) {
       const diff = Math.abs(p1Points - p2Points);
-      
+
       if (diff >= 2) {
         // Game won
         const gameWinner = p1Points > p2Points ? 1 : 2;
-        return this.awardGame(newScore, gameWinner);
+        return this.awardGame(newScore, gameWinner, playerIds);
       } else if (p1Points >= 3 && p2Points >= 3) {
         // Deuce
         game.isDeuce = true;
@@ -52,10 +65,15 @@ export class TennisScoringEngine {
 
   /**
    * Award a game to a player
+   * @param score - L'état actuel du score du match
+   * @param playerId - Indicateur du joueur (1 ou 2)
+   * @param playerIds - Optionnel: IDs réels des joueurs pour définir winnerId correctement
+   * @returns Le nouvel état du score
    */
   static awardGame(
     score: TennisMatchScore,
-    playerId: 1 | 2
+    playerId: 1 | 2,
+    playerIds?: PlayerIds
   ): TennisMatchScore {
     const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
     const currentSet = newScore.sets[newScore.currentSet];
@@ -82,11 +100,11 @@ export class TennisScoringEngine {
     // Normal set win (6 games with 2-game lead)
     if (p1Games >= 6 || p2Games >= 6) {
       const diff = Math.abs(p1Games - p2Games);
-      
+
       if (diff >= 2) {
         // Set won
         const setWinner = p1Games > p2Games ? 1 : 2;
-        return this.awardSet(newScore, setWinner);
+        return this.awardSet(newScore, setWinner, playerIds);
       } else if (p1Games === 6 && p2Games === 6) {
         // Tiebreak at 6-6
         currentSet.isTiebreak = true;
@@ -99,10 +117,15 @@ export class TennisScoringEngine {
 
   /**
    * Award a tiebreak point
+   * @param score - L'état actuel du score du match
+   * @param playerId - Indicateur du joueur (1 ou 2)
+   * @param playerIds - Optionnel: IDs réels des joueurs pour définir winnerId correctement
+   * @returns Le nouvel état du score
    */
   static awardTiebreakPoint(
     score: TennisMatchScore,
-    playerId: 1 | 2
+    playerId: 1 | 2,
+    playerIds?: PlayerIds
   ): TennisMatchScore {
     const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
     const currentSet = newScore.sets[newScore.currentSet];
@@ -126,7 +149,7 @@ export class TennisScoringEngine {
       const diff = Math.abs(p1 - p2);
       if (diff >= 2) {
         const setWinner = p1 > p2 ? 1 : 2;
-        return this.awardSet(newScore, setWinner);
+        return this.awardSet(newScore, setWinner, playerIds);
       }
     }
 
@@ -135,10 +158,16 @@ export class TennisScoringEngine {
 
   /**
    * Award a set to a player
+   * @param score - L'état actuel du score du match
+   * @param playerId - Indicateur du joueur (1 ou 2)
+   * @param playerIds - Optionnel: IDs réels des joueurs pour définir winnerId correctement.
+   *                    Si non fourni, winnerId sera '1' ou '2' (indicateur) que l'appelant devra convertir.
+   * @returns Le nouvel état du score avec winnerId défini si le match est terminé
    */
   static awardSet(
     score: TennisMatchScore,
-    playerId: 1 | 2
+    playerId: 1 | 2,
+    playerIds?: PlayerIds
   ): TennisMatchScore {
     const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
 
@@ -151,14 +180,16 @@ export class TennisScoringEngine {
 
     // Check for match win
     const setsToWin = newScore.sets.length === 5 ? 3 : 2; // Best of 5 or 3
-    
+
     if (newScore.player1Sets === setsToWin) {
       newScore.isComplete = true;
-      newScore.winnerId = '1'; // Will be replaced with actual player ID
+      // Utilise l'ID réel si fourni, sinon indicateur '1'
+      newScore.winnerId = playerIds?.player1Id ?? '1';
       return newScore;
     } else if (newScore.player2Sets === setsToWin) {
       newScore.isComplete = true;
-      newScore.winnerId = '2'; // Will be replaced with actual player ID
+      // Utilise l'ID réel si fourni, sinon indicateur '2'
+      newScore.winnerId = playerIds?.player2Id ?? '2';
       return newScore;
     }
 

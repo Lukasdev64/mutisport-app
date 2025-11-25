@@ -11,6 +11,7 @@ interface WizardState {
   
   // Step 2: Tournament Setup (NEW)
   tournamentName: string;
+  sport: 'tennis' | 'football' | 'basketball' | 'other';
   startDate: Date;
   venue: string;
   description: string;
@@ -48,6 +49,7 @@ interface WizardState {
   
   // Actions - Step 2: Tournament Setup
   setTournamentName: (name: string) => void;
+  setSport: (sport: 'tennis' | 'football' | 'basketball' | 'other') => void;
   setStartDate: (date: Date) => void;
   setVenue: (venue: string) => void;
   setDescription: (description: string) => void;
@@ -80,11 +82,12 @@ interface WizardState {
 export const useWizardStore = create<WizardState>((set) => ({
   // Initial state - Navigation
   step: 1,
-  totalSteps: 6, // Updated: 6 steps for Planned mode (selection done in Campaign Setup)
+  totalSteps: 4, // Default to 4 for instant mode
   mode: 'instant',
   
   // Initial state - Step 2: Tournament Setup
   tournamentName: '',
+  sport: 'tennis', // Default to tennis
   startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default: 1 week from now
   venue: '',
   description: '',
@@ -109,10 +112,14 @@ export const useWizardStore = create<WizardState>((set) => ({
   setStep: (step) => set({ step }),
   nextStep: () => set((state) => ({ step: Math.min(state.step + 1, state.totalSteps) })),
   prevStep: () => set((state) => ({ step: Math.max(state.step - 1, 1) })),
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => set({ 
+    mode,
+    totalSteps: mode === 'planned' ? 6 : 4 // Update total steps based on mode
+  }),
   
   // Actions - Step 2: Tournament Setup
   setTournamentName: (tournamentName) => set({ tournamentName }),
+  setSport: (sport) => set({ sport }),
   setStartDate: (startDate) => set({ startDate }),
   setVenue: (venue) => set({ venue }),
   setDescription: (description) => set({ description }),
@@ -160,10 +167,14 @@ export const useWizardStore = create<WizardState>((set) => ({
   setTennisPreset: (tennisPresetId) => set({ tennisPresetId }),
   setTennisConfig: (tennisConfig) => set({ tennisConfig }),
   
+  /**
+   * Réinitialise l'état complet du wizard, incluant la configuration tennis
+   */
   reset: () => set({
     step: 1,
     mode: 'instant',
     tournamentName: '',
+    sport: 'tennis',
     startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     venue: '',
     description: '',
@@ -175,6 +186,9 @@ export const useWizardStore = create<WizardState>((set) => ({
     estimatedMaxParticipants: 16,
     campaignFilters: {},
     players: [],
-    maxParticipants: null
+    selectedPlayers: [],
+    maxParticipants: null,
+    tennisPresetId: undefined,
+    tennisConfig: undefined
   })
 }));
