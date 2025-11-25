@@ -4,233 +4,221 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-Sport Competition is a React + Vite application for managing sports competitions. It uses Supabase for authentication, database, and file storage. The application allows organizers to create competitions, manage participants, track results, and communicate with participants.
+Multi-Sport Platform is a React 19 + TypeScript application for managing sports tournaments (tennis, basketball). Uses Bun runtime, Vite, Supabase backend, Stripe payments, and Zustand state management.
 
 ## Development Commands
 
 ```bash
-# Navigate to the application directory
-cd multi-sport-competition
+# Install dependencies (uses Bun)
+bun install
 
-# Install dependencies
-npm install
+# Start dev server (http://localhost:5173)
+bun run dev
 
-# Start development server (http://localhost:5173)
-npm run dev
+# Production build
+bun run build
 
-# Build for production
-npm run build
+# Run tests
+bun test
+bun test:watch      # Watch mode
+bun test:coverage   # With coverage
 
-# Preview production build
-npm run preview
-
-# Run linter
-npm run lint
+# Linting
+bun run lint
 ```
 
 ## Environment Setup
 
-1. Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
+Copy `.env.example` to `.env` and configure:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
 
-2. Configure Supabase credentials:
-   ```env
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
-
-3. Set up Supabase database and storage:
-   - Run the SQL script in `SUPABASE_SETUP.md` to create tables, RLS policies, and triggers
-   - Run `STORAGE_BUCKET_SETUP.sql` to configure the `competition-files` storage bucket
+If credentials are missing, the app falls back to localStorage with mock Supabase responses (see `src/lib/supabase.ts`).
 
 ## Architecture
 
-### Project Structure
+### Feature-Based Structure
 
 ```
-multi-sport-competition/
-├── src/
-│   ├── components/       # Reusable UI components (Header, Footer, Sidebar, etc.)
-│   ├── pages/           # Page-level components (Login, Register, Dashboard, CompetitionDetails)
-│   ├── services/        # API interaction layer (competitionService, profileService)
-│   ├── lib/            # Third-party integrations (supabase client)
-│   ├── utils/          # Utility functions (auth helpers)
-│   ├── App.jsx         # Main routing configuration
-│   └── main.jsx        # Application entry point
-├── public/             # Static assets
-└── SUPABASE_SETUP.md   # Database schema and setup instructions
+src/
+├── features/           # Feature modules (main code organization)
+│   ├── tournament/     # Tournament system (largest feature)
+│   │   ├── components/
+│   │   │   ├── arena/     # Live tournament view
+│   │   │   ├── wizard/    # Multi-step creation
+│   │   │   ├── registration/
+│   │   │   └── scheduling/
+│   │   ├── logic/         # Business logic
+│   │   │   ├── engine.ts          # TournamentEngine: bracket generation
+│   │   │   ├── schedulingEngine.ts
+│   │   │   └── selectionAlgorithm.ts
+│   │   └── store/         # Zustand stores
+│   │       ├── tournamentStore.ts
+│   │       └── wizardStore.ts
+│   ├── billing/        # Stripe subscriptions
+│   ├── dashboard/      # Main dashboard
+│   ├── players/        # Player management
+│   ├── teams/          # Team management
+│   └── settings/
+├── sports/             # Sport-specific logic
+│   ├── tennis/
+│   │   ├── scoring.ts         # TennisScoringEngine class
+│   │   ├── config.ts          # Tennis configurations
+│   │   └── tournamentPresets.ts
+│   └── basketball/
+│       └── scoring.ts
+├── store/              # Global Zustand stores
+│   └── sportStore.ts   # Active sport selection (persisted)
+├── hooks/              # React hooks
+│   ├── useTournaments.ts
+│   ├── useStripe.ts
+│   └── useSportFilter.ts
+├── types/              # TypeScript types
+│   ├── tournament.ts   # Tournament, Match, Player, Round
+│   ├── tennis.ts       # TennisMatchScore, TennisGameScore
+│   └── sport.ts        # SportType, SPORTS registry
+├── components/         # Shared UI components
+├── context/            # React contexts (SubscriptionContext)
+├── lib/                # Third-party setup (supabase.ts)
+└── tests/              # Bun tests
 ```
 
-### Key Architectural Patterns
+### State Management Strategy
 
-**Service Layer Pattern**: All Supabase interactions go through service modules (`competitionService.js`, `profileService.js`). Never call Supabase directly from components - always use these service functions.
+```
+Zustand (persisted to localStorage)
+├── sportStore        → Active sport selection
+├── tournamentStore   → Tournament data
+└── wizardStore       → Tournament creation wizard state
 
-**Authentication Flow**:
-- Authentication is centralized in `src/lib/supabase.js` with helper functions exported as `auth` object
-- Session management uses `supabase.auth.onAuthStateChange()` listener in Dashboard
-- Protected routes check for session and redirect to `/login` if not authenticated
-- User profiles are automatically created via database trigger (`handle_new_user()`) when users sign up
+React Query (@tanstack/react-query)
+└── Server state caching for tournaments
 
-**Profile Management**:
-- `ensureUserProfile()` from `profileService.js` should be called after authentication to verify/create user profile
-- Profile creation fallback exists in case the database trigger fails
-
-**File Upload Pattern**:
-- Files are uploaded to Supabase Storage bucket `competition-files`
-- File paths follow pattern: `{user_id}/{timestamp}.{extension}` or `{user_id}/cover-{competition_id}.{extension}`
-- File metadata is stored in `competition_files` table
-- Max file size: 5MB per file
-
-### Database Schema Key Points
-
-**Tables**:
-- `profiles`: User profiles linked to `auth.users` (1:1 relationship)
-- `competitions`: Competition events with organizer relationship
-- `participants`: Join table for competition registrations (competition + user)
-- `competition_files`: File metadata for competition documents/images
-- `results`: Competition results linked to participants
-- `messages`: Direct messaging between users
-
-**Important Triggers**:
-- `handle_new_user()`: Auto-creates profile when user signs up
-- `update_competition_participant_count()`: Maintains `current_participants` count automatically when registration status changes to/from 'confirmed'
-- `update_updated_at_column()`: Auto-updates `updated_at` timestamps
-
-**Row Level Security (RLS)**:
-- All tables have RLS enabled
-- Users can only view/edit their own profiles
-- Competitions are publicly viewable but only editable by organizers
-- Participants can view other participants in competitions they're involved in
-- Only organizers can manage results for their competitions
-
-### Routing Structure
-
-- `/` - Landing page with public competition listings
-- `/login` - Login page
-- `/register` - Registration page
-- `/dashboard/*` - Protected dashboard with nested routes:
-  - `/dashboard/profile` - User profile view
-  - `/dashboard/competitions` - Competition management
-  - `/dashboard/participants` - Participant management
-  - `/dashboard/availability` - Availability tracking
-  - `/dashboard/results` - Results management
-  - `/dashboard/stats` - Statistics dashboard
-  - `/dashboard/messages` - Messaging system
-  - `/dashboard/settings` - User settings
-- `/competition/:id` - Public competition details page
-
-## Working with Competitions
-
-### Creating Competitions
-
-Use `createCompetitionWithFiles()` which handles both competition creation and file uploads in a transaction-like manner:
-
-```javascript
-import { createCompetitionWithFiles } from '../services/competitionService'
-
-const competitionData = {
-  name: "Tournament Name",
-  sport: "Tennis",
-  date: "2025-06-15",
-  description: "Optional description",
-  address: "123 Street Name",
-  city: "Paris",
-  postalCode: "75001",
-  maxParticipants: 32,
-  ageCategory: "both", // "minors" | "adults" | "both"
-  isOfficial: false
-}
-
-const files = [/* file objects */]
-
-const { data, error } = await createCompetitionWithFiles(competitionData, files)
+React Context
+└── SubscriptionContext → User billing status
 ```
 
-### Fetching Competitions
+### Key Classes
 
-- `getUserCompetitions()`: Get competitions organized by current user
-- `getAllCompetitions(filters)`: Get all public competitions with optional filters (sport, city, status, ageCategory)
-- `getCompetitionById(id)`: Get single competition with organizer, files, and participants
+**TournamentEngine** (`src/features/tournament/logic/engine.ts`):
+- `generateBracket(players, format)` - Creates brackets for single_elimination, round_robin, swiss
+- `generateSwissRound(tournament, roundNumber)` - Dynamic Swiss pairing
+- `getStandings(tournament)` - Calculate standings from match results
 
-## Common Patterns
+**TennisScoringEngine** (`src/sports/tennis/scoring.ts`):
+- `awardPoint(score, playerId)` - Point progression with deuce/advantage
+- `awardGame/awardSet(score, playerId)` - Game/set progression
+- `awardTiebreakPoint(score, playerId)` - Tiebreak handling
+- `initializeMatch(config)` - Create initial score state
+- `getScoreDisplay(score)` / `getGameScoreDisplay(game)` - Human-readable scores
 
-### Error Handling
+### Routes
 
-Services return `{ data, error }` pattern. Always check for errors:
-
-```javascript
-const { data, error } = await getUserCompetitions()
-if (error) {
-  // Handle error
-  console.error(error)
-  return
-}
-// Use data
+```
+/                    → Landing page
+/dashboard           → Sport-filtered dashboard
+/tournaments         → Tournament listing
+/tournaments/new     → Creation wizard
+/tournaments/:id     → Live tournament arena
+/players             → Player management
+/teams               → Team management
+/billing             → Stripe billing
+/settings            → User settings
 ```
 
-### Loading States
+### Lazy Loading
 
-Components managing async data should handle three states:
-1. Loading (show spinner)
-2. Error (show error message)
-3. Success (show data or empty state)
-
-See `CompetitionsView` component for reference implementation.
-
-### Authentication State
-
-Check authentication in `useEffect` with cleanup:
-
-```javascript
-useEffect(() => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-    // Handle auth state
-  })
-  return () => subscription.unsubscribe()
-}, [])
+All pages use React lazy loading with Suspense (see `src/App.tsx`):
+```typescript
+const TournamentArenaPage = lazy(() => import('@/features/tournament/TournamentArenaPage').then(module => ({ default: module.TournamentArenaPage })));
 ```
 
-## Supabase Queries
+### Path Alias
 
-### Relationships
-
-Use Supabase's relation syntax for joins:
-
-```javascript
-// Get competition with organizer profile
-.select(`
-  *,
-  profiles!competitions_organizer_id_fkey (
-    id,
-    full_name,
-    avatar_url
-  )
-`)
-
-// Get competition with nested participants and their profiles
-.select(`
-  *,
-  participants (
-    *,
-    profiles (full_name, avatar_url)
-  )
-`)
+Use `@/` for imports from `src/`:
+```typescript
+import { TournamentEngine } from '@/features/tournament/logic/engine';
+import type { Match } from '@/types/tournament';
 ```
 
-### Foreign Key Naming
+## Testing
 
-When selecting related data, use the foreign key constraint name:
-- `profiles!competitions_organizer_id_fkey` for organizer relationship
-- Check Supabase dashboard for exact constraint names if uncertain
+Test files in `src/tests/`:
+- `bracketGeneration.test.ts` - Tournament bracket algorithms
+- `tennisScoring.test.ts` - Tennis scoring engine
+- `matchService.test.ts` - Match operations
+- `useTournaments.test.tsx` - React hooks (uses happy-dom)
 
-## Important Notes
+Run single test file:
+```bash
+bun test src/tests/tennisScoring.test.ts
+```
 
-- The main application code is in `multi-sport-competition/` subdirectory, not the repository root
-- File uploads must be done by authenticated users only
-- Always call `ensureUserProfile()` after authentication and before creating competitions
-- The `current_participants` field is automatically maintained by triggers - do not update manually
-- Competition status values: `upcoming`, `ongoing`, `completed`, `cancelled`
-- Registration status values: `pending`, `confirmed`, `cancelled`, `rejected`
-- Age category values: `minors`, `adults`, `both`
+## Key Patterns
+
+**Provider Hierarchy** (`src/App.tsx`):
+```
+ToastProvider → SubscriptionProvider → Router → Layout → Pages
+```
+
+**Tournament Formats**:
+- `single_elimination` - Standard bracket
+- `round_robin` - All vs all
+- `swiss` - Progressive pairing by score
+- `double_elimination` - (TODO)
+
+**Tennis Scoring Flow**:
+1. `awardPoint()` → checks for game win → calls `awardGame()`
+2. `awardGame()` → checks for set win (or tiebreak) → calls `awardSet()`
+3. `awardSet()` → checks for match win → sets `isComplete: true, winnerId`
+
+## Supabase
+
+Project: `multi-sport` (ubmkyocqhaunemrzmfyb) - Region: eu-west-1
+
+### Database Schema
+
+All tables have RLS enabled. Main tables:
+
+| Table | Purpose | Key Columns |
+|-------|---------|-------------|
+| `profiles` | User profiles (linked to auth.users) | stripe_customer_id, subscription_plan, subscription_status |
+| `tournaments` | Tournament metadata | format, status, bracket_data (JSONB), match_results (JSONB) |
+| `tournament_players` | Players in tournaments | seed, wins/losses/draws/points, buchholz_score, opponents (JSONB) |
+| `tournament_rounds` | Tournament rounds | round_number, round_type, status |
+| `tournament_matches` | Individual matches | player1/2_id, winner_id, next_match_id, loser_next_match_id, details (JSONB) |
+| `tournament_files` | Tournament documents | category (rules/schedule/results/photo/document/other) |
+| `anonymous_tournaments` | Quick tournaments (no auth) | unique_url_code, expires_at (30 days default) |
+| `competitions` | Legacy competitions | organizer_id, max_participants, age_category |
+| `team_members` | Team collaboration | team_owner_id, user_id, role, permissions (JSONB) |
+
+**Status Enums**:
+- Tournament: `draft` | `upcoming` | `ongoing` | `completed` | `cancelled`
+- Match: `pending` | `in_progress` | `completed` | `cancelled`
+- Player: `pending` | `confirmed` | `rejected` | `withdrawn`
+- Round type: `winners` | `losers` | `finals` | `third-place` | `round-robin` | `swiss`
+
+### Edge Functions
+
+| Function | JWT | Purpose |
+|----------|-----|---------|
+| `create-checkout-session` | ✓ | Stripe checkout session creation |
+| `create-subscription` | ✓ | Stripe subscription management |
+| `stripe-webhook` | ✓ | Handle Stripe events |
+| `invite-team-member` | ✗ | Team invitation emails |
+| `tally-webhook` | ✗ | Tally form submissions |
+
+### Realtime
+
+Used for live subscription updates (see `SubscriptionContext.tsx`):
+```typescript
+supabase.channel('name')
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` }, callback)
+  .subscribe();
+```
+
+### Fallback Mode
+
+If env vars missing, `src/lib/supabase.ts` returns mock client - app works offline with localStorage.

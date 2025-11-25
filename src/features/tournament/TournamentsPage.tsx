@@ -14,18 +14,20 @@ export function TournamentsPage() {
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];
-  const { archiveTournament, unarchiveTournament } = useTournamentStore();
+  const { archiveTournament, unarchiveTournament, tournaments: localTournaments } = useTournamentStore();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  
-  // Use React Query hook for data fetching
-  const { data: tournaments = [] } = useTournaments();
-  
-  // Filter by sport
-  const storeTournaments = tournaments.filter(t => t.sport === activeSport);
+
+  // Use React Query hook for data fetching (Supabase)
+  const { data: remoteTournaments = [] } = useTournaments();
+
+  // Combine local Zustand store + remote Supabase tournaments (deduplicate by ID)
+  const localForSport = localTournaments.filter(t => t.sport === activeSport);
+  const remoteForSport = remoteTournaments.filter(t => t.sport === activeSport);
   const mockTournamentsForSport = ALL_MOCK_TOURNAMENTS.filter(mt => mt.sport === activeSport);
-  
-  // Combine store tournaments and mock tournaments (deduplicating by ID)
-  const allTournaments = [...storeTournaments, ...mockTournamentsForSport.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
+
+  // Merge all sources, keeping first occurrence (local > remote > mock)
+  const allTournaments = [...localForSport, ...remoteForSport, ...mockTournamentsForSport]
+    .filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i);
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'archived'>('all');
   const [search, setSearch] = useState('');

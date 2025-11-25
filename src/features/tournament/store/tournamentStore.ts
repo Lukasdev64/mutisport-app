@@ -8,15 +8,16 @@ import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
 interface TournamentStore {
   tournaments: Tournament[];
   activeTournamentId: string | null;
-  
+
   // Actions
   createTournament: (tournament: Tournament) => void;
   setActiveTournament: (id: string) => void;
+  updateTournament: (id: string, updates: Partial<Tournament>) => void;
   updateMatch: (tournamentId: string, matchId: string, data: Partial<Match>) => void;
   generateNextRound: (tournamentId: string) => void;
   getTournament: (id: string) => Tournament | undefined;
-  archiveTournament: (id: string) => void; // NEW
-  unarchiveTournament: (id: string) => void; // NEW
+  archiveTournament: (id: string) => void;
+  unarchiveTournament: (id: string) => void;
 }
 
 export const useTournamentStore = create<TournamentStore>()(
@@ -34,6 +35,14 @@ export const useTournamentStore = create<TournamentStore>()(
       },
 
   setActiveTournament: (id) => set({ activeTournamentId: id }),
+
+  updateTournament: (id, updates) => set((state) => ({
+    tournaments: state.tournaments.map((t) =>
+      t.id === id
+        ? { ...t, ...updates, updatedAt: new Date().toISOString() }
+        : t
+    ),
+  })),
 
   updateMatch: (tournamentId, matchId, data) => set((state) => ({
     tournaments: state.tournaments.map((t) => {

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
 import { BracketDisplay } from './components/arena/BracketDisplay';
@@ -6,13 +7,15 @@ import { Trophy, Users, Calendar, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { TennisRulesModule } from './components/arena/TennisRulesModule';
+import { TournamentSettingsModal } from './components/arena/TournamentSettingsModal';
 
 export function TournamentArenaPage() {
   const { id } = useParams<{ id: string }>();
-  const tournament = useTournamentStore((state) => 
+  const tournament = useTournamentStore((state) =>
     state.tournaments.find((t) => t.id === id)
   );
   const { toast } = useToast();
+  const [showSettings, setShowSettings] = useState(false);
 
   if (!tournament) {
     return (
@@ -61,7 +64,7 @@ export function TournamentArenaPage() {
             <Share2 className="w-3 h-3 mr-2" />
             Share
           </Button>
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-500 h-9" onClick={() => toast('Tournament settings coming soon!', 'info')}>
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-500 h-9" onClick={() => setShowSettings(true)}>
             Settings
           </Button>
         </div>
@@ -90,6 +93,13 @@ export function TournamentArenaPage() {
           </div>
         </div>
       </div>
+
+      {/* Settings Modal */}
+      <TournamentSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        tournament={tournament}
+      />
     </div>
   );
 }
