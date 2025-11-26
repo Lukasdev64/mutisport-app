@@ -372,6 +372,69 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 bun test src/tests/tennisScoring.test.ts
 ```
 
+## TypeScript Best Practices
+
+### Avoid `any` Types
+
+**Never use `any` in business logic or UI code.** The `any` type disables TypeScript's type checking, hiding bugs until runtime.
+
+```typescript
+// BAD - bugs hidden until runtime
+const player: any = { name: "Alice" };
+player.email.toLowerCase(); // Runtime crash! email is undefined
+
+// GOOD - TypeScript catches the bug at compile time
+const player: Player = { name: "Alice" };
+player.email?.toLowerCase(); // TypeScript warns: email might be undefined
+```
+
+**Acceptable uses of `any`:**
+- **Supabase boundary** (`useTournaments.ts`, `useTeams.ts`) - Supabase types are incomplete
+- **Test mocking** - Mocks often require `any` for flexibility
+- **External library workarounds** - When library types are wrong
+
+**Alternatives to `any`:**
+| Instead of | Use |
+|------------|-----|
+| `any` | `unknown` + type narrowing |
+| `as any` | Proper type assertion or interface extension |
+| `param: any` | Generic `<T>` or union types |
+| `obj as any` | Type guard function |
+
+**Example - Type-safe Supabase payload:**
+```typescript
+// Define the shape you expect
+interface MatchRow {
+  id: string;
+  [key: string]: unknown;
+}
+
+// Use with Supabase Realtime
+type MatchChangePayload = RealtimePostgresChangesPayload<MatchRow>;
+
+const handleChange = (payload: MatchChangePayload) => {
+  const record = payload.new as MatchRow | undefined;
+  const matchId = record?.id || '';
+};
+```
+
+### Type Mapping Helpers
+
+When converting between different type systems (wizard → tournament, app → database):
+
+```typescript
+// Create explicit mapping functions instead of casting
+const mapWizardSportToSportType = (wizardSport: string): SportType => {
+  if (wizardSport === 'other') return 'generic';
+  return wizardSport as SportType;
+};
+
+// Status mapping (App ↔ Database)
+const dbStatus = appStatus === 'draft' ? 'setup'
+  : appStatus === 'active' ? 'in_progress'
+  : 'completed';
+```
+
 ## Key Dependencies
 
 | Package | Version | Purpose |
