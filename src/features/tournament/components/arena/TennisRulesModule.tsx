@@ -1,11 +1,53 @@
 import { Trophy, Clock, Flag, AlertCircle } from 'lucide-react';
 import type { TennisMatchConfig } from '@/types/tennis';
+import { cn } from '@/lib/utils';
 
 interface TennisRulesModuleProps {
   config: TennisMatchConfig;
+  compact?: boolean;
 }
 
-export function TennisRulesModule({ config }: TennisRulesModuleProps) {
+export function TennisRulesModule({ config, compact = false }: TennisRulesModuleProps) {
+  if (compact) {
+    // Ultra compact version - inline badges
+    const badges = [
+      { label: config.format === 'best_of_5' ? '5 Sets' : '3 Sets', color: 'bg-blue-500/20 text-blue-400' },
+      { label: config.surface, color: 'bg-emerald-500/20 text-emerald-400' },
+      { label: config.decidingPointAtDeuce ? 'No-Ad' : 'Avantage', color: 'bg-purple-500/20 text-purple-400' },
+      { label: `TB ${config.tiebreakAt}-${config.tiebreakAt}`, color: 'bg-amber-500/20 text-amber-400' },
+    ];
+
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-1.5">
+          {badges.map((badge, i) => (
+            <span
+              key={i}
+              className={cn(
+                "px-2 py-0.5 rounded text-[10px] font-medium capitalize",
+                badge.color
+              )}
+            >
+              {badge.label}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-3 text-[10px] text-slate-400">
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {config.warmupMinutes}m warmup
+          </span>
+          <span className="flex items-center gap-1">
+            <Flag className="w-3 h-3" /> {config.changeoverSeconds}s change
+          </span>
+        </div>
+        {config.coachingAllowed && (
+          <span className="text-[10px] text-emerald-400">✓ Coaching autorisé</span>
+        )}
+      </div>
+    );
+  }
+
+  // Full version
   return (
     <div className="glass-panel p-4 rounded-xl border border-white/10 space-y-4">
       <div className="flex items-center gap-2 pb-2 border-b border-white/5">

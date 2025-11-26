@@ -1,0 +1,44 @@
+{
+  "name": "Multi-Sport Tournament",
+  "short_name": "MultiSport",
+  "description": "Tournament management for tennis and basketball",
+  "theme_color": "#1e293b",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/dashboard",
+  "icons": [
+    {
+      "src": "/icons/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "New Tournament",
+      "short_name": "New",
+      "url": "/tournaments/new",
+      "description": "Create a new tournament"
+    },
+    {
+      "name": "My Tournaments",
+      "short_name": "Tournaments",
+      "url": "/tournaments",
+      "description": "View all tournaments"
+    }
+  ]
+}

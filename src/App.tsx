@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ToastProvider } from '@/components/ui/toast';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AutoLogin } from '@/components/auth/AutoLogin';
+import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
@@ -23,8 +25,10 @@ function App() {
   return (
     <ToastProvider>
       <SubscriptionProvider>
-        <Router>
-          <AutoLogin />
+        <NotificationProvider>
+          <Router>
+            <AutoLogin />
+            <PWAInstallPrompt />
           <Routes>
             {/* Public Route - Landing Page */}
             <Route 
@@ -66,8 +70,9 @@ function App() {
                 </Layout>
               }
             />
-          </Routes>
-        </Router>
+            </Routes>
+          </Router>
+        </NotificationProvider>
       </SubscriptionProvider>
     </ToastProvider>
   );

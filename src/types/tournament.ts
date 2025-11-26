@@ -39,6 +39,34 @@ export interface Match {
   scheduledAt?: string;
   location?: string;
   resourceId?: string;
+  remindersSentAt?: string[]; // ISO dates of reminders already sent
+}
+
+// Scheduling configuration for tournaments
+export type ResourceType = 'court' | 'field' | 'table';
+
+export interface Resource {
+  id: string;
+  name: string;
+  type: ResourceType;
+}
+
+export interface SchedulingConfig {
+  enabled: boolean;
+  startDate: string;              // ISO date YYYY-MM-DD
+  endDate?: string;               // ISO date (for multi-day tournaments)
+  dailyStartTime: string;         // "09:00"
+  dailyEndTime: string;           // "18:00"
+  matchDurationMinutes: number;   // Default: 60
+  breakBetweenMatches: number;    // Minutes between matches, default: 15
+  resources: Resource[];
+}
+
+export interface ReminderConfig {
+  enabled: boolean;
+  reminderTimes: number[];        // Minutes before match [15, 60, 1440] = 15min, 1h, 1day
+  notifyOnRoundStart: boolean;
+  notifyOnMatchEnd: boolean;
 }
 
 export interface Round {
@@ -54,15 +82,15 @@ export interface Tournament {
   id: string;
   name: string;
   sport?: SportType;
-  tennisConfig?: TennisMatchConfig; // NEW: Tennis specific config
+  tennisConfig?: TennisMatchConfig;
   ageCategory?: string;
   isRanked?: boolean;
   rankingRange?: { min?: string; max?: string };
   format: TournamentFormat;
   status: TournamentStatus;
-  archived?: boolean; // NEW: Archive flag
-  location?: string; // NEW: Location field
-  tournamentDate?: string; // NEW: Date field
+  archived?: boolean;
+  location?: string;
+  tournamentDate?: string;
   players: Player[];
   rounds: Round[];
   createdAt: string;
@@ -72,6 +100,9 @@ export interface Tournament {
     pointsForDraw: number;
     pointsForLoss: number;
   };
+  // Scheduling & Notifications
+  schedulingConfig?: SchedulingConfig;
+  reminderConfig?: ReminderConfig;
 }
 
 export interface Standing {
