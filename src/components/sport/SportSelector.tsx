@@ -8,11 +8,7 @@ export function SportSelector() {
   const { activeSport, setActiveSport } = useSportStore();
   
   const handleSportChange = (sportId: SportType) => {
-    if (confirm(`Switch to ${SPORTS[sportId].name}? This will change the context to ${SPORTS[sportId].name}-specific tournaments and data.`)) {
-      setActiveSport(sportId);
-      // Reload to apply new context
-      window.location.reload();
-    }
+    setActiveSport(sportId);
   };
 
   return (
@@ -60,7 +56,7 @@ export function SportSelector() {
           <strong className="text-slate-300">Current:</strong> {SPORTS[activeSport].emoji} {SPORTS[activeSport].name}
         </p>
         <p className="text-xs text-slate-500 mt-1">
-          Switching sports will reload the app with sport-specific configurations
+          Le changement de sport met instantanément à jour le dashboard et les vues
         </p>
       </div>
     </div>

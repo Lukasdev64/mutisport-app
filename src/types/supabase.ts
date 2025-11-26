@@ -258,6 +258,67 @@ export interface Database {
           updated_at?: string
         }
       }
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          avatar_url: string | null
+          subscription_plan: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          avatar_url?: string | null
+          subscription_plan?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          avatar_url?: string | null
+          subscription_plan?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tournament_matches: {
+        Row: {
+          id: string
+          tournament_id: string
+          round_id: string
+          player1_id: string | null
+          player2_id: string | null
+          status: string
+          result: Json | null
+          updated_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          tournament_id: string
+          round_id: string
+          player1_id?: string | null
+          player2_id?: string | null
+          status?: string
+          result?: Json | null
+          updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          tournament_id?: string
+          round_id?: string
+          player1_id?: string | null
+          player2_id?: string | null
+          status?: string
+          result?: Json | null
+          updated_at?: string
+          created_at?: string
+        }
+      }
     }
   }
 }

@@ -3,19 +3,27 @@ import { persist } from 'zustand/middleware';
 import type { Tournament, Match } from '@/types/tournament';
 import { MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { TournamentEngine } from '../logic/engine';
+import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
+
+/** Shape of the persisted state for migrations */
+interface PersistedTournamentState {
+  tournaments: Tournament[];
+  activeTournamentId: string | null;
+}
 
 interface TournamentStore {
   tournaments: Tournament[];
   activeTournamentId: string | null;
-  
+
   // Actions
   createTournament: (tournament: Tournament) => void;
   setActiveTournament: (id: string) => void;
+  updateTournament: (id: string, updates: Partial<Tournament>) => void;
   updateMatch: (tournamentId: string, matchId: string, data: Partial<Match>) => void;
   generateNextRound: (tournamentId: string) => void;
   getTournament: (id: string) => Tournament | undefined;
-  archiveTournament: (id: string) => void; // NEW
-  unarchiveTournament: (id: string) => void; // NEW
+  archiveTournament: (id: string) => void;
+  unarchiveTournament: (id: string) => void;
 }
 
 export const useTournamentStore = create<TournamentStore>()(
@@ -33,6 +41,14 @@ export const useTournamentStore = create<TournamentStore>()(
       },
 
   setActiveTournament: (id) => set({ activeTournamentId: id }),
+
+  updateTournament: (id, updates) => set((state) => ({
+    tournaments: state.tournaments.map((t) =>
+      t.id === id
+        ? { ...t, ...updates, updatedAt: new Date().toISOString() }
+        : t
+    ),
+  })),
 
   updateMatch: (tournamentId, matchId, data) => set((state) => ({
     tournaments: state.tournaments.map((t) => {
@@ -110,7 +126,34 @@ export const useTournamentStore = create<TournamentStore>()(
   getTournament: (id) => get().tournaments.find((t) => t.id === id)
 }),
     {
-      name: 'tournament-storage' // LocalStorage key
+      name: 'tournament-storage', // LocalStorage key
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as PersistedTournamentState | undefined;
+        if (version === 0) {
+          // Safety check
+          if (!state || !state.tournaments) {
+            return state;
+          }
+
+          // Migration: Add default tennis config to existing tennis tournaments
+          const defaultPreset = TENNIS_TOURNAMENT_PRESETS[0]; // Australian Open
+
+          return {
+            ...state,
+            tournaments: state.tournaments.map((t) => {
+              if (t.sport === 'tennis' && !t.tennisConfig) {
+                return {
+                  ...t,
+                  tennisConfig: defaultPreset.config
+                };
+              }
+              return t;
+            })
+          };
+        }
+        return state;
+      }
     }
   )
 );

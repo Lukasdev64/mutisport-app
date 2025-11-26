@@ -28,6 +28,7 @@ export const useInviteTeamMember = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['team-members', 'invite'],
     mutationFn: async (newMember: CreateTeamMemberDTO) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
@@ -57,7 +58,12 @@ export const useUpdateTeamMember = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['team-members', 'update'],
     mutationFn: async ({ id, updates }: { id: string; updates: UpdateTeamMemberDTO }) => {
+      // Get current user for defense-in-depth (alongside RLS)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (teamMembersTable() as any)
         .update({
@@ -65,6 +71,7 @@ export const useUpdateTeamMember = () => {
           permissions: updates.permissions as unknown as Json
         })
         .eq('id', id)
+        .eq('team_owner_id', user.id) // Defense-in-depth: verify ownership
         .select()
         .single();
 
@@ -81,10 +88,16 @@ export const useRemoveTeamMember = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['team-members', 'remove'],
     mutationFn: async (id: string) => {
+      // Get current user for defense-in-depth (alongside RLS)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { error } = await teamMembersTable()
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('team_owner_id', user.id); // Defense-in-depth: verify ownership
 
       if (error) throw error;
     },

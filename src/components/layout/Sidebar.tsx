@@ -16,6 +16,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SportSwitcher } from '@/components/sport/SportSwitcher';
+import { useWizardNavigation } from '@/hooks/useWizardNavigation';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -32,6 +34,7 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { isPro } = useSubscription();
   const [userProfile, setUserProfile] = useState<{ name: string; email: string } | null>(null);
+  const { wizardUrl, canCreate, statusLabel } = useWizardNavigation();
 
   useEffect(() => {
     const getProfile = async () => {
@@ -41,10 +44,10 @@ export function Sidebar() {
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
-          .single();
-        
+          .single() as { data: { full_name: string | null } | null };
+
         setUserProfile({
-          name: profile?.full_name || user.user_metadata?.full_name || 'User Name',
+          name: profile?.full_name ?? user.user_metadata?.full_name ?? 'User Name',
           email: user.email || 'user@example.com'
         });
       } else {
@@ -113,16 +116,59 @@ export function Sidebar() {
         </motion.div>
       </div>
 
+      {/* Sport Switcher */}
+      <div className="px-4 pt-4">
+        <SportSwitcher collapsed={collapsed} />
+      </div>
+
       {/* New Tournament Button */}
       <div className="p-4">
-        <NavLink to="/tournaments/new">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button 
+        {canCreate ? (
+          <NavLink to={wizardUrl}>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                className={cn(
+                  "w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-0 shadow-lg shadow-blue-500/20",
+                  collapsed ? "px-0" : ""
+                )}
+                size={collapsed ? "icon" : "default"}
+              >
+                <AnimatePresence mode="wait">
+                  {collapsed ? (
+                    <motion.div
+                      key="icon"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      exit={{ scale: 0, rotate: 180 }}
+                      transition={{ type: "spring", damping: 15 }}
+                    >
+                      <PlusCircle size={20} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="full"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center"
+                    >
+                      <PlusCircle size={18} className="mr-2" />
+                      New Tournament
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Button>
+            </motion.div>
+          </NavLink>
+        ) : (
+          <div className="relative group">
+            <Button
+              disabled
               className={cn(
-                "w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-0 shadow-lg shadow-blue-500/20",
+                "w-full bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed",
                 collapsed ? "px-0" : ""
               )}
               size={collapsed ? "icon" : "default"}
@@ -131,29 +177,41 @@ export function Sidebar() {
                 {collapsed ? (
                   <motion.div
                     key="icon"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    exit={{ scale: 0, rotate: 180 }}
-                    transition={{ type: "spring", damping: 15 }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="relative"
                   >
-                    <PlusCircle size={20} />
+                    <PlusCircle size={20} className="opacity-50" />
                   </motion.div>
                 ) : (
                   <motion.div
                     key="full"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center"
+                    className="flex items-center gap-2"
                   >
-                    <PlusCircle size={18} className="mr-2" />
-                    New Tournament
+                    <PlusCircle size={18} className="opacity-50" />
+                    <span>New Tournament</span>
+                    {statusLabel && (
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                        {statusLabel}
+                      </span>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
             </Button>
-          </motion.div>
-        </NavLink>
+            {/* Tooltip for collapsed state */}
+            {collapsed && statusLabel && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-800 text-xs rounded-lg whitespace-nowrap z-50 border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <span className="text-slate-400">Wizard</span>{' '}
+                <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                  {statusLabel}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Navigation Items */}

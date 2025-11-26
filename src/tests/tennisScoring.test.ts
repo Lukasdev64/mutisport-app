@@ -214,7 +214,7 @@ describe('TennisScoringEngine', () => {
 
   describe('Tie-break at 6-6', () => {
     it('should trigger tie-break at 6-6', () => {
-      let score = {
+      let score: TennisMatchScore = {
         ...initialScore,
         sets: [{
           player1Games: 5,
@@ -232,7 +232,7 @@ describe('TennisScoringEngine', () => {
     });
 
     it('should win tie-break at 7-5', () => {
-      let score = {
+      let score: TennisMatchScore = {
         ...initialScore,
         sets: [{
           player1Games: 6,
@@ -249,7 +249,7 @@ describe('TennisScoringEngine', () => {
     });
 
     it('should not win tie-break at 7-6 (need 2-point lead)', () => {
-      let score = {
+      let score: TennisMatchScore = {
         ...initialScore,
         sets: [{
           player1Games: 6,
@@ -266,7 +266,7 @@ describe('TennisScoringEngine', () => {
     });
 
     it('should win tie-break at 8-6', () => {
-      let score = {
+      let score: TennisMatchScore = {
         ...initialScore,
         sets: [{
           player1Games: 6,

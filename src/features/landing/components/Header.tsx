@@ -1,17 +1,106 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
-    { name: 'Produit', href: '/#features' },
-    { name: 'Solutions', href: '/#solutions' },
-    { name: 'Tarifs', href: '/pricing' },
+    { name: 'Fonctionnalités', href: '#features', isAnchor: true },
+    { name: 'Avantages', href: '#solutions', isAnchor: true },
+    { name: 'Événements', href: '#events', isAnchor: true },
+    { name: 'Tarifs', href: '/pricing', isAnchor: false },
   ];
+
+  // Scroll to element helper
+  const scrollToElement = useCallback((sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    console.log('Scrolling to:', sectionId, 'Element found:', !!element);
+    
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+      
+      // Ajuster pour le header fixe après le scroll
+      setTimeout(() => {
+        const headerOffset = 80;
+        const currentScroll = window.scrollY;
+        window.scrollTo({
+          top: currentScroll - headerOffset,
+          behavior: 'smooth'
+        });
+      }, 300);
+    }
+  }, []);
+
+  // Scroll spy - detect which section is in view
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setActiveSection('');
+      return;
+    }
+
+    const handleScroll = () => {
+      const sections = ['features', 'solutions', 'events'];
+      const scrollPosition = window.scrollY + 100;
+
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const offsetHeight = element.offsetHeight;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(sectionId);
+            return;
+          }
+        }
+      }
+      
+      // Si on est tout en haut
+      if (window.scrollY < 100) {
+        setActiveSection('');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [location.pathname]);
+
+  // Handle hash on page load or navigation
+  useEffect(() => {
+    if (location.pathname === '/' && location.hash) {
+      const sectionId = location.hash.replace('#', '');
+      // Petit délai pour laisser le DOM se charger
+      setTimeout(() => {
+        scrollToElement(sectionId);
+      }, 100);
+    }
+  }, [location, scrollToElement]);
+
+  // Smooth scroll to section
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith('#')) return;
+    
+    e.preventDefault();
+    const sectionId = href.replace('#', '');
+    
+    // Si on n'est pas sur la page d'accueil, naviguer d'abord
+    if (location.pathname !== '/') {
+      navigate('/' + href);
+    } else {
+      scrollToElement(sectionId);
+    }
+    
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <>
@@ -32,15 +121,40 @@ export const Header = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-sm font-medium text-slate-300 hover:text-blue-400 transition-colors duration-200"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = link.isAnchor && activeSection === link.href.replace('#', '');
+                
+                return link.isAnchor ? (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`text-sm font-medium transition-colors duration-200 cursor-pointer ${
+                      isActive 
+                        ? 'text-blue-400' 
+                        : 'text-slate-300 hover:text-blue-400'
+                    }`}
+                  >
+                    {link.name}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeSection"
+                        className="h-0.5 bg-blue-400 mt-1 rounded-full"
+                        initial={false}
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className="text-sm font-medium text-slate-300 hover:text-blue-400 transition-colors duration-200"
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* Desktop CTA */}
@@ -82,16 +196,31 @@ export const Header = () => {
             className="fixed inset-0 z-40 bg-[#020617] pt-24 px-4 md:hidden"
           >
             <div className="flex flex-col space-y-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className="text-lg font-medium text-slate-300 hover:text-blue-400 border-b border-blue-900/20 pb-4"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = link.isAnchor && activeSection === link.href.replace('#', '');
+                
+                return link.isAnchor ? (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className={`text-lg font-medium border-b border-blue-900/20 pb-4 cursor-pointer ${
+                      isActive ? 'text-blue-400' : 'text-slate-300 hover:text-blue-400'
+                    }`}
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className="text-lg font-medium text-slate-300 hover:text-blue-400 border-b border-blue-900/20 pb-4"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                );
+              })}
               <div className="pt-4 flex flex-col space-y-3">
                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full justify-center border-blue-900/50 text-slate-300 hover:bg-blue-900/20">

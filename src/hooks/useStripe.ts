@@ -8,6 +8,7 @@ interface CheckoutSessionParams {
 
 export function useCreateCheckoutSession() {
   return useMutation({
+    mutationKey: ['stripe', 'checkout'],
     mutationFn: async ({ priceId, returnUrl }: CheckoutSessionParams) => {
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: { priceId, returnUrl },
@@ -23,6 +24,7 @@ export function useStripePortal() {
   // This would typically invoke another function or redirect to Stripe Customer Portal
   // For now, we'll leave it as a placeholder or implement if the backend function exists
   return useMutation({
+    mutationKey: ['stripe', 'portal'],
     mutationFn: async () => {
       // Implementation depends on if you have a create-portal-session function
       // const { data, error } = await supabase.functions.invoke('create-portal-session');

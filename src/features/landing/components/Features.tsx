@@ -50,7 +50,7 @@ const item = {
 
 export const Features = () => {
   return (
-    <section className="relative py-32">
+    <section id="features" className="relative py-32 scroll-mt-20">
       <div className="container relative z-10 px-4 md:px-6 max-w-7xl mx-auto">
         <div className="text-center mb-20 space-y-4">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  TENNIS_TOURNAMENT_PRESETS, 
-  type TournamentCategory 
+import {
+  TENNIS_TOURNAMENT_PRESETS,
+  type TournamentCategory
 } from '@/sports/tennis/tournamentPresets';
 import { PresetCard } from '@/sports/tennis/components/PresetCard';
-import { Settings2 } from 'lucide-react';
+import { useFavoritePresets } from '@/sports/tennis/hooks/useFavoritePresets';
+import { Settings2, Search, Star } from 'lucide-react';
 
 interface TennisPresetSelectorProps {
   selectedPresetId?: string;
@@ -18,10 +19,13 @@ export function TennisPresetSelector({
   onSelectPreset,
   onCustomize
 }: TennisPresetSelectorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<TournamentCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<TournamentCategory | 'all' | 'favorites'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const { favorites, toggleFavorite, isFavorite, hasFavorites } = useFavoritePresets();
 
-  const categories: Array<{ id: TournamentCategory | 'all'; label: string }> = [
+  const categories: Array<{ id: TournamentCategory | 'all' | 'favorites'; label: string; icon?: React.ReactNode }> = [
     { id: 'all', label: 'Tous' },
+    { id: 'favorites', label: 'Favoris', icon: <Star className="w-3 h-3 fill-current" /> },
     { id: 'grand_slam', label: 'Grand Chelem' },
     { id: 'atp', label: 'ATP' },
     { id: 'wta', label: 'WTA' },
@@ -29,9 +33,28 @@ export function TennisPresetSelector({
     { id: 'junior', label: 'Junior' }
   ];
 
-  const filteredPresets = selectedCategory === 'all'
-    ? TENNIS_TOURNAMENT_PRESETS.filter(p => p.id !== 'custom')
-    : TENNIS_TOURNAMENT_PRESETS.filter(p => p.category === selectedCategory && p.id !== 'custom');
+  const filteredPresets = useMemo(() => {
+    let presets = TENNIS_TOURNAMENT_PRESETS.filter(p => p.id !== 'custom');
+
+    // Filter by category
+    if (selectedCategory === 'favorites') {
+      presets = presets.filter(p => favorites.includes(p.id));
+    } else if (selectedCategory !== 'all') {
+      presets = presets.filter(p => p.category === selectedCategory);
+    }
+
+    // Filter by search query (fuzzy search on name and description)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      presets = presets.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.config.surface?.toLowerCase().includes(query)
+      );
+    }
+
+    return presets;
+  }, [selectedCategory, searchQuery, favorites]);
 
   return (
     <motion.div
@@ -47,21 +70,52 @@ export function TennisPresetSelector({
         </p>
       </div>
 
+      {/* Search Input */}
+      <div className="relative max-w-md mx-auto">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Rechercher un format (ex: Roland Garros, terre battue...)"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all touch-target"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
       {/* Category Filters */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {categories.map(category => (
-          <button
-            key={category.id}
-            onClick={() => setSelectedCategory(category.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              selectedCategory === category.id
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700 border border-white/10'
-            }`}
-          >
-            {category.label}
-          </button>
-        ))}
+        {categories.map(category => {
+          // Hide favorites tab if no favorites
+          if (category.id === 'favorites' && !hasFavorites) return null;
+
+          return (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 ${
+                selectedCategory === category.id
+                  ? category.id === 'favorites'
+                    ? 'bg-yellow-500 text-black shadow-lg'
+                    : 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700 border border-white/10'
+              }`}
+            >
+              {category.icon}
+              {category.label}
+              {category.id === 'favorites' && (
+                <span className="text-xs opacity-70">({favorites.length})</span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Presets Grid */}
@@ -72,9 +126,20 @@ export function TennisPresetSelector({
             preset={preset}
             selected={selectedPresetId === preset.id}
             onClick={() => onSelectPreset(preset.id)}
+            isFavorite={isFavorite(preset.id)}
+            onToggleFavorite={toggleFavorite}
           />
         ))}
       </div>
+
+      {/* Empty state for favorites */}
+      {selectedCategory === 'favorites' && filteredPresets.length === 0 && (
+        <div className="text-center py-12 text-slate-500">
+          <Star className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>Aucun favori pour le moment</p>
+          <p className="text-sm mt-1">Cliquez sur l'étoile d'un preset pour l'ajouter</p>
+        </div>
+      )}
 
       {/* Custom Configuration Button */}
       <div className="flex justify-center pt-4">

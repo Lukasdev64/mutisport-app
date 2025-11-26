@@ -3,7 +3,7 @@ import { Zap, ShieldCheck, UserX } from 'lucide-react';
 
 export const ValueProposition = () => {
   return (
-    <section className="relative py-32">
+    <section id="solutions" className="relative py-32 scroll-mt-20">
       <div className="container relative z-10 px-4 md:px-6 max-w-7xl mx-auto">
         <div className="grid gap-16 lg:grid-cols-2 items-center">
           {/* Left: Content */}

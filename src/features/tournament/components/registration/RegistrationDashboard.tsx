@@ -9,6 +9,9 @@ import { AvailabilityHeatmap } from '../availability/AvailabilityHeatmap';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 
+/** Dashboard tab identifiers */
+type DashboardTab = 'registration' | 'availability' | 'planning';
+
 // Mock Data Generator
 const generateMockRegistrations = (count: number): RegistrationData[] => {
   return Array.from({ length: count }).map((_, i) => ({
@@ -107,7 +110,7 @@ export function RegistrationDashboard() {
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as DashboardTab)}
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all",
                 activeTab === tab.id 
