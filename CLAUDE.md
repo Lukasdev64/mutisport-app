@@ -92,6 +92,11 @@ src/
 │   ├── tennis.ts       # TennisMatchScore, TennisGameScore
 │   └── sport.ts        # SportType, SPORTS registry
 ├── components/         # Shared UI components
+│   ├── sport/
+│   │   ├── SportSwitcher.tsx    # Sidebar dropdown for switching sports (hot-switch)
+│   │   └── SportSelector.tsx    # Full grid selector (Settings page)
+│   └── layout/
+│       └── Sidebar.tsx          # Main navigation with SportSwitcher
 ├── context/            # React contexts (SubscriptionContext)
 ├── lib/                # Third-party setup (supabase.ts)
 └── tests/              # Bun tests
@@ -171,6 +176,12 @@ export const footballPlugin: SportPlugin = {
 - `useSportConfig<T>(tournament)` - Get typed config from tournament
 - `useSportComponents(sportId?)` - Get plugin UI components
 - `useHasPlugin(sportId)` - Check if plugin is registered
+
+**Sport Switching UI:**
+- `SportSwitcher` (sidebar) - Compact dropdown for quick switching, uses hot-switch (no page reload)
+- `SportSelector` (settings page) - Full grid view of all sports
+- Active sport is persisted to localStorage via `sportStore`
+- All sport-filtered components auto-update via Zustand selectors
 
 **Provider Hierarchy** (`src/App.tsx`):
 ```
