@@ -372,6 +372,127 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 bun test src/tests/tennisScoring.test.ts
 ```
 
+## React Best Practices
+
+### Controlled Inputs
+Always pair `value` with `onChange` - otherwise typing is impossible:
+```tsx
+// BAD - can't type
+<input value={name} />
+
+// GOOD
+<input value={name} onChange={(e) => setName(e.target.value)} />
+```
+
+### Button Types in Forms
+Buttons without `type` default to `submit` - use explicit types:
+```tsx
+<button type="button">Cancel</button>     // Won't submit form
+<button type="submit">Save</button>       // Will submit form
+```
+
+### Refs Are Escape Hatches
+If much of your logic relies on refs, rethink your approach. Use refs for:
+- DOM measurements
+- Focus management
+- Third-party library integration
+
+**Not for:** Application state, data flow, or preventing re-renders.
+
+## Zustand Best Practices
+
+### Use Selectors to Prevent Re-renders
+```typescript
+// BAD - re-renders on ANY store change
+const store = useTournamentStore();
+
+// GOOD - re-renders only when tournaments change
+const tournaments = useTournamentStore((s) => s.tournaments);
+```
+
+### Use `useShallow` for Multiple Properties
+```typescript
+import { useShallow } from 'zustand/react/shallow';
+
+// Prevents re-render if values are shallowly equal
+const { players, rounds } = useTournamentStore(
+  useShallow((s) => ({ players: s.players, rounds: s.rounds }))
+);
+```
+
+### Derive Computed Values with Selectors
+```typescript
+// Don't store derived data - compute it
+const activeTournaments = useTournamentStore(
+  (s) => s.tournaments.filter(t => t.status === 'active')
+);
+```
+
+## TanStack Query Best Practices
+
+### Never Mutate Cache Directly
+```typescript
+// BAD - mutating cache in place
+queryClient.setQueryData(['tournaments'], (old) => {
+  old.push(newTournament); // DON'T DO THIS
+  return old;
+});
+
+// GOOD - return new reference
+queryClient.setQueryData(['tournaments'], (old) =>
+  old ? [...old, newTournament] : [newTournament]
+);
+```
+
+### Update Cache from Mutation Response
+```typescript
+const mutation = useMutation({
+  mutationFn: createTournament,
+  onSuccess: (newTournament) => {
+    // Update cache with server response instead of refetching
+    queryClient.setQueryData(['tournaments'], (old) =>
+      old ? [...old, newTournament] : [newTournament]
+    );
+  }
+});
+```
+
+### Use `mutationKey` for Related Mutations
+```typescript
+const updateMatch = useMutation({
+  mutationKey: ['tournament', tournamentId, 'match'],
+  mutationFn: (data) => updateMatchInDb(data),
+});
+```
+
+## Supabase & RLS Best Practices
+
+### Wrap `auth.uid()` in SELECT for Performance
+```sql
+-- BAD - function called per row
+CREATE POLICY "Users can view own data" ON tournaments
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- GOOD - function cached via initPlan
+CREATE POLICY "Users can view own data" ON tournaments
+  FOR SELECT USING ((select auth.uid()) = user_id);
+```
+
+### Don't Rely on RLS Alone for Filtering
+```typescript
+// BAD - RLS does all the work (slow)
+const { data } = await supabase.from('tournaments').select();
+
+// GOOD - explicit filter + RLS for security
+const { data } = await supabase
+  .from('tournaments')
+  .select()
+  .eq('user_id', userId);  // Filter + RLS
+```
+
+### Disable RLS for Public Tables
+For insensitive data (public leaderboards, etc.), RLS adds overhead without benefit.
+
 ## TypeScript Best Practices
 
 ### Avoid `any` Types
