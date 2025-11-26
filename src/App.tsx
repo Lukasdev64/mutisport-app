@@ -4,6 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { ToastProvider } from '@/components/ui/toast';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { NotificationProvider } from '@/context/NotificationContext';
+import { SportPluginsProvider } from '@/sports/core/SportPluginsProvider';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AutoLogin } from '@/components/auth/AutoLogin';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
@@ -24,9 +25,10 @@ const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
 function App() {
   return (
     <ToastProvider>
-      <SubscriptionProvider>
-        <NotificationProvider>
-          <Router>
+      <SportPluginsProvider>
+        <SubscriptionProvider>
+          <NotificationProvider>
+            <Router>
             <AutoLogin />
             <PWAInstallPrompt />
           <Routes>
@@ -71,9 +73,10 @@ function App() {
               }
             />
             </Routes>
-          </Router>
-        </NotificationProvider>
-      </SubscriptionProvider>
+            </Router>
+          </NotificationProvider>
+        </SubscriptionProvider>
+      </SportPluginsProvider>
     </ToastProvider>
   );
 }

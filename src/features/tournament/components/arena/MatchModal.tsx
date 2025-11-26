@@ -5,8 +5,7 @@ import { useTournamentStore } from '../../store/tournamentStore';
 import { Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/toast';
-import { TennisMatchModal } from '@/sports/tennis/TennisMatchModal';
-import { BasketballMatchModal } from '@/sports/basketball/BasketballMatchModal';
+import { useSportPlugin } from '@/sports/core/hooks';
 
 interface MatchModalProps {
   isOpen: boolean;
@@ -16,27 +15,18 @@ interface MatchModalProps {
 }
 
 export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalProps) {
-  // Delegate to sport-specific modals
-  if (tournament.sport === 'tennis') {
-    return (
-      <TennisMatchModal
-        isOpen={isOpen}
-        onClose={onClose}
-        matchId={match.id}
-        player1Id={match.player1Id!}
-        player2Id={match.player2Id!}
-        tournament={tournament}
-      />
-    );
-  }
+  const plugin = useSportPlugin(tournament.sport);
+  const { updateMatch } = useTournamentStore();
 
-  if (tournament.sport === 'basketball') {
-    const { updateMatch } = useTournamentStore();
+  // If a sport plugin provides a custom MatchModal, use it
+  if (plugin?.components.MatchModal) {
+    const SportMatchModal = plugin.components.MatchModal;
     return (
-      <BasketballMatchModal
+      <SportMatchModal
         isOpen={isOpen}
         onClose={onClose}
         match={match}
+        tournament={tournament}
         onUpdateResult={(matchId, result) => {
           updateMatch(tournament.id, matchId, {
             status: 'completed',
@@ -47,7 +37,22 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
     );
   }
 
-  // Generic modal for other sports
+  // Generic modal for sports without a plugin
+  return (
+    <GenericMatchModal
+      isOpen={isOpen}
+      onClose={onClose}
+      match={match}
+      tournament={tournament}
+    />
+  );
+}
+
+/**
+ * Generic match modal for sports that don't have a custom plugin.
+ * Provides simple point-based scoring.
+ */
+function GenericMatchModal({ isOpen, onClose, match, tournament }: MatchModalProps) {
   const { updateMatch } = useTournamentStore();
   const { toast } = useToast();
   const [score1, setScore1] = useState(match.result?.player1Score ?? 0);
@@ -58,7 +63,7 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
 
   const handleSave = () => {
     const winnerId = score1 > score2 ? player1?.id : score2 > score1 ? player2?.id : undefined;
-    
+
     updateMatch(tournament.id, match.id, {
       status: 'completed',
       result: {
@@ -67,7 +72,7 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
         winnerId
       }
     });
-    
+
     const winnerName = winnerId === player1?.id ? player1?.name : winnerId === player2?.id ? player2?.name : 'Draw';
     toast(`Match saved! Winner: ${winnerName}`, 'success');
     onClose();
@@ -77,7 +82,7 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -102,14 +107,14 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
               </div>
               <span className="font-bold text-lg text-center text-white">{player1?.name || 'TBD'}</span>
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   onClick={() => setScore1(Math.max(0, score1 - 1))}
                   className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400"
                 >
                   -
                 </button>
                 <span className="text-2xl font-bold font-mono w-8 text-center">{score1}</span>
-                <button 
+                <button
                   onClick={() => setScore1(score1 + 1)}
                   className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white"
                 >
@@ -132,14 +137,14 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
               </div>
               <span className="font-bold text-lg text-center text-white">{player2?.name || 'TBD'}</span>
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   onClick={() => setScore2(Math.max(0, score2 - 1))}
                   className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400"
                 >
                   -
                 </button>
                 <span className="text-2xl font-bold font-mono w-8 text-center">{score2}</span>
-                <button 
+                <button
                   onClick={() => setScore2(score2 + 1)}
                   className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center text-white"
                 >

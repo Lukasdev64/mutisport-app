@@ -62,21 +62,33 @@ src/
 │   ├── players/        # Player management
 │   ├── teams/          # Team management
 │   └── settings/
-├── sports/             # Sport-specific logic
+├── sports/             # Sport-specific logic (PLUGIN ARCHITECTURE)
+│   ├── core/              # Plugin system infrastructure
+│   │   ├── types.ts           # SportPlugin interface
+│   │   ├── hooks.ts           # useSportPlugin, useSportConfig
+│   │   ├── loader.ts          # Lazy loading utilities
+│   │   └── SportPluginsProvider.tsx
 │   ├── tennis/
+│   │   ├── plugin.ts          # Tennis plugin definition
 │   │   ├── scoring.ts         # TennisScoringEngine class
 │   │   ├── config.ts          # Tennis configurations
-│   │   └── tournamentPresets.ts
+│   │   ├── tournamentPresets.ts
+│   │   └── components/        # Tennis-specific UI
+│   │       ├── TennisMatchModalWrapper.tsx
+│   │       └── TennisRulesModule.tsx
 │   └── basketball/
-│       └── scoring.ts
+│       ├── plugin.ts          # Basketball plugin definition
+│       ├── scoring.ts
+│       └── components/
+│           └── BasketballMatchModalWrapper.tsx
 ├── store/              # Global Zustand stores
-│   └── sportStore.ts   # Active sport selection (persisted)
+│   └── sportStore.ts   # Active sport + plugin registry (persisted)
 ├── hooks/              # React hooks
 │   ├── useTournaments.ts
 │   ├── useStripe.ts
 │   └── useSportFilter.ts
 ├── types/              # TypeScript types
-│   ├── tournament.ts   # Tournament, Match, Player, Round
+│   ├── tournament.ts   # Tournament (with sportConfig), Match, Player, Round
 │   ├── tennis.ts       # TennisMatchScore, TennisGameScore
 │   └── sport.ts        # SportType, SPORTS registry
 ├── components/         # Shared UI components
@@ -89,7 +101,7 @@ src/
 
 ```
 Zustand (persisted to localStorage)
-├── sportStore        → Active sport selection
+├── sportStore        → Active sport + plugin registry
 ├── tournamentStore   → Tournament data
 └── wizardStore       → Tournament creation wizard state
 
@@ -98,6 +110,71 @@ React Query (@tanstack/react-query)
 
 React Context
 └── SubscriptionContext → User billing status
+```
+
+### Sport Plugin Architecture
+
+The app uses a **modular plugin system** for sport-specific functionality. Each sport is a self-contained plugin that provides components, scoring logic, and configuration.
+
+**Core Concepts:**
+- `SportPlugin` interface defines what each sport must provide
+- Plugins are registered at app startup via `SportPluginsProvider`
+- Components use hooks (`useSportPlugin`, `useSportConfig`) to access sport-specific logic
+- Backward compatible with legacy `tennisConfig` field
+
+**Plugin Structure** (`src/sports/core/types.ts`):
+```typescript
+interface SportPlugin {
+  id: SportType;
+  sport: Sport;
+  defaultConfig: unknown;
+  presets?: SportPreset[];           // Quick configuration presets
+  components: {
+    MatchModal: ComponentType;       // Required: match result entry
+    RulesModule?: ComponentType;     // Optional: rules display
+    RulesCustomizer?: ComponentType; // Optional: rules editor
+  };
+  scoringEngine?: {
+    initializeMatch: (config) => Score;
+    getWinner: (score) => string | undefined;
+    getScoreDisplay: (score) => string;
+  };
+}
+```
+
+**Adding a New Sport:**
+1. Create folder `src/sports/[sport]/`
+2. Create `plugin.ts` implementing `SportPlugin`
+3. Create wrapper components in `components/`
+4. Register in `SportPluginsProvider.tsx`
+
+**Example - Creating Football Plugin:**
+```typescript
+// src/sports/football/plugin.ts
+export const footballPlugin: SportPlugin = {
+  id: 'football',
+  sport: SPORTS.football,
+  defaultConfig: { halfDuration: 45, extraTimeEnabled: true },
+  components: {
+    MatchModal: FootballMatchModalWrapper,
+  },
+  scoringEngine: {
+    initializeMatch: () => ({ homeScore: 0, awayScore: 0 }),
+    getWinner: (s) => s.homeScore > s.awayScore ? 'home' : s.awayScore > s.homeScore ? 'away' : undefined,
+    getScoreDisplay: (s) => `${s.homeScore} - ${s.awayScore}`,
+  },
+};
+```
+
+**Key Hooks:**
+- `useSportPlugin(sportId?)` - Get plugin for sport or active sport
+- `useSportConfig<T>(tournament)` - Get typed config from tournament
+- `useSportComponents(sportId?)` - Get plugin UI components
+- `useHasPlugin(sportId)` - Check if plugin is registered
+
+**Provider Hierarchy** (`src/App.tsx`):
+```
+ToastProvider → SportPluginsProvider → SubscriptionProvider → Router
 ```
 
 ### Key Classes
@@ -160,7 +237,7 @@ bun test src/tests/tennisScoring.test.ts
 
 **Provider Hierarchy** (`src/App.tsx`):
 ```
-ToastProvider → SubscriptionProvider → Router → Layout → Pages
+ToastProvider → SportPluginsProvider → SubscriptionProvider → NotificationProvider → Router → Layout → Pages
 ```
 
 **Tournament Formats**:

@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Clock, Trophy, BookOpen } from 'lucide-react';
 import type { Tournament } from '@/types/tournament';
 import { StandingsTable } from './StandingsTable';
-import { TennisRulesModule } from './TennisRulesModule';
 import { cn } from '@/lib/utils';
+import { useSportPlugin, useSportConfig } from '@/sports/core/hooks';
 
 interface ArenaSidebarProps {
   tournament: Tournament;
@@ -16,14 +16,18 @@ export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
   const hasUpcomingMatches = tournament.rounds.some(r =>
     r.matches.some(m => m.scheduledAt && !m.result)
   );
-  const hasTennisRules = tournament.sport === 'tennis' && tournament.tennisConfig;
+
+  // Get sport plugin and config for rules display
+  const plugin = useSportPlugin(tournament.sport);
+  const sportConfig = useSportConfig(tournament);
+  const hasRulesModule = plugin?.components.RulesModule && sportConfig;
 
   const [activeTab, setActiveTab] = useState<TabId>(hasUpcomingMatches ? 'matches' : 'standings');
 
   const tabs: { id: TabId; label: string; icon: React.ReactNode; show: boolean }[] = [
     { id: 'matches', label: 'Matchs', icon: <Clock size={12} />, show: true },
     { id: 'standings', label: 'Classement', icon: <Trophy size={12} />, show: true },
-    { id: 'rules', label: 'Règles', icon: <BookOpen size={12} />, show: !!hasTennisRules },
+    { id: 'rules', label: 'Règles', icon: <BookOpen size={12} />, show: !!hasRulesModule },
   ];
 
   const visibleTabs = tabs.filter(t => t.show);
@@ -62,9 +66,14 @@ export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
             </div>
           )}
 
-          {activeTab === 'rules' && hasTennisRules && (
+          {activeTab === 'rules' && hasRulesModule && (
             <div className="p-2">
-              <TennisRulesModule config={tournament.tennisConfig!} compact />
+              {(() => {
+                const RulesModule = plugin?.components.RulesModule;
+                return RulesModule ? (
+                  <RulesModule config={sportConfig} compact />
+                ) : null;
+              })()}
             </div>
           )}
         </div>

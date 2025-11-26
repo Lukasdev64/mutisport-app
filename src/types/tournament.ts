@@ -78,10 +78,25 @@ export interface Round {
   status?: 'pending' | 'active' | 'completed';
 }
 
+/**
+ * Generic sport configuration type.
+ * Each sport plugin defines its own config structure.
+ * Use useSportConfig() hook to get typed config based on sport.
+ */
+export type SportConfig = Record<string, unknown>;
+
 export interface Tournament {
   id: string;
   name: string;
   sport?: SportType;
+  /**
+   * Generic sport configuration - use this for new integrations.
+   * Will contain sport-specific config (tennis, basketball, etc.)
+   */
+  sportConfig?: SportConfig;
+  /**
+   * @deprecated Use sportConfig instead. Kept for backward compatibility.
+   */
   tennisConfig?: TennisMatchConfig;
   ageCategory?: string;
   isRanked?: boolean;
