@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SportSwitcher } from '@/components/sport/SportSwitcher';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -111,6 +112,11 @@ export function Sidebar() {
             </motion.div>
           </Button>
         </motion.div>
+      </div>
+
+      {/* Sport Switcher */}
+      <div className="px-4 pt-4">
+        <SportSwitcher collapsed={collapsed} />
       </div>
 
       {/* New Tournament Button */}
