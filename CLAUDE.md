@@ -107,7 +107,7 @@ src/
 ```
 Zustand (persisted to localStorage)
 ├── sportStore        → Active sport + plugin registry
-├── tournamentStore   → Tournament data
+├── tournamentStore   → Tournament data (local-first)
 └── wizardStore       → Tournament creation wizard state
 
 React Query (@tanstack/react-query)
@@ -116,6 +116,41 @@ React Query (@tanstack/react-query)
 React Context
 └── SubscriptionContext → User billing status
 ```
+
+### Data Synchronization (Supabase)
+
+The app uses a **local-first** approach: mutations update the Zustand store immediately for instant UI feedback, then sync to Supabase in the background.
+
+**Mutation Hooks** (`src/hooks/useTournaments.ts`):
+
+| Hook | Purpose | Supabase Table |
+|------|---------|----------------|
+| `useCreateTournament()` | Create tournament | `tournaments` |
+| `useUpdateTournament()` | Update tournament | `tournaments` |
+| `useUpdateMatch()` | Update match result | `tournament_matches` |
+| `useArchiveTournament()` | Archive/unarchive | `tournaments` |
+
+**Usage Pattern:**
+```typescript
+// In components - use hooks instead of direct store access
+const updateMatchMutation = useUpdateMatch();
+
+// Mutation updates local store first, then syncs to Supabase
+updateMatchMutation.mutate({
+  tournamentId: tournament.id,
+  matchId: match.id,
+  data: { status: 'completed', result: { winnerId: 'player-1' } }
+});
+```
+
+**Status Mapping** (App ↔ Database):
+- `draft` ↔ `setup`
+- `active` ↔ `in_progress`
+- `completed` ↔ `completed`
+
+**Sport Type Convention**: Always use lowercase (`tennis`, `basketball`) - the database stores lowercase values.
+
+**Error Handling**: Supabase sync failures are logged but don't block the UI - local changes persist.
 
 ### Sport Plugin Architecture
 
@@ -310,3 +345,43 @@ supabase.channel('name')
 ### Fallback Mode
 
 If env vars missing, `src/lib/supabase.ts` returns mock client - app works offline with localStorage.
+
+## Debugging Tips
+
+### Check Persisted State
+```typescript
+// In browser console
+localStorage.getItem('tournament-storage')
+localStorage.getItem('sport-storage')
+```
+
+### React Query DevTools
+```tsx
+// Install: bun add @tanstack/react-query-devtools
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
+// Add to providers
+<ReactQueryProvider>
+  {children}
+  <ReactQueryDevtools />
+</ReactQueryProvider>
+```
+
+### Run Single Test
+```bash
+bun test src/tests/tennisScoring.test.ts
+```
+
+## Key Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| react | 19.x | UI Framework |
+| typescript | ~5.9 | Type Safety |
+| vite | 7.x | Build Tool |
+| tailwindcss | 4.x | Styling |
+| zustand | 5.x | State Management |
+| @tanstack/react-query | 5.x | Server State |
+| @supabase/supabase-js | 2.x | Backend |
+| framer-motion | 12.x | Animations |
+| @stripe/react-stripe-js | 5.x | Payments |

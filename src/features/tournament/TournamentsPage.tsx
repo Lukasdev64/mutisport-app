@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
-import { useTournaments } from '@/hooks/useTournaments';
+import { useTournaments, useArchiveTournament } from '@/hooks/useTournaments';
 import { ALL_MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Trophy, Calendar, Users, Archive, ArchiveRestore, MoreVertical } from 'lucide-react';
@@ -14,7 +14,8 @@ export function TournamentsPage() {
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];
-  const { archiveTournament, unarchiveTournament, tournaments: localTournaments } = useTournamentStore();
+  const { tournaments: localTournaments } = useTournamentStore();
+  const archiveMutation = useArchiveTournament();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   // Use React Query hook for data fetching (Supabase)
@@ -127,7 +128,7 @@ export function TournamentsPage() {
                     {tournament.archived ? (
                       <button
                         onClick={() => {
-                          unarchiveTournament(tournament.id);
+                          archiveMutation.mutate({ id: tournament.id, archived: false });
                           setActiveMenu(null);
                         }}
                         className="w-full px-4 py-2.5 text-left text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
@@ -138,7 +139,7 @@ export function TournamentsPage() {
                     ) : (
                       <button
                         onClick={() => {
-                          archiveTournament(tournament.id);
+                          archiveMutation.mutate({ id: tournament.id, archived: true });
                           setActiveMenu(null);
                         }}
                         className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-2"

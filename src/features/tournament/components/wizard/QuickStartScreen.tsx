@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 import { cn } from '@/lib/utils';
 import { useTournamentStore } from '../../store/tournamentStore';
+import { useCreateTournament } from '@/hooks/useTournaments';
 import { TournamentEngine } from '../../logic/engine';
 import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
 import type { TournamentFormat, Player, Tournament } from '@/types/tournament';
@@ -59,7 +60,8 @@ const QUICK_PRESETS = [
 
 export function QuickStartScreen() {
   const navigate = useNavigate();
-  const { createTournament } = useTournamentStore();
+  const { createTournament: createLocalTournament } = useTournamentStore();
+  const createTournamentMutation = useCreateTournament();
 
   // State - Default to 'custom' preset for quickest start (Match Amical)
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>('custom');
@@ -135,7 +137,12 @@ export function QuickStartScreen() {
       }
     };
 
-    createTournament(newTournament);
+    // Save to local store for immediate access
+    createLocalTournament(newTournament);
+
+    // Save to Supabase (async, don't block navigation)
+    createTournamentMutation.mutate(newTournament);
+
     navigate(`/tournaments/${newTournament.id}`);
   };
 

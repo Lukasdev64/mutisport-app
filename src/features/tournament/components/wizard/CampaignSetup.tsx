@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SelectionAlgorithm } from '../../logic/selectionAlgorithm';
 import type { SelectionResult } from '../../logic/selectionAlgorithm';
+import type { Player } from '@/types/tournament';
 
 // Mock Player Database with realistic names
 const MOCK_PLAYER_NAMES = [
@@ -92,8 +93,8 @@ export function CampaignSetup() {
             }
           };
           
-          addExistingPlayer(newPlayer as any); 
-          currentPlayers.push(newPlayer as any);
+          addExistingPlayer(newPlayer);
+          currentPlayers.push(newPlayer);
         }
       });
 
@@ -104,16 +105,16 @@ export function CampaignSetup() {
     }, 1500);
   };
 
-  const handleRunSelectionPreview = (customListOrEvent?: any[] | React.MouseEvent) => {
+  const handleRunSelectionPreview = (customListOrEvent?: Player[] | React.MouseEvent) => {
     // Check if it's an array or an event
     const sourceList = Array.isArray(customListOrEvent) ? customListOrEvent : players;
-    
+
     const candidates = sourceList.map(p => ({
         id: p.id,
         name: p.name,
         email: p.email || '',
-        registrationDate: new Date((p as any).registrationDate || Date.now()),
-        constraints: (p as any).constraints || { unavailableDates: [], maxMatchesPerDay: 3 }
+        registrationDate: new Date(p.registrationDate || Date.now()),
+        constraints: p.constraints || { unavailableDates: [], maxMatchesPerDay: 3 }
     }));
 
     const result = SelectionAlgorithm.selectParticipants(candidates, 16, new Date());
@@ -138,7 +139,7 @@ export function CampaignSetup() {
         };
       });
       
-      store.setSelectedPlayers(selectedPlayersWithAvatars as any);
+      store.setSelectedPlayers(selectedPlayersWithAvatars);
     }
     setStep(step + 1);
   };
@@ -263,7 +264,7 @@ export function CampaignSetup() {
                         <img src={player.avatar} alt={player.name} className="w-8 h-8 rounded-full bg-slate-700 z-10" />
                         <div className="z-10">
                           <div className="text-sm font-medium text-white">{player.name}</div>
-                          <div className="text-xs text-purple-300">Inscrit le {new Date((player as any).registrationDate).toLocaleDateString()}</div>
+                          <div className="text-xs text-purple-300">Inscrit le {new Date(player.registrationDate || '').toLocaleDateString()}</div>
                         </div>
                       </div>
                     ))}

@@ -1,6 +1,14 @@
 import { useEffect, useCallback, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import type { Match } from '@/types/tournament';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+/** Supabase Realtime payload for match changes */
+interface MatchRow {
+  id: string;
+  [key: string]: unknown;
+}
+type MatchChangePayload = RealtimePostgresChangesPayload<MatchRow>;
 
 interface MatchUpdate {
   matchId: string;
@@ -48,11 +56,16 @@ export function useMatchSubscription({
   const [lastUpdate, setLastUpdate] = useState<MatchUpdate | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const handleMatchChange = useCallback((payload: any) => {
+  const handleMatchChange = useCallback((payload: MatchChangePayload) => {
+    // Safely extract id from new or old record
+    const newRecord = payload.new as MatchRow | undefined;
+    const oldRecord = payload.old as MatchRow | undefined;
+    const matchId = newRecord?.id || oldRecord?.id || '';
+
     const update: MatchUpdate = {
-      matchId: payload.new?.id || payload.old?.id,
+      matchId,
       tournamentId,
-      data: payload.new,
+      data: newRecord as Partial<Match>,
       timestamp: new Date().toISOString()
     };
 

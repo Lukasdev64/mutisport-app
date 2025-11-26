@@ -36,7 +36,7 @@ export class SchedulingEngine {
     
     // Process each match
     for (const match of matches) {
-      if ((match as any).winner) {
+      if (match.result?.winnerId) {
         // Match already played, keep existing schedule
         scheduledMatches.push(match as ScheduledMatch);
         continue;

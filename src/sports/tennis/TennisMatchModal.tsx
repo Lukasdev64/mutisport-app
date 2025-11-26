@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import type { Tournament } from '@/types/tournament';
 import type { TennisMatchScore } from '@/types/tennis';
 import { DEFAULT_TENNIS_CONFIG } from '@/sports/tennis/config';
-import { useTournamentStore } from '@/features/tournament/store/tournamentStore';
+import { useUpdateMatch } from '@/hooks/useTournaments';
 import { useToast } from '@/components/ui/toast';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -27,7 +27,7 @@ export function TennisMatchModal({
   player2Id,
   tournament
 }: TennisMatchModalProps) {
-  const { updateMatch } = useTournamentStore();
+  const updateMatchMutation = useUpdateMatch();
   const { toast } = useToast();
   
   const player1 = tournament.players.find(p => p.id === player1Id);
@@ -146,12 +146,16 @@ export function TennisMatchModal({
       }
     }
 
-    updateMatch(tournament.id, matchId, {
-      status: 'completed',
-      result: {
-        player1Score: p1SetsWon,
-        player2Score: p2SetsWon,
-        winnerId: winner === '1' ? player1Id : player2Id
+    updateMatchMutation.mutate({
+      tournamentId: tournament.id,
+      matchId,
+      data: {
+        status: 'completed',
+        result: {
+          player1Score: p1SetsWon,
+          player2Score: p2SetsWon,
+          winnerId: winner === '1' ? player1Id : player2Id
+        }
       }
     });
 
@@ -312,12 +316,16 @@ export function TennisMatchModal({
               player2Name={player2?.name || 'Player 2'}
               onMatchComplete={(finalScore: TennisMatchScore) => {
                 // Convert score to match result
-                updateMatch(tournament.id, matchId, {
-                  status: 'completed',
-                  result: {
-                    player1Score: finalScore.player1Sets,
-                    player2Score: finalScore.player2Sets,
-                    winnerId: finalScore.winnerId
+                updateMatchMutation.mutate({
+                  tournamentId: tournament.id,
+                  matchId,
+                  data: {
+                    status: 'completed',
+                    result: {
+                      player1Score: finalScore.player1Sets,
+                      player2Score: finalScore.player2Sets,
+                      winnerId: finalScore.winnerId
+                    }
                   }
                 });
                 toast('Match terminé!', 'success');

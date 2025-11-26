@@ -5,11 +5,19 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from '../../store/tournamentStore';
+import { useCreateTournament } from '@/hooks/useTournaments';
 // Sport store available if needed
 // import { useSportStore } from '@/store/sportStore';
 import { TournamentEngine } from '../../logic/engine';
 import { v4 as uuidv4 } from 'uuid';
 import type { Tournament } from '@/types/tournament';
+import type { SportType } from '@/types/sport';
+
+/** Maps wizard sport selection to valid SportType */
+const mapWizardSportToSportType = (wizardSport: string): SportType => {
+  if (wizardSport === 'other') return 'generic';
+  return wizardSport as SportType;
+};
 
 // Force reload fix
 
@@ -20,12 +28,13 @@ interface WizardLayoutProps {
 }
 
 export function WizardLayout({ children, title, description }: WizardLayoutProps) {
-  const { 
-    step, totalSteps, prevStep, nextStep, 
+  const {
+    step, totalSteps, prevStep, nextStep,
     players, selectedPlayers, format, tournamentName,
     sport, tennisConfig, mode // Add mode
   } = useWizardStore();
-  const { createTournament } = useTournamentStore();
+  const { createTournament: createLocalTournament } = useTournamentStore();
+  const createTournamentMutation = useCreateTournament();
   const navigate = useNavigate();
 
   const canProceed = () => {
@@ -61,7 +70,7 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
     return true;
   };
 
-  const handleCreateTournament = () => {
+  const handleCreateTournament = async () => {
     // Allow empty name in instant mode
     if (!format || (mode === 'planned' && !tournamentName)) return;
 
@@ -75,7 +84,7 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
       id: uuidv4(),
       name: finalName,
       format: format,
-      sport: (sport === 'other' ? 'generic' : sport) as any, // Map 'other' to 'generic' or cast to avoid type error
+      sport: mapWizardSportToSportType(sport),
       tennisConfig: sport === 'tennis' ? tennisConfig : undefined, // Save tennis config
       status: 'active',
       players: finalPlayers, // Only selected players!
@@ -89,7 +98,12 @@ export function WizardLayout({ children, title, description }: WizardLayoutProps
       }
     };
 
-    createTournament(newTournament);
+    // Save to local store for immediate access
+    createLocalTournament(newTournament);
+
+    // Save to Supabase (async, don't block navigation)
+    createTournamentMutation.mutate(newTournament);
+
     navigate(`/tournaments/${newTournament.id}`);
   };
 

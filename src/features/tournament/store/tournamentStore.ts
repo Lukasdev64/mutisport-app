@@ -5,6 +5,12 @@ import { MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { TournamentEngine } from '../logic/engine';
 import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
 
+/** Shape of the persisted state for migrations */
+interface PersistedTournamentState {
+  tournaments: Tournament[];
+  activeTournamentId: string | null;
+}
+
 interface TournamentStore {
   tournaments: Tournament[];
   activeTournamentId: string | null;
@@ -122,19 +128,20 @@ export const useTournamentStore = create<TournamentStore>()(
     {
       name: 'tournament-storage', // LocalStorage key
       version: 1,
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as PersistedTournamentState | undefined;
         if (version === 0) {
           // Safety check
-          if (!persistedState || !persistedState.tournaments) {
-            return persistedState;
+          if (!state || !state.tournaments) {
+            return state;
           }
 
           // Migration: Add default tennis config to existing tennis tournaments
           const defaultPreset = TENNIS_TOURNAMENT_PRESETS[0]; // Australian Open
-          
+
           return {
-            ...persistedState,
-            tournaments: persistedState.tournaments.map((t: any) => {
+            ...state,
+            tournaments: state.tournaments.map((t) => {
               if (t.sport === 'tennis' && !t.tennisConfig) {
                 return {
                   ...t,
@@ -145,7 +152,7 @@ export const useTournamentStore = create<TournamentStore>()(
             })
           };
         }
-        return persistedState;
+        return state;
       }
     }
   )

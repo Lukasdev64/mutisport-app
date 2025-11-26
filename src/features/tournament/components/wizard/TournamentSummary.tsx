@@ -75,9 +75,9 @@ export function TournamentSummary() {
                 <div className="text-sm font-medium text-white truncate">
                   {player.name}
                 </div>
-                {(player as any).email && (
+                {player.email && (
                   <div className="text-xs text-slate-500 truncate">
-                    {(player as any).email}
+                    {player.email}
                   </div>
                 )}
               </div>

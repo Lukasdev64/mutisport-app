@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Match, Tournament } from '@/types/tournament';
-import { useTournamentStore } from '../../store/tournamentStore';
+import { useUpdateMatch } from '@/hooks/useTournaments';
 import { Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '@/components/ui/toast';
@@ -16,7 +16,7 @@ interface MatchModalProps {
 
 export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalProps) {
   const plugin = useSportPlugin(tournament.sport);
-  const { updateMatch } = useTournamentStore();
+  const updateMatchMutation = useUpdateMatch();
 
   // If a sport plugin provides a custom MatchModal, use it
   if (plugin?.components.MatchModal) {
@@ -28,9 +28,10 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
         match={match}
         tournament={tournament}
         onUpdateResult={(matchId, result) => {
-          updateMatch(tournament.id, matchId, {
-            status: 'completed',
-            result
+          updateMatchMutation.mutate({
+            tournamentId: tournament.id,
+            matchId,
+            data: { status: 'completed', result }
           });
         }}
       />
@@ -53,7 +54,7 @@ export function MatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
  * Provides simple point-based scoring.
  */
 function GenericMatchModal({ isOpen, onClose, match, tournament }: MatchModalProps) {
-  const { updateMatch } = useTournamentStore();
+  const updateMatchMutation = useUpdateMatch();
   const { toast } = useToast();
   const [score1, setScore1] = useState(match.result?.player1Score ?? 0);
   const [score2, setScore2] = useState(match.result?.player2Score ?? 0);
@@ -64,12 +65,16 @@ function GenericMatchModal({ isOpen, onClose, match, tournament }: MatchModalPro
   const handleSave = () => {
     const winnerId = score1 > score2 ? player1?.id : score2 > score1 ? player2?.id : undefined;
 
-    updateMatch(tournament.id, match.id, {
-      status: 'completed',
-      result: {
-        player1Score: score1,
-        player2Score: score2,
-        winnerId
+    updateMatchMutation.mutate({
+      tournamentId: tournament.id,
+      matchId: match.id,
+      data: {
+        status: 'completed',
+        result: {
+          player1Score: score1,
+          player2Score: score2,
+          winnerId
+        }
       }
     });
 

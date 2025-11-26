@@ -493,7 +493,7 @@ export function generateSwissBracket(players: BracketPlayer[], numberOfRounds: n
   return { rounds: bracket };
 }
 
-function generateSwissFirstRound(playerRecords: any[]): BracketMatch[] {
+function generateSwissFirstRound(playerRecords: BracketPlayer[]): BracketMatch[] {
   const shuffled = [...playerRecords].sort(() => Math.random() - 0.5);
   const matches: BracketMatch[] = [];
 

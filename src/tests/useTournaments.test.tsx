@@ -33,15 +33,23 @@ const mockTournamentStore = {
   tournaments: [],
   addTournament: mock(),
   updateTournament: mock(),
-  deleteTournament: mock()
+  updateMatch: mock(),
+  archiveTournament: mock(),
+  unarchiveTournament: mock(),
+  deleteTournament: mock(),
+  createTournament: mock(),
+  getState: () => mockTournamentStore
 };
 
 mock.module('../features/tournament/store/tournamentStore', () => ({
-  useTournamentStore: mock(() => mockTournamentStore)
+  useTournamentStore: Object.assign(
+    mock(() => mockTournamentStore),
+    { getState: () => mockTournamentStore }
+  )
 }));
 
-// Import hook AFTER mocks
-import { useTournaments } from '../hooks/useTournaments';
+// Import hooks AFTER mocks
+import { useTournaments, useCreateTournament, useUpdateTournament, useUpdateMatch, useArchiveTournament } from '../hooks/useTournaments';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -117,5 +125,187 @@ describe('useTournaments', () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+});
+
+describe('useUpdateTournament', () => {
+  beforeEach(() => {
+    // Reset mock calls
+    (mockTournamentStore.updateTournament as any).mockClear?.();
+  });
+
+  it('should update local store and sync to Supabase', async () => {
+    const updateMock = mock(() => ({
+      eq: mock(() => Promise.resolve({ error: null }))
+    }));
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useUpdateTournament(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({
+      id: 'test-id',
+      updates: { name: 'Updated Tournament' }
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Should have called local store update
+    expect(mockTournamentStore.updateTournament).toHaveBeenCalledWith(
+      'test-id',
+      { name: 'Updated Tournament' }
+    );
+  });
+
+  it('should map status values correctly for Supabase', async () => {
+    let capturedUpdate: any = null;
+    const updateMock = mock((data: any) => {
+      capturedUpdate = data;
+      return {
+        eq: mock(() => Promise.resolve({ error: null }))
+      };
+    });
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useUpdateTournament(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({
+      id: 'test-id',
+      updates: { status: 'active' }
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Status should be mapped: 'active' -> 'in_progress'
+    expect(capturedUpdate?.status).toBe('in_progress');
+  });
+});
+
+describe('useUpdateMatch', () => {
+  beforeEach(() => {
+    (mockTournamentStore.updateMatch as any).mockClear?.();
+  });
+
+  it('should update local store and sync match to Supabase', async () => {
+    const updateMock = mock(() => ({
+      eq: mock(() => Promise.resolve({ error: null }))
+    }));
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useUpdateMatch(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({
+      tournamentId: 'tournament-1',
+      matchId: 'match-1',
+      data: {
+        status: 'completed',
+        result: {
+          player1Score: 6,
+          player2Score: 4,
+          winnerId: 'player-1'
+        }
+      }
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Should have called local store update
+    expect(mockTournamentStore.updateMatch).toHaveBeenCalledWith(
+      'tournament-1',
+      'match-1',
+      expect.objectContaining({
+        status: 'completed',
+        result: expect.objectContaining({
+          winnerId: 'player-1'
+        })
+      })
+    );
+  });
+});
+
+describe('useArchiveTournament', () => {
+  beforeEach(() => {
+    (mockTournamentStore.archiveTournament as any).mockClear?.();
+    (mockTournamentStore.unarchiveTournament as any).mockClear?.();
+  });
+
+  it('should archive tournament in local store and sync to Supabase', async () => {
+    const updateMock = mock(() => ({
+      eq: mock(() => Promise.resolve({ error: null }))
+    }));
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useArchiveTournament(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({ id: 'test-id', archived: true });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Should have called archive
+    expect(mockTournamentStore.archiveTournament).toHaveBeenCalledWith('test-id');
+    expect(mockTournamentStore.unarchiveTournament).not.toHaveBeenCalled();
+  });
+
+  it('should unarchive tournament in local store and sync to Supabase', async () => {
+    const updateMock = mock(() => ({
+      eq: mock(() => Promise.resolve({ error: null }))
+    }));
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useArchiveTournament(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({ id: 'test-id', archived: false });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Should have called unarchive
+    expect(mockTournamentStore.unarchiveTournament).toHaveBeenCalledWith('test-id');
+    expect(mockTournamentStore.archiveTournament).not.toHaveBeenCalled();
+  });
+
+  it('should continue even if Supabase sync fails', async () => {
+    const updateMock = mock(() => ({
+      eq: mock(() => Promise.resolve({ error: { message: 'Sync failed' } }))
+    }));
+
+    (mockSupabase.from as any).mockImplementation(() => ({
+      update: updateMock
+    }));
+
+    const { result } = renderHook(() => useArchiveTournament(), {
+      wrapper: createWrapper()
+    });
+
+    result.current.mutate({ id: 'test-id', archived: true });
+
+    // Should still succeed (local update happened)
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Local store should still have been updated
+    expect(mockTournamentStore.archiveTournament).toHaveBeenCalledWith('test-id');
   });
 });
