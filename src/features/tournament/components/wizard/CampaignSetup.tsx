@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Users, Filter, Link as LinkIcon, Send, CheckCircle, Search, AlertCircle, Play, BarChart3, List } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,7 +32,18 @@ const MOCK_DB_PLAYERS = MOCK_PLAYER_NAMES.map((name, i) => ({
 }));
 
 export function CampaignSetup() {
-  const { setCampaignFilters, addExistingPlayer, players, setStep, step } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const { players, step } = useWizardStore(
+    useShallow((s) => ({
+      players: s.players,
+      step: s.step
+    }))
+  );
+
+  // Actions - stable references, no useShallow needed
+  const setCampaignFilters = useWizardStore((s) => s.setCampaignFilters);
+  const addExistingPlayer = useWizardStore((s) => s.addExistingPlayer);
+  const setStep = useWizardStore((s) => s.setStep);
   const [filteredPlayers, setFilteredPlayers] = useState(MOCK_DB_PLAYERS);
   const [tallyLink, setTallyLink] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);

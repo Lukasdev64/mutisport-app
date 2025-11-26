@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useSwipeable } from 'react-swipeable';
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -28,12 +29,27 @@ interface WizardLayoutProps {
 }
 
 export function WizardLayout({ children, title, description }: WizardLayoutProps) {
+  // State values - use useShallow to prevent unnecessary re-renders
   const {
-    step, totalSteps, prevStep, nextStep,
-    players, selectedPlayers, format, tournamentName,
-    sport, tennisConfig, mode // Add mode
-  } = useWizardStore();
-  const { createTournament: createLocalTournament } = useTournamentStore();
+    step, totalSteps, players, selectedPlayers, format,
+    tournamentName, sport, tennisConfig, mode
+  } = useWizardStore(useShallow((s) => ({
+    step: s.step,
+    totalSteps: s.totalSteps,
+    players: s.players,
+    selectedPlayers: s.selectedPlayers,
+    format: s.format,
+    tournamentName: s.tournamentName,
+    sport: s.sport,
+    tennisConfig: s.tennisConfig,
+    mode: s.mode
+  })));
+
+  // Actions - stable references, no useShallow needed
+  const prevStep = useWizardStore((s) => s.prevStep);
+  const nextStep = useWizardStore((s) => s.nextStep);
+
+  const createLocalTournament = useTournamentStore((s) => s.createTournament);
   const createTournamentMutation = useCreateTournament();
   const navigate = useNavigate();
 

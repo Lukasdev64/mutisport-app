@@ -28,17 +28,21 @@ const mapSupabaseToTournament = (row: any): Tournament => {
   };
 };
 
-// Fetch all tournaments
+// Fetch all tournaments for the current user
 export const useTournaments = () => {
   return useQuery({
     queryKey: ['tournaments'],
     queryFn: async () => {
       if (isSupabaseConfigured()) {
+        // Get current user for filtering (defense-in-depth with RLS)
+        const { data: { user } } = await supabase.auth.getUser();
+
         const { data, error } = await supabase
           .from('tournaments')
           .select('*')
+          .eq('organizer_id', user?.id) // Explicit user filter alongside RLS
           .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
         return data.map(mapSupabaseToTournament);
       } else {
@@ -85,8 +89,9 @@ export const useTournament = (id: string) => {
 // Create tournament
 export const useCreateTournament = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
+    mutationKey: ['tournaments', 'create'],
     mutationFn: async (tournament: Tournament) => {
       if (isSupabaseConfigured()) {
         // 1. Create tournament record
@@ -122,8 +127,11 @@ export const useCreateTournament = () => {
         return tournament;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tournaments'] });
+    onSuccess: (newTournament) => {
+      // Update cache directly instead of refetching
+      queryClient.setQueryData(['tournaments'], (old: Tournament[] | undefined) =>
+        old ? [newTournament, ...old] : [newTournament]
+      );
     }
   });
 };
@@ -133,6 +141,7 @@ export const useUpdateTournament = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['tournaments', 'update'],
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Tournament> }) => {
       // Always update local store first for immediate UI feedback
       useTournamentStore.getState().updateTournament(id, updates);
@@ -171,6 +180,7 @@ export const useUpdateMatch = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['tournaments', 'match', 'update'],
     mutationFn: async ({
       tournamentId,
       matchId,
@@ -213,6 +223,7 @@ export const useArchiveTournament = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ['tournaments', 'archive'],
     mutationFn: async ({ id, archived }: { id: string; archived: boolean }) => {
       // Update local store first
       if (archived) {

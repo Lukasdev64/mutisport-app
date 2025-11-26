@@ -403,22 +403,34 @@ If much of your logic relies on refs, rethink your approach. Use refs for:
 
 ### Use Selectors to Prevent Re-renders
 ```typescript
-// BAD - re-renders on ANY store change
-const store = useTournamentStore();
+// BAD - re-renders on ANY store change (wizard has 30+ properties!)
+const store = useWizardStore();
 
 // GOOD - re-renders only when tournaments change
 const tournaments = useTournamentStore((s) => s.tournaments);
 ```
 
-### Use `useShallow` for Multiple Properties
+**Functional benefit:** Without selectors, typing in a form field triggers re-renders of unrelated components, causing lag and jank.
+
+### Separate State Values from Actions
 ```typescript
 import { useShallow } from 'zustand/react/shallow';
 
-// Prevents re-render if values are shallowly equal
-const { players, rounds } = useTournamentStore(
-  useShallow((s) => ({ players: s.players, rounds: s.rounds }))
+// STATE VALUES - use useShallow (can change, trigger re-renders)
+const { format, players, status } = useWizardStore(
+  useShallow((s) => ({
+    format: s.format,
+    players: s.players,
+    status: s.status
+  }))
 );
+
+// ACTIONS - individual selectors, NO useShallow needed (stable references)
+const setFormat = useWizardStore((s) => s.setFormat);
+const setPlayers = useWizardStore((s) => s.setPlayers);
 ```
+
+**Why actions don't need useShallow:** Zustand store functions are stable references - they never change between renders, so selecting them individually is safe and efficient.
 
 ### Derive Computed Values with Selectors
 ```typescript
@@ -444,28 +456,68 @@ queryClient.setQueryData(['tournaments'], (old) =>
 );
 ```
 
-### Update Cache from Mutation Response
+### setQueryData vs invalidateQueries
+
+| Method | Use when | Performance |
+|--------|----------|-------------|
+| `setQueryData` | Mutation response contains all needed data | Instant (no network) |
+| `invalidateQueries` | Need fresh data from server | ~100-300ms (network) |
+
 ```typescript
-const mutation = useMutation({
-  mutationFn: createTournament,
-  onSuccess: (newTournament) => {
-    // Update cache with server response instead of refetching
-    queryClient.setQueryData(['tournaments'], (old) =>
-      old ? [...old, newTournament] : [newTournament]
-    );
-  }
-});
+// USE setQueryData - we have the complete object
+onSuccess: (newTournament) => {
+  queryClient.setQueryData(['tournaments'], (old) =>
+    old ? [newTournament, ...old] : [newTournament]
+  );
+}
+
+// USE invalidateQueries - server computes derived data we don't have
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['standings'] });
+}
 ```
 
-### Use `mutationKey` for Related Mutations
+**Functional benefit:** `setQueryData` makes the UI feel instant - no loading spinners, no flicker.
+
+### Always Use `mutationKey`
 ```typescript
 const updateMatch = useMutation({
-  mutationKey: ['tournament', tournamentId, 'match'],
+  mutationKey: ['tournaments', 'match', 'update'],  // Required!
   mutationFn: (data) => updateMatchInDb(data),
 });
 ```
 
+**Functional benefits of `mutationKey`:**
+- **DevTools visibility**: See "tournaments.match.update" instead of "unknown mutation"
+- **Deduplication**: Two identical calls are merged automatically
+- **Targeted invalidation**: `queryClient.cancelMutations({ mutationKey: ['tournaments'] })`
+- **Retry identification**: The system can identify and retry specific mutations
+
 ## Supabase & RLS Best Practices
+
+### Defense-in-Depth: Explicit Filters + RLS
+
+**Always add explicit user filters, even with RLS enabled:**
+
+```typescript
+// Get current user first
+const { data: { user } } = await supabase.auth.getUser();
+
+// Add explicit filter PLUS rely on RLS
+const { data } = await supabase
+  .from('tournaments')
+  .select('*')
+  .eq('organizer_id', user?.id)  // Explicit filter
+  .order('created_at', { ascending: false });
+```
+
+**Why both?**
+| Protection | What it catches |
+|------------|-----------------|
+| RLS policy | Malicious API calls, SQL injection attempts |
+| Explicit filter | RLS misconfiguration, policy disabled by accident |
+
+**Functional benefit:** If someone accidentally disables RLS, data doesn't leak - the client filter still works. It also makes the query intent explicit in code reviews.
 
 ### Wrap `auth.uid()` in SELECT for Performance
 ```sql
@@ -478,16 +530,17 @@ CREATE POLICY "Users can view own data" ON tournaments
   FOR SELECT USING ((select auth.uid()) = user_id);
 ```
 
-### Don't Rely on RLS Alone for Filtering
+### Verify Ownership in Mutations
 ```typescript
-// BAD - RLS does all the work (slow)
-const { data } = await supabase.from('tournaments').select();
+// For UPDATE/DELETE - always verify ownership
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) throw new Error('Not authenticated');
 
-// GOOD - explicit filter + RLS for security
-const { data } = await supabase
-  .from('tournaments')
-  .select()
-  .eq('user_id', userId);  // Filter + RLS
+await supabase
+  .from('team_members')
+  .update({ role: 'admin' })
+  .eq('id', memberId)
+  .eq('team_owner_id', user.id);  // Defense-in-depth
 ```
 
 ### Disable RLS for Public Tables

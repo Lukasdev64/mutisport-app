@@ -5,8 +5,20 @@ import type { ReactNode } from 'react';
 
 // Mock Supabase
 const mockSupabase = {
+  auth: {
+    getUser: mock(() => Promise.resolve({
+      data: { user: { id: 'test-user-id' } },
+      error: null
+    }))
+  },
   from: mock(() => ({
     select: mock(() => ({
+      eq: mock(() => ({
+        order: mock(() => Promise.resolve({
+          data: [],
+          error: null
+        }))
+      })),
       order: mock(() => Promise.resolve({
         data: [],
         error: null
@@ -89,12 +101,14 @@ describe('useTournaments', () => {
       }
     ];
 
-    // Setup mock return
+    // Setup mock return - chain: from().select().eq().order()
     (mockSupabase.from as any).mockImplementation(() => ({
       select: mock(() => ({
-        order: mock(() => Promise.resolve({
-          data: mockData,
-          error: null
+        eq: mock(() => ({
+          order: mock(() => Promise.resolve({
+            data: mockData,
+            error: null
+          }))
         }))
       }))
     }));
@@ -110,12 +124,14 @@ describe('useTournaments', () => {
   });
 
   it('should handle Supabase errors gracefully', async () => {
-    // Setup mock error
+    // Setup mock error - chain: from().select().eq().order()
     (mockSupabase.from as any).mockImplementation(() => ({
       select: mock(() => ({
-        order: mock(() => Promise.resolve({
-          data: null,
-          error: { message: 'Network error' }
+        eq: mock(() => ({
+          order: mock(() => Promise.resolve({
+            data: null,
+            error: { message: 'Network error' }
+          }))
         }))
       }))
     }));

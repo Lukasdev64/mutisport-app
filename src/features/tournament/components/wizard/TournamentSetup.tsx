@@ -1,16 +1,27 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Calendar, MapPin, FileText, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function TournamentSetup() {
-  const { 
-    tournamentName, setTournamentName,
-    sport, setSport,
-    startDate, setStartDate,
-    venue, setVenue,
-    description, setDescription
-  } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const {
+    tournamentName, sport, startDate, venue, description
+  } = useWizardStore(useShallow((s) => ({
+    tournamentName: s.tournamentName,
+    sport: s.sport,
+    startDate: s.startDate,
+    venue: s.venue,
+    description: s.description
+  })));
+
+  // Actions - stable references, no useShallow needed
+  const setTournamentName = useWizardStore((s) => s.setTournamentName);
+  const setSport = useWizardStore((s) => s.setSport);
+  const setStartDate = useWizardStore((s) => s.setStartDate);
+  const setVenue = useWizardStore((s) => s.setVenue);
+  const setDescription = useWizardStore((s) => s.setDescription);
 
   return (
     <motion.div

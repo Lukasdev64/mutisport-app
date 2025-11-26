@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Trophy, Users, GitMerge, Repeat, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -64,17 +65,31 @@ const FORMAT_OPTIONS = [
 ];
 
 export function FormatAndRules() {
-  const { 
-    format, setFormat,
-    ageCategory, setAgeCategory,
-    customAgeRules, setCustomAgeRules,
-    isRanked, setIsRanked,
-    rankingRange, setRankingRange,
-    estimatedMaxParticipants, setEstimatedMaxParticipants,
-    tennisPresetId, setTennisPreset,
-    tennisConfig, setTennisConfig,
-    sport // Get sport from wizardStore
-  } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const {
+    format, ageCategory, customAgeRules, isRanked, rankingRange,
+    estimatedMaxParticipants, tennisPresetId, tennisConfig, sport
+  } = useWizardStore(useShallow((s) => ({
+    format: s.format,
+    ageCategory: s.ageCategory,
+    customAgeRules: s.customAgeRules,
+    isRanked: s.isRanked,
+    rankingRange: s.rankingRange,
+    estimatedMaxParticipants: s.estimatedMaxParticipants,
+    tennisPresetId: s.tennisPresetId,
+    tennisConfig: s.tennisConfig,
+    sport: s.sport
+  })));
+
+  // Actions - stable references, no useShallow needed
+  const setFormat = useWizardStore((s) => s.setFormat);
+  const setAgeCategory = useWizardStore((s) => s.setAgeCategory);
+  const setCustomAgeRules = useWizardStore((s) => s.setCustomAgeRules);
+  const setIsRanked = useWizardStore((s) => s.setIsRanked);
+  const setRankingRange = useWizardStore((s) => s.setRankingRange);
+  const setEstimatedMaxParticipants = useWizardStore((s) => s.setEstimatedMaxParticipants);
+  const setTennisPreset = useWizardStore((s) => s.setTennisPreset);
+  const setTennisConfig = useWizardStore((s) => s.setTennisConfig);
 
   // State for Tennis Configuration Mode
   const [tennisMode, setTennisMode] = useState<'preset' | 'custom' | null>(
