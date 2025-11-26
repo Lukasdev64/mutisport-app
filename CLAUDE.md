@@ -46,17 +46,17 @@ src/
 ├── features/           # Feature modules (main code organization)
 │   ├── tournament/     # Tournament system (largest feature)
 │   │   ├── components/
-│   │   │   ├── arena/     # Live tournament view
-│   │   │   ├── wizard/    # Multi-step creation
+│   │   │   ├── arena/        # Live tournament view
+│   │   │   ├── wizard-hub/   # Sport selection entry point
+│   │   │   │   └── SportSelectionHub.tsx
 │   │   │   ├── registration/
 │   │   │   └── scheduling/
-│   │   ├── logic/         # Business logic
+│   │   ├── logic/            # Business logic
 │   │   │   ├── engine.ts          # TournamentEngine: bracket generation
 │   │   │   ├── schedulingEngine.ts
 │   │   │   └── selectionAlgorithm.ts
-│   │   └── store/         # Zustand stores
-│   │       ├── tournamentStore.ts
-│   │       └── wizardStore.ts
+│   │   └── store/            # Zustand stores
+│   │       └── tournamentStore.ts
 │   ├── billing/        # Stripe subscriptions
 │   ├── dashboard/      # Main dashboard
 │   ├── players/        # Player management
@@ -73,12 +73,18 @@ src/
 │   │   ├── scoring.ts         # TennisScoringEngine class
 │   │   ├── config.ts          # Tennis configurations
 │   │   ├── tournamentPresets.ts
+│   │   ├── wizard/            # Tennis-specific wizard (ISOLATED)
+│   │   │   ├── store.ts           # Dedicated Zustand store
+│   │   │   ├── TennisWizardPage.tsx
+│   │   │   └── steps/             # Wizard step components
 │   │   └── components/        # Tennis-specific UI
 │   │       ├── TennisMatchModalWrapper.tsx
 │   │       └── TennisRulesModule.tsx
 │   └── basketball/
 │       ├── plugin.ts          # Basketball plugin definition
 │       ├── scoring.ts
+│       ├── wizard/            # Basketball wizard (WIP)
+│       │   └── BasketballWizardPage.tsx
 │       └── components/
 │           └── BasketballMatchModalWrapper.tsx
 ├── store/              # Global Zustand stores
@@ -106,9 +112,11 @@ src/
 
 ```
 Zustand (persisted to localStorage)
-├── sportStore        → Active sport + plugin registry
-├── tournamentStore   → Tournament data (local-first)
-└── wizardStore       → Tournament creation wizard state
+├── sportStore              → Active sport + plugin registry
+├── tournamentStore         → Tournament data (local-first)
+└── Sport-specific wizard stores:
+    ├── tennisWizardStore   → Tennis wizard state (tennis-wizard-storage)
+    └── [sport]WizardStore  → Each sport has its own isolated store
 
 React Query (@tanstack/react-query)
 └── Server state caching for tournaments
@@ -223,6 +231,144 @@ export const footballPlugin: SportPlugin = {
 ToastProvider → SportPluginsProvider → SubscriptionProvider → Router
 ```
 
+### Sport Implementation Status
+
+The wizard uses an **implementation status system** to prevent incomplete sports from contaminating the user experience. This ensures tennis-specific features don't leak into other sports.
+
+**Status Types** (`src/types/sport.ts`):
+```typescript
+type SportImplementationStatus = 'implemented' | 'partial' | 'wip';
+```
+
+**Current Status Matrix:**
+
+| Sport | Status | Wizard | Quick Start | Rules Customizer |
+|-------|--------|--------|-------------|------------------|
+| Tennis | `implemented` | Full | Yes | Yes |
+| Basketball | `partial` | Format only | No (link to wizard) | Coming soon |
+| Football | `wip` | Blocked | No | No |
+| Ping Pong | `wip` | Blocked | No | No |
+| Chess | `wip` | Blocked | No | No |
+| Generic | `wip` | Blocked | No | No |
+
+**Helper Functions:**
+```typescript
+import { isSportImplemented, isSportUsable, getImplementationStatusLabel } from '@/types/sport';
+
+// Check if sport has full wizard support
+isSportImplemented('tennis')     // true
+isSportImplemented('basketball') // false
+
+// Check if sport can be used (implemented or partial)
+isSportUsable('basketball')      // true
+isSportUsable('football')        // false
+
+// Get UI label for badges
+getImplementationStatusLabel('partial') // "Beta"
+getImplementationStatusLabel('wip')     // "Bientot"
+```
+
+**UI Behavior:**
+- **TournamentSetup**: WIP sports show "Bientot" badge and are disabled
+- **FormatAndRules**: Partial sports show info banner, no rules customizer
+- **QuickStartScreen**: Tennis-only, links to wizard for other sports
+
+**Adding Support for a New Sport:**
+1. Update `SPORT_IMPLEMENTATION_STATUS` in `src/types/sport.ts`
+2. Create wizard components in `src/sports/[sport]/wizard/`
+3. Register components in the sport plugin
+4. Update status from `wip` → `partial` → `implemented`
+
+### Sport-Specific Wizard Architecture
+
+Each sport has its own **completely isolated wizard** for tournament creation. This ensures sport-specific logic doesn't contaminate other sports.
+
+**Route Structure:**
+```
+/tournaments/new                → SportSelectionHub (choose sport)
+/tournaments/new/tennis         → TennisWizardPage (tennis-specific)
+/tournaments/new/basketball     → BasketballWizardPage (WIP placeholder)
+```
+
+**File Structure:**
+```
+src/
+├── features/tournament/components/wizard-hub/
+│   └── SportSelectionHub.tsx    # Entry point - sport selection
+└── sports/
+    ├── tennis/wizard/
+    │   ├── index.ts             # Exports
+    │   ├── store.ts             # Tennis-specific Zustand store
+    │   ├── TennisWizardPage.tsx # Main wizard orchestrator
+    │   └── steps/
+    │       ├── TennisModeSelection.tsx     # Quick/Instant/Planned
+    │       ├── TennisTournamentSetup.tsx   # Name, date, venue
+    │       ├── TennisFormatAndRules.tsx    # Presets, rules, format
+    │       ├── TennisPlayerSelection.tsx   # Add players
+    │       ├── TennisSummary.tsx           # Review & launch
+    │       └── TennisQuickStart.tsx        # One-page quick creation
+    └── basketball/wizard/
+        ├── index.ts
+        └── BasketballWizardPage.tsx        # WIP placeholder
+```
+
+**Tennis Wizard Store** (`src/sports/tennis/wizard/store.ts`):
+```typescript
+interface TennisWizardState {
+  mode: TennisWizardMode;              // 'selection' | 'quickstart' | 'instant' | 'planned'
+  step: number;
+  name: string;
+  date: string | null;
+  venue: string;
+  format: TournamentFormat;
+  presetId: string | null;             // Tennis preset (BO3, BO5, etc.)
+  config: TennisMatchConfig | null;    // Tennis-specific rules
+  players: WizardPlayer[];
+  // ... actions
+}
+```
+
+**Adding a New Sport Wizard:**
+1. Create folder `src/sports/[sport]/wizard/`
+2. Create dedicated Zustand store with sport-specific fields
+3. Create `[Sport]WizardPage.tsx` as main orchestrator
+4. Create step components in `steps/` folder
+5. Create `index.ts` with exports
+6. Add route in `App.tsx`
+7. Update `SportSelectionHub.tsx` to link to the new wizard
+
+**Key Principles:**
+- **Complete isolation**: No shared state between sport wizards
+- **Sport-specific stores**: Each wizard has its own persisted Zustand store
+- **WIP placeholders**: Non-implemented sports show informative placeholder pages
+- **Hub-based navigation**: User selects sport first, then enters dedicated wizard
+
+**Wizard Navigation Hook** (`src/hooks/useWizardNavigation.ts`):
+
+Routes "Create Tournament" buttons to the correct wizard and blocks WIP sports:
+
+```typescript
+import { useWizardNavigation, getWizardUrl, canCreateTournament, getWizardStatusLabel } from '@/hooks/useWizardNavigation';
+
+// In components with access to active sport
+const { wizardUrl, canCreate, statusLabel } = useWizardNavigation();
+
+// Or use standalone functions
+getWizardUrl('tennis')           // '/tournaments/new/tennis'
+getWizardUrl('football')         // '/tournaments/new' (hub - WIP)
+canCreateTournament('tennis')    // true
+canCreateTournament('basketball') // false (partial)
+getWizardStatusLabel('tennis')   // null
+getWizardStatusLabel('basketball') // 'Beta'
+getWizardStatusLabel('football') // 'Bientot'
+```
+
+| Sport | `canCreate` | `statusLabel` | Button State |
+|-------|-------------|---------------|--------------|
+| Tennis | `true` | `null` | Active (blue) |
+| Basketball | `false` | `"Beta"` | Disabled + badge |
+| Football | `false` | `"Bientot"` | Disabled + badge |
+
 ### Key Classes
 
 **TournamentEngine** (`src/features/tournament/logic/engine.ts`):
@@ -240,14 +386,16 @@ ToastProvider → SportPluginsProvider → SubscriptionProvider → Router
 ### Routes
 
 ```
-/                    → Landing page
-/dashboard           → Sport-filtered dashboard
-/tournaments         → Tournament listing
-/tournaments/new     → Creation wizard
-/tournaments/:id     → Live tournament arena
-/players             → Player management
-/teams               → Team management
-/billing             → Stripe billing
+/                              → Landing page
+/dashboard                     → Sport-filtered dashboard
+/tournaments                   → Tournament listing
+/tournaments/new               → Sport Selection Hub
+/tournaments/new/tennis        → Tennis wizard (fully implemented)
+/tournaments/new/basketball    → Basketball wizard (WIP placeholder)
+/tournaments/:id               → Live tournament arena
+/players                       → Player management
+/teams                         → Team management
+/billing                       → Stripe billing
 /settings            → User settings
 ```
 
@@ -273,10 +421,17 @@ Test files in `src/tests/`:
 - `tennisScoring.test.ts` - Tennis scoring engine
 - `matchService.test.ts` - Match operations
 - `useTournaments.test.tsx` - React hooks (uses happy-dom)
+- `sportImplementation.test.ts` - Sport implementation status system
+- `wizardNavigation.test.ts` - Sport-specific wizard navigation
 
 Run single test file:
 ```bash
 bun test src/tests/tennisScoring.test.ts
+```
+
+Run all tests:
+```bash
+bun test
 ```
 
 ## Key Patterns

@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
+import { getWizardUrl, canCreateTournament, getWizardStatusLabel } from '@/hooks/useWizardNavigation';
 
 export function TournamentsPage() {
   const navigate = useNavigate();
@@ -54,10 +55,22 @@ export function TournamentsPage() {
           </div>
           <p className="text-slate-400">Manage and track your {activeSportInfo.name.toLowerCase()} competitions</p>
         </div>
-        <Button onClick={() => navigate('/tournaments/new')} className="bg-blue-600 hover:bg-blue-500">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Tournament
-        </Button>
+{canCreateTournament(activeSport) ? (
+          <Button onClick={() => navigate(getWizardUrl(activeSport))} className="bg-blue-600 hover:bg-blue-500">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Tournament
+          </Button>
+        ) : (
+          <Button disabled className="bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed">
+            <Plus className="w-4 h-4 mr-2 opacity-50" />
+            Create Tournament
+            {getWizardStatusLabel(activeSport) && (
+              <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                {getWizardStatusLabel(activeSport)}
+              </span>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Filters */}

@@ -7,6 +7,7 @@ import { useSportStats, useSportFilteredTournaments } from '@/hooks/useSportFilt
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { getWizardUrl, canCreateTournament, getWizardStatusLabel } from '@/hooks/useWizardNavigation';
 import { useEffect } from 'react';
 
 export function Dashboard() {
@@ -41,11 +42,22 @@ export function Dashboard() {
           </div>
           <p className="text-slate-400 mt-1">Welcome back to your {activeSportInfo.name.toLowerCase()} tournaments</p>
         </div>
-        <Link to="/tournaments/new">
-          <Button className="bg-blue-600 hover:bg-blue-500">
+{canCreateTournament(activeSport) ? (
+          <Link to={getWizardUrl(activeSport)}>
+            <Button className="bg-blue-600 hover:bg-blue-500">
+              Create Tournament
+            </Button>
+          </Link>
+        ) : (
+          <Button disabled className="bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed">
             Create Tournament
+            {getWizardStatusLabel(activeSport) && (
+              <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                {getWizardStatusLabel(activeSport)}
+              </span>
+            )}
           </Button>
-        </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

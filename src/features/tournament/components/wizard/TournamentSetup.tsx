@@ -3,6 +3,12 @@ import { useWizardStore } from '../../store/wizardStore';
 import { Calendar, MapPin, FileText, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import {
+  SPORT_IMPLEMENTATION_STATUS,
+  getImplementationStatusLabel,
+  isSportUsable
+} from '@/types/sport';
+import type { SportType } from '@/types/sport';
 
 export function TournamentSetup() {
   // State values - use useShallow to prevent unnecessary re-renders
@@ -67,26 +73,55 @@ export function TournamentSetup() {
             { id: 'football' as const, name: 'Football', emoji: '⚽' },
             { id: 'basketball' as const, name: 'Basketball', emoji: '🏀' },
             { id: 'other' as const, name: 'Autre', emoji: '🏆' }
-          ].map((sportOption) => (
-            <button
-              key={sportOption.id}
-              onClick={() => setSport(sportOption.id)}
-              className={cn(
-                "p-4 rounded-xl border-2 transition-all text-center",
-                sport === sportOption.id
-                  ? "bg-blue-500/20 border-blue-500 shadow-lg"
-                  : "bg-slate-900/50 border-white/10 hover:border-white/20 hover:bg-slate-800"
-              )}
-            >
-              <div className="text-3xl mb-2">{sportOption.emoji}</div>
-              <div className={cn(
-                "font-medium text-sm",
-                sport === sportOption.id ? "text-blue-400" : "text-slate-300"
-              )}>
-                {sportOption.name}
-              </div>
-            </button>
-          ))}
+          ].map((sportOption) => {
+            // Map wizard sport IDs to SportType for status check
+            const sportTypeMap: Record<string, SportType> = {
+              'tennis': 'tennis',
+              'football': 'football',
+              'basketball': 'basketball',
+              'other': 'generic'
+            };
+            const sportType = sportTypeMap[sportOption.id];
+            const status = SPORT_IMPLEMENTATION_STATUS[sportType];
+            const statusLabel = getImplementationStatusLabel(status);
+            const isUsable = isSportUsable(sportType);
+            const isSelected = sport === sportOption.id;
+
+            return (
+              <button
+                key={sportOption.id}
+                onClick={() => isUsable && setSport(sportOption.id)}
+                disabled={!isUsable}
+                className={cn(
+                  "relative p-4 rounded-xl border-2 transition-all text-center",
+                  isSelected
+                    ? "bg-blue-500/20 border-blue-500 shadow-lg"
+                    : isUsable
+                      ? "bg-slate-900/50 border-white/10 hover:border-white/20 hover:bg-slate-800"
+                      : "bg-slate-900/30 border-white/5 opacity-60 cursor-not-allowed"
+                )}
+              >
+                {/* Status Badge */}
+                {statusLabel && (
+                  <div className={cn(
+                    "absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                    status === 'partial'
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      : "bg-slate-700/80 text-slate-400 border border-slate-600"
+                  )}>
+                    {statusLabel}
+                  </div>
+                )}
+                <div className="text-3xl mb-2">{sportOption.emoji}</div>
+                <div className={cn(
+                  "font-medium text-sm",
+                  isSelected ? "text-blue-400" : isUsable ? "text-slate-300" : "text-slate-500"
+                )}>
+                  {sportOption.name}
+                </div>
+              </button>
+            );
+          })}
         </div>
         <p className="text-xs text-slate-500">
           Le sport sélectionné déterminera les options de règles disponibles

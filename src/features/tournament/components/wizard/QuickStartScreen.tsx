@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Zap, Plus, X, User, Users, Trophy, GitMerge,
-  ChevronDown, ChevronUp, Search
+  ChevronDown, ChevronUp, Search, ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
@@ -155,9 +155,19 @@ export function QuickStartScreen() {
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-full text-yellow-400 text-sm font-medium mb-4">
           <Zap className="w-4 h-4" />
           Quick Start
+          <span className="text-emerald-400">🎾 Tennis</span>
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2">Lancer un Tournoi</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Lancer un Tournoi Tennis</h1>
         <p className="text-slate-400">Tout sur un seul écran - jouez en moins d'une minute</p>
+
+        {/* Link to full wizard for other sports */}
+        <Link
+          to="/tournaments/new?mode=planned"
+          className="inline-flex items-center gap-2 mt-4 text-sm text-slate-500 hover:text-blue-400 transition-colors"
+        >
+          Autre sport ? Utiliser l'assistant complet
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
 
       <div className="space-y-6">

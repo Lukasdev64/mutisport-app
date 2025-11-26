@@ -13,14 +13,17 @@ import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
 const PricingPage = lazy(() => import('@/features/landing/PricingPage').then(module => ({ default: module.PricingPage })));
 const Dashboard = lazy(() => import('@/features/dashboard/Dashboard').then(module => ({ default: module.Dashboard })));
-const TournamentWizardPage = lazy(() => import('@/features/tournament/TournamentWizardPage').then(module => ({ default: module.TournamentWizardPage })));
-const QuickStartScreen = lazy(() => import('@/features/tournament/components/wizard/QuickStartScreen').then(module => ({ default: module.QuickStartScreen })));
 const TournamentArenaPage = lazy(() => import('@/features/tournament/TournamentArenaPage').then(module => ({ default: module.TournamentArenaPage })));
 const TournamentsPage = lazy(() => import('@/features/tournament/TournamentsPage').then(module => ({ default: module.TournamentsPage })));
 const PlayersPage = lazy(() => import('@/features/players/PlayersPage').then(module => ({ default: module.PlayersPage })));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(module => ({ default: module.SettingsPage })));
 const TeamManagement = lazy(() => import('@/features/teams/TeamManagement'));
 const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
+
+// Sport Selection Hub & Sport-Specific Wizards
+const SportSelectionHub = lazy(() => import('@/features/tournament/components/wizard-hub/SportSelectionHub').then(module => ({ default: module.SportSelectionHub })));
+const TennisWizardPage = lazy(() => import('@/sports/tennis/wizard/TennisWizardPage').then(module => ({ default: module.TennisWizardPage })));
+const BasketballWizardPage = lazy(() => import('@/sports/basketball/wizard/BasketballWizardPage').then(module => ({ default: module.BasketballWizardPage })));
 
 function App() {
   return (
@@ -59,8 +62,11 @@ function App() {
                   <Suspense fallback={<LoadingSpinner fullScreen />}>
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/tournaments/quickstart" element={<QuickStartScreen />} />
-                      <Route path="/tournaments/new" element={<TournamentWizardPage />} />
+                      {/* Sport Selection Hub - Entry point for tournament creation */}
+                      <Route path="/tournaments/new" element={<SportSelectionHub />} />
+                      {/* Sport-Specific Wizards */}
+                      <Route path="/tournaments/new/tennis" element={<TennisWizardPage />} />
+                      <Route path="/tournaments/new/basketball" element={<BasketballWizardPage />} />
                       <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
                       <Route path="/tournaments" element={<TournamentsPage />} />
                       <Route path="/players" element={<PlayersPage />} />

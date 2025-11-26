@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
-import { Trophy, Users, GitMerge, Repeat, Calendar, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Trophy, Users, GitMerge, Repeat, Calendar, TrendingUp, ArrowLeft, AlertCircle, Wrench } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AGE_CATEGORIES } from '@/config/categories';
@@ -11,6 +11,12 @@ import { TennisPresetSelector } from './TennisPresetSelector';
 import { TennisRulesCustomizer } from './TennisRulesCustomizer';
 import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
 import type { TennisMatchConfig } from '@/types/tennis';
+import {
+  SPORT_IMPLEMENTATION_STATUS,
+  isSportImplemented,
+  SPORTS
+} from '@/types/sport';
+import type { SportType } from '@/types/sport';
 
 const FORMAT_OPTIONS = [
   {
@@ -96,6 +102,17 @@ export function FormatAndRules() {
     tennisPresetId ? (tennisPresetId === 'custom' ? 'custom' : 'preset') : null
   );
   
+  // Map wizard sport to SportType
+  const sportTypeMap: Record<string, SportType> = {
+    'tennis': 'tennis',
+    'football': 'football',
+    'basketball': 'basketball',
+    'other': 'generic'
+  };
+  const sportType = sportTypeMap[sport] || 'generic';
+  const implementationStatus = SPORT_IMPLEMENTATION_STATUS[sportType];
+  const isFullyImplemented = isSportImplemented(sportType);
+
   // Detect if tennis based on sport selection
   const isTennis = sport === 'tennis';
 
@@ -413,9 +430,35 @@ export function FormatAndRules() {
       );
     }
   } else {
-    // Standard non-tennis content
+    // Non-tennis sports content
+    const sportInfo = SPORTS[sportType];
+
     content = (
       <>
+        {/* Info banner for partially implemented sports */}
+        {implementationStatus === 'partial' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6"
+          >
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-amber-500/20 rounded-lg">
+                <Wrench className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-amber-400 mb-1">
+                  {sportInfo.emoji} {sportInfo.name} - Version Beta
+                </h4>
+                <p className="text-sm text-slate-300">
+                  La personnalisation des règles pour {sportInfo.name.toLowerCase()} arrive bientot.
+                  En attendant, vous pouvez créer un tournoi avec les formats standards.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Tournament Format Selection */}
         <div className="space-y-4">
         <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
