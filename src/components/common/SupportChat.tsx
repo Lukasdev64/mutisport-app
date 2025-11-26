@@ -27,6 +27,13 @@ export const SupportChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const suggestedQuestions = [
+    "Comment créer un tournoi ?",
+    "Quels sont les tarifs Premium ?",
+    "Règles du Tennis",
+    "Comment inviter des joueurs ?"
+  ];
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -35,14 +42,15 @@ export const SupportChat = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
+  const handleSendMessage = async (e?: React.FormEvent, customMessage?: string) => {
     e?.preventDefault();
-    if (!inputValue.trim() || isLoading) return;
+    const messageText = customMessage || inputValue;
+    if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue.trim(),
+      content: messageText.trim(),
       timestamp: new Date()
     };
 
@@ -54,6 +62,7 @@ export const SupportChat = () => {
       const { data, error } = await supabase.functions.invoke('chat-bot', {
         body: { message: userMessage.content }
       });
+
 
       if (error) throw error;
 
@@ -160,6 +169,22 @@ export const SupportChat = () => {
                   </div>
                 </div>
               ))}
+              
+              {/* Suggested Questions */}
+              {messages.length === 1 && !isLoading && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {suggestedQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSendMessage(undefined, question)}
+                      className="text-xs bg-slate-800 hover:bg-slate-700 text-blue-400 border border-slate-700 rounded-full px-3 py-1.5 transition-colors text-left"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {isLoading && (
                 <div className="flex gap-3 max-w-[85%]">
                   <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center shrink-0">

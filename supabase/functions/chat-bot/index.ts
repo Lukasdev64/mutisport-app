@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,40 +15,90 @@ serve(async (req) => {
   try {
     const { message } = await req.json()
 
-    // Récupérez votre clé API depuis les variables d'environnement Supabase
+    // Environment variables
     const openAiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openAiKey) {
-      throw new Error('OPENAI_API_KEY is not set')
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!openAiKey || !supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing environment variables')
     }
 
-    // ⚠️ IMPORTANT : REMPLACEZ CET ID PAR CELUI QUE VOUS AVEZ REÇU D'OPENAI
-    // Exemple format : "ft:gpt-4o-mini-2024-07-18:votre-org::8r7s6t5"
-    // Si vous n'avez pas encore l'ID, mettez "gpt-4o-mini" en attendant.
-    const FINE_TUNED_MODEL_ID = "gpt-4o-mini" 
+    // Initialize Supabase Client
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    // 1. Generate Embedding for the user's question
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: FINE_TUNED_MODEL_ID,
+        model: 'text-embedding-3-small',
+        input: message.replace(/\n/g, ' '),
+      }),
+    })
+    
+    const embeddingData = await embeddingResponse.json()
+    
+    if (embeddingData.error) {
+        throw new Error(`OpenAI Embedding Error: ${embeddingData.error.message}`)
+    }
+
+    const embedding = embeddingData.data[0].embedding
+
+    // 2. Search for relevant documents in Supabase
+    const { data: documents, error: searchError } = await supabase.rpc('match_documents', {
+      query_embedding: embedding,
+      match_threshold: 0.5, // Minimum similarity (0 to 1)
+      match_count: 3, // Number of chunks to retrieve
+    })
+
+    if (searchError) {
+        console.error('Supabase Search Error:', searchError)
+        // Continue without context if search fails, or throw error depending on preference
+    }
+
+    // 3. Construct the context string
+    let contextText = ""
+    if (documents && documents.length > 0) {
+      contextText = documents.map((doc: any) => doc.content).join("\n---\n")
+    }
+
+    // 4. Send to OpenAI with the context
+    // You can use your fine-tuned model ID here if you have one, or standard gpt-4o-mini
+    const MODEL_ID = "gpt-4o-mini" 
+
+    const systemMessage = `Tu es l'assistant virtuel de SportChampions.
+    Utilise les informations de CONTEXTE ci-dessous pour répondre à la question de l'utilisateur.
+    Si la réponse ne se trouve pas dans le contexte, utilise tes connaissances générales mais précise que tu n'es pas sûr à 100%.
+    Sois concis et professionnel.
+    
+    CONTEXTE TROUVÉ DANS LA DOCUMENTATION:
+    ${contextText}
+    `
+
+    const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL_ID,
         messages: [
-          {
-            role: 'system',
-            content: "Tu es l'assistant virtuel de MultiSport App. Tu aides les organisateurs à créer des tournois, gérer les équipes et comprendre les abonnements. Tu es concis, professionnel et tu connais parfaitement l'interface de l'application."
-          },
+          { role: 'system', content: systemMessage },
           { role: 'user', content: message }
         ],
-        temperature: 0.7,
+        temperature: 0.5,
       }),
     })
 
-    const data = await response.json()
+    const data = await chatResponse.json()
 
     if (data.error) {
-      console.error('OpenAI Error:', data.error)
+      console.error('OpenAI Chat Error:', data.error)
       throw new Error(data.error.message)
     }
 
