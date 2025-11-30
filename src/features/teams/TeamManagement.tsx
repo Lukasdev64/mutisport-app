@@ -7,8 +7,10 @@ import { useTeamMembers, useInviteTeamMember, useRemoveTeamMember, useUpdateTeam
 import { Loader2, Mail, Trash2, Shield, User, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { TeamRole } from '@/types/team';
+import { useSubscription } from '@/context/SubscriptionContext';
 
 export default function TeamManagement() {
+  const { isPro, isLoading: subLoading } = useSubscription();
   const { data: members, isLoading } = useTeamMembers();
   const inviteMutation = useInviteTeamMember();
   const removeMutation = useRemoveTeamMember();
@@ -54,6 +56,31 @@ export default function TeamManagement() {
       setFeedback({ type: 'error', message: 'Erreur lors de la mise à jour.' });
     }
   };
+
+  if (subLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-4" />
+        <p className="text-slate-400">Chargement de votre abonnement...</p>
+      </div>
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <Shield className="h-12 w-12 text-blue-500 mb-4" />
+        <h2 className="text-2xl font-bold text-white mb-2">Fonctionnalité Pro</h2>
+        <p className="text-slate-400 mb-6 text-center max-w-md">
+          La gestion avancée d'équipe est réservée aux membres <span className="text-blue-400 font-semibold">Pro</span>.<br />
+          Passez au plan Pro pour inviter des collaborateurs, gérer les rôles et accéder à toutes les fonctionnalités d'équipe.
+        </p>
+        <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full text-lg shadow-lg">
+          <a href="/billing">Découvrir le plan Premium</a>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
