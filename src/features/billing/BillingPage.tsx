@@ -4,17 +4,32 @@ import { Button } from '@/components/ui/button';
 import { useCreateCheckoutSession } from '@/hooks/useStripe';
 import { Check, Zap, Shield, Star, Loader2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckoutModal } from './components/CheckoutModal';
 import { useToast } from '@/components/ui/toast';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { supabase } from '@/lib/supabase';
 
 export default function BillingPage() {
   const checkoutMutation = useCreateCheckoutSession();
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { toast } = useToast();
   const { isPro, togglePro } = useSubscription();
+  // Get current user from Supabase
+  const [userId, setUserId] = useState<string | null>(null);
+  const [jwt, setJwt] = useState<string | null>(null);
+
+  // Fetch user ID and JWT on mount
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) setJwt(session.access_token);
+    })();
+  }, []);
 
   const handleUpgrade = async (priceId: string) => {
     try {
@@ -37,9 +52,51 @@ export default function BillingPage() {
         console.error('Invalid response format:', response);
         toast('Erreur de configuration du paiement. Veuillez contacter le support.', 'error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating checkout session:', error);
-      toast('Une erreur est survenue. Veuillez réessayer.', 'error');
+      // Si l'erreur vient de notre fonction Edge avec un message spécifique
+      if (error.message && error.message.includes('Abonnement actif détecté')) {
+         toast(error.message, 'error');
+      } else if (error.message?.includes('Edge Function returned a non-2xx status code')) {
+        // Fallback si le message n'est pas parsé correctement par le client Supabase
+        toast('Vous avez déjà un abonnement actif. Veuillez le gérer depuis le portail.', 'error');
+      } else {
+        toast('Une erreur est survenue. Veuillez réessayer.', 'error');
+      }
+    }
+  };
+
+  // Stripe Customer Portal handler
+  const handleOpenPortal = async () => {
+    setIsPortalLoading(true);
+    try {
+      if (!userId || !jwt) {
+        toast("Utilisateur non authentifié.", "error");
+        setIsPortalLoading(false);
+        return;
+      }
+      const endpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-stripe-portal`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          returnUrl: window.location.origin + '/settings',
+        }),
+      });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast('Erreur lors de l’ouverture du portail Stripe.', 'error');
+      }
+    } catch (err) {
+      toast('Impossible d’ouvrir le portail Stripe.', 'error');
+    } finally {
+      setIsPortalLoading(false);
     }
   };
 
@@ -108,13 +165,29 @@ export default function BillingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button 
-                variant="outline" 
-                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800" 
-                disabled={!isPro}
-              >
-                {!isPro ? 'Plan actuel' : 'Downgrade'}
-              </Button>
+              {isPro ? (
+                <Button
+                  variant="outline"
+                  className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+                  onClick={handleOpenPortal}
+                  disabled={isPortalLoading}
+                >
+                  {isPortalLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Shield className="mr-2 h-4 w-4" />
+                  )}
+                  Gérer l’abonnement / Annuler
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+                  disabled
+                >
+                  Plan actuel
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </motion.div>
