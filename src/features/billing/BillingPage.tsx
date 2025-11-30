@@ -20,6 +20,7 @@ export default function BillingPage() {
   // Get current user from Supabase
   const [userId, setUserId] = useState<string | null>(null);
   const [jwt, setJwt] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
 
   // Fetch user ID and JWT on mount
   useEffect(() => {
@@ -132,6 +133,34 @@ export default function BillingPage() {
         </div>
       </div>
 
+      <div className="flex justify-center mt-8">
+        <div className="bg-slate-900/50 p-1 rounded-lg border border-slate-800 inline-flex relative">
+          <button
+            onClick={() => setBillingCycle('monthly')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+              billingCycle === 'monthly' 
+                ? 'bg-blue-600 text-white shadow-sm' 
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Mensuel
+          </button>
+          <button
+            onClick={() => setBillingCycle('yearly')}
+            className={`px-6 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+              billingCycle === 'yearly' 
+                ? 'bg-blue-600 text-white shadow-sm' 
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Annuel
+            <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+              -20%
+            </span>
+          </button>
+        </div>
+      </div>
+
       <div className="grid gap-8 lg:grid-cols-2 max-w-4xl mx-auto mt-8">
         {/* Free Plan */}
         <motion.div
@@ -215,8 +244,12 @@ export default function BillingPage() {
                 <Zap className="h-6 w-6 text-blue-400" />
               </div>
               <div className="mt-4">
-                <span className="text-4xl font-bold text-white">9.99€</span>
-                <span className="text-slate-400">/mois</span>
+                <span className="text-4xl font-bold text-white">
+                  {billingCycle === 'monthly' ? '9.99€' : '99.99€'}
+                </span>
+                <span className="text-slate-400">
+                  {billingCycle === 'monthly' ? '/mois' : '/an'}
+                </span>
               </div>
             </CardHeader>
             <CardContent className="flex-1">
@@ -242,7 +275,11 @@ export default function BillingPage() {
               ) : (
                 <Button 
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20"
-                  onClick={() => handleUpgrade(import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY || '')}
+                  onClick={() => handleUpgrade(
+                    billingCycle === 'monthly' 
+                      ? import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY 
+                      : import.meta.env.VITE_STRIPE_PRICE_PRO_YEARLY || ''
+                  )}
                   disabled={checkoutMutation.isPending}
                 >
                   {checkoutMutation.isPending ? (
