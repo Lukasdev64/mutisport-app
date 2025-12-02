@@ -107,10 +107,10 @@ export function SpectatorSubscribePage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-slate-900 flex items-center justify-center px-4 py-8">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Chargement du tournoi...</p>
+          <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 text-sm sm:text-base">Chargement du tournoi...</p>
         </div>
       </div>
     );
@@ -119,13 +119,13 @@ export function SpectatorSubscribePage() {
   // Error or not found
   if (error || !tournament) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-slate-900 flex items-center justify-center px-4 py-8">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-400" />
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-7 h-7 sm:w-8 sm:h-8 text-red-400" />
           </div>
-          <h1 className="text-xl font-bold text-white mb-2">Tournoi introuvable</h1>
-          <p className="text-slate-400 mb-6">
+          <h1 className="text-lg sm:text-xl font-bold text-white mb-2">Tournoi introuvable</h1>
+          <p className="text-slate-400 text-sm sm:text-base mb-6">
             Ce tournoi n'existe pas ou n'est plus disponible.
           </p>
           <Button onClick={() => navigate('/')} variant="outline">
@@ -137,38 +137,38 @@ export function SpectatorSubscribePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-slate-900 flex flex-col justify-center px-4 py-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md mx-auto"
       >
         {/* Tournament Card */}
         <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-6 border-b border-slate-700">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-green-500/20 rounded-xl flex items-center justify-center">
-                <Trophy className="w-7 h-7 text-green-400" />
+          <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 p-4 sm:p-6 border-b border-slate-700">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-green-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
                   {tournament.status === 'active' ? 'En cours' : tournament.status}
                 </span>
-                <h1 className="text-xl font-bold text-white mt-1 truncate">{tournament.name}</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-white mt-1 truncate">{tournament.name}</h1>
               </div>
             </div>
           </div>
 
           {/* Tournament Info */}
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-6 text-sm">
+          <div className="p-4 sm:p-6 space-y-4">
+            <div className="flex items-center gap-4 sm:gap-6 text-sm">
               <div className="flex items-center gap-2 text-slate-400">
-                <Users className="w-4 h-4" />
+                <Users className="w-4 h-4 flex-shrink-0" />
                 <span>{tournament.players.length} joueurs</span>
               </div>
               <div className="flex items-center gap-2 text-slate-400">
-                <Calendar className="w-4 h-4" />
+                <Calendar className="w-4 h-4 flex-shrink-0" />
                 <span>{new Date(tournament.createdAt).toLocaleDateString('fr-FR')}</span>
               </div>
             </div>
