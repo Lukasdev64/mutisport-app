@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #020617; /* Slate 950 */
-  --color-foreground: #f8fafc; /* Slate 50 */
+  --color-background: #020617;
+  --color-foreground: #f8fafc;
   
-  --color-primary: #3b82f6; /* Blue 500 */
+  --color-primary: #3b82f6;
   --color-primary-foreground: #ffffff;
   
-  --color-secondary: #1e293b; /* Slate 800 */
+  --color-secondary: #1e293b;
   --color-secondary-foreground: #f8fafc;
   
-  --color-accent: #10b981; /* Emerald 500 */
+  --color-accent: #10b981;
   --color-accent-foreground: #ffffff;
   
-  --color-destructive: #ef4444; /* Red 500 */
+  --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
   
-  --color-muted: #334155; /* Slate 700 */
-  --color-muted-foreground: #94a3b8; /* Slate 400 */
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
   
-  --color-card: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+  --color-card: rgba(30, 41, 59, 0.7);
   --color-card-foreground: #f8fafc;
   
-  --color-border: #334155; /* Slate 700 */
+  --color-border: #334155;
   
   --font-sans: "Inter", sans-serif;
   --font-heading: "Outfit", sans-serif;
@@ -46,8 +46,6 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
-}
   min-height: 100vh;
   width: 100%;
 }

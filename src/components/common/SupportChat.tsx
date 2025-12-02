@@ -1,20 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Send, Loader2, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Bot, User, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  action?: {
+    path: string;
+    label: string;
+  } | null;
 }
 
 export const SupportChat = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -60,7 +66,7 @@ export const SupportChat = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('chat-bot', {
-        body: { message: userMessage.content }
+        body: { query: userMessage.content }
       });
 
 
@@ -69,7 +75,8 @@ export const SupportChat = () => {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.choices[0].message.content,
+        content: data.reply,
+        action: data.action,
         timestamp: new Date()
       };
 
@@ -165,7 +172,21 @@ export const SupportChat = () => {
                       ? "bg-blue-600 text-white rounded-tr-none" 
                       : "bg-slate-800 text-slate-200 rounded-tl-none border border-slate-700"
                   )}>
-                    {msg.content}
+                    <p>{msg.content}</p>
+                    {msg.action && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="mt-3 w-full bg-slate-700 hover:bg-slate-600 text-white border border-slate-600"
+                        onClick={() => {
+                          navigate(msg.action!.path);
+                          setIsOpen(false);
+                        }}
+                      >
+                        {msg.action.label}
+                        <ArrowRight className="ml-2 h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
