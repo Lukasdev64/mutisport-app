@@ -129,7 +129,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!isInitialized || !isSupported) {
-      toast('Push notifications are not supported on this device', 'error');
+      // Silent log instead of intrusive toast - not all devices support push
+      console.info('[Notifications] Push notifications not supported on this device');
       return false;
     }
 

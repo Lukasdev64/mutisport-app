@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Share2, Copy, Download, QrCode, Check, Bell, BellOff } from 'lucide-react';
+import { X, Share2, Copy, Download, QrCode, Check, Bell, BellOff, CloudOff, Cloud, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNotifications } from '@/context/NotificationContext';
+import { useSyncTournamentToCloud } from '@/hooks/useTournaments';
 import type { Tournament } from '@/types/tournament';
 
 interface TournamentShareModalProps {
@@ -21,11 +22,20 @@ export function TournamentShareModal({ tournament, isOpen, onClose }: Tournament
     unsubscribeFromTournament
   } = useNotifications();
 
+  const syncMutation = useSyncTournamentToCloud();
+
   const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-  const shareUrl = `${baseUrl}/tournaments/${tournament.id}`;
-  const spectatorUrl = `${shareUrl}?subscribe=spectator`;
+  const spectatorUrl = `${baseUrl}/tournaments/${tournament.id}/spectator`;
 
   const isSubscribed = activeSubscription?.tournamentId === tournament.id;
+
+  // Check if tournament is synced to cloud
+  const isSynced = tournament.syncStatus === 'synced';
+  const isSyncing = syncMutation.isPending;
+
+  const handleSync = () => {
+    syncMutation.mutate(tournament);
+  };
 
   const handleCopy = async () => {
     try {
@@ -126,63 +136,98 @@ export function TournamentShareModal({ tournament, isOpen, onClose }: Tournament
             </button>
           </div>
 
-          {/* QR Code */}
-          <div className="flex flex-col items-center mb-6">
-            <div
-              ref={qrRef}
-              className="bg-white p-4 rounded-xl"
-            >
-              <QRCodeSVG
-                value={spectatorUrl}
-                size={180}
-                level="H"
-                includeMargin={false}
-                bgColor="#ffffff"
-                fgColor="#1e293b"
-              />
+          {/* Sync Warning - Show if tournament is not synced */}
+          {!isSynced && !isSyncing && (
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <CloudOff className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-orange-400 font-medium text-sm">Tournoi non synchronisé</h3>
+                  <p className="text-slate-400 text-xs mt-1">
+                    Les spectateurs ne pourront pas voir ce tournoi tant qu'il n'est pas synchronisé avec le cloud.
+                  </p>
+                  <button
+                    onClick={handleSync}
+                    className="mt-3 flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-colors"
+                  >
+                    <Cloud className="w-4 h-4" />
+                    Synchroniser maintenant
+                  </button>
+                </div>
+              </div>
             </div>
-            <p className="text-slate-400 text-xs mt-3 text-center">
-              Scan to follow this tournament live
-            </p>
-          </div>
+          )}
 
-          {/* URL Display */}
-          <div className="bg-slate-900/50 rounded-xl p-3 mb-4">
-            <div className="flex items-center gap-2">
-              <QrCode className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              <span className="text-slate-300 text-sm truncate flex-1">
-                {spectatorUrl}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="flex-shrink-0 p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                {copied ? (
-                  <Check className="w-4 h-4 text-green-400" />
-                ) : (
-                  <Copy className="w-4 h-4 text-slate-400" />
-                )}
-              </button>
+          {/* Syncing State */}
+          {isSyncing && (
+            <div className="flex flex-col items-center mb-6 py-8">
+              <Loader2 className="w-12 h-12 text-green-500 animate-spin mb-4" />
+              <p className="text-slate-300 font-medium">Synchronisation en cours...</p>
+              <p className="text-slate-500 text-sm">Les spectateurs pourront bientôt voir ce tournoi</p>
             </div>
-          </div>
+          )}
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <button
-              onClick={handleNativeShare}
-              className="flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Share Link
-            </button>
-            <button
-              onClick={handleDownloadQR}
-              className="flex items-center justify-center gap-2 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download QR
-            </button>
-          </div>
+          {/* QR Code - Only show if synced */}
+          {isSynced && (
+            <>
+              <div className="flex flex-col items-center mb-6">
+                <div
+                  ref={qrRef}
+                  className="bg-white p-4 rounded-xl"
+                >
+                  <QRCodeSVG
+                    value={spectatorUrl}
+                    size={180}
+                    level="H"
+                    includeMargin={false}
+                    bgColor="#ffffff"
+                    fgColor="#1e293b"
+                  />
+                </div>
+                <p className="text-slate-400 text-xs mt-3 text-center">
+                  Scan to follow this tournament live
+                </p>
+              </div>
+
+              {/* URL Display */}
+              <div className="bg-slate-900/50 rounded-xl p-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                  <span className="text-slate-300 text-sm truncate flex-1">
+                    {spectatorUrl}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="flex-shrink-0 p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
+                  >
+                    {copied ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  onClick={handleNativeShare}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share Link
+                </button>
+                <button
+                  onClick={handleDownloadQR}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Download QR
+                </button>
+              </div>
+            </>
+          )}
 
           {/* Notification Toggle */}
           <div className="border-t border-slate-700 pt-4">
@@ -209,6 +254,11 @@ export function TournamentShareModal({ tournament, isOpen, onClose }: Tournament
             {permission === 'denied' && (
               <p className="text-amber-400 text-xs mt-2 text-center">
                 Notifications blocked. Enable them in browser settings.
+              </p>
+            )}
+            {permission === 'unsupported' && (
+              <p className="text-slate-500 text-xs mt-2 text-center">
+                Push notifications not available on this device.
               </p>
             )}
           </div>
