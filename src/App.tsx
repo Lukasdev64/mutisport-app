@@ -9,6 +9,7 @@ import { SportPluginsProvider } from '@/sports/core/SportPluginsProvider';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { AutoLogin } from '@/components/auth/AutoLogin';
 import { PWAInstallPrompt } from '@/components/common/PWAInstallPrompt';
+import { DevGuard } from '@/components/common/DevGuard';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/features/landing/LandingPage').then(module => ({ default: module.LandingPage })));
@@ -36,10 +37,11 @@ function App() {
       <SportPluginsProvider>
         <SubscriptionProvider>
           <NotificationProvider>
-            <Router>
-            <AutoLogin />
-            <PWAInstallPrompt />
-          <Routes>
+            <DevGuard>
+              <Router>
+                <AutoLogin />
+                <PWAInstallPrompt />
+                <Routes>
             {/* Public Route - Landing Page */}
             <Route 
               path="/" 
@@ -93,8 +95,9 @@ function App() {
                 </Layout>
               }
             />
-            </Routes>
-            </Router>
+                </Routes>
+              </Router>
+            </DevGuard>
           </NotificationProvider>
         </SubscriptionProvider>
       </SportPluginsProvider>
