@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, ArrowLeft, Loader2, Clock, AlertCircle } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   useRuleCategoriesQuery,
