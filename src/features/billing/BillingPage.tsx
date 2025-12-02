@@ -276,7 +276,7 @@ export default function BillingPage() {
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-900/20"
                   onClick={() => handleUpgrade(
                     billingCycle === 'monthly' 
-                      ? import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY 
+                      ? import.meta.env.VITE_STRIPE_PRICE_PRO_MONTHLY || ''
                       : import.meta.env.VITE_STRIPE_PRICE_PRO_YEARLY || ''
                   )}
                   disabled={checkoutMutation.isPending}

@@ -1,4 +1,4 @@
-import { Calendar, CheckCircle2, AlertCircle, Clock, Play, Trophy } from 'lucide-react';
+import { Calendar, CheckCircle2, AlertCircle, Play, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Tournament } from '@/types/tournament';
 import { TournamentEngine } from '../../logic/engine';
@@ -11,11 +11,6 @@ interface TournamentStateIndicatorProps {
 
 export function TournamentStateIndicator({ tournament, onOpenScheduling }: TournamentStateIndicatorProps) {
   const { state, stats } = TournamentEngine.getTournamentSchedulingState(tournament);
-
-  // Don't show only if no bracket exists
-  if (state === 'no_bracket') {
-    return null;
-  }
 
   // Find tournament winner (from final match or standings)
   const getWinnerName = (): string | undefined => {
@@ -94,6 +89,11 @@ export function TournamentStateIndicator({ tournament, onOpenScheduling }: Tourn
         : 'Tournoi terminé',
     },
   };
+
+  // Don't show only if no bracket exists
+  if (state === 'no_bracket') {
+    return null;
+  }
 
   const config = configs[state];
 

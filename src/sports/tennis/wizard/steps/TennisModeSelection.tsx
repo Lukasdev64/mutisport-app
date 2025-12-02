@@ -103,13 +103,13 @@ export function TennisModeSelection() {
               className={cn(
                 "group relative p-6 rounded-2xl border-2 text-left transition-all",
                 "bg-slate-900/50",
-                colorClasses.border,
-                colorClasses.hover
+                colorClasses?.border,
+                colorClasses?.hover
               )}
             >
               {/* Icon */}
-              <div className={cn("inline-flex p-3 rounded-xl mb-4", colorClasses.bg)}>
-                <Icon className={cn("w-6 h-6", colorClasses.icon)} />
+              <div className={cn("inline-flex p-3 rounded-xl mb-4", colorClasses?.bg)}>
+                <Icon className={cn("w-6 h-6", colorClasses?.icon)} />
               </div>
 
               {/* Title */}
@@ -131,7 +131,7 @@ export function TennisModeSelection() {
               {/* Arrow */}
               <div className={cn(
                 "flex items-center gap-2 text-sm font-medium transition-transform group-hover:translate-x-2",
-                colorClasses.icon
+                colorClasses?.icon
               )}>
                 Choisir
                 <ArrowRight className="w-4 h-4" />

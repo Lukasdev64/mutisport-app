@@ -20,7 +20,10 @@ export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
   // Get sport plugin and config for rules display
   const plugin = useSportPlugin(tournament.sport);
   const sportConfig = useSportConfig(tournament);
-  const hasRulesModule = plugin?.components.RulesModule && sportConfig;
+  // Check if the sport plugin has a rules module
+  const hasRulesModule = !!plugin?.components.RulesModule;
+
+  // const now = new Date();
 
   const [activeTab, setActiveTab] = useState<TabId>(hasUpcomingMatches ? 'matches' : 'standings');
 
@@ -192,7 +195,7 @@ function UpcomingMatchesContent({ tournament }: { tournament: Tournament }) {
 
 // Helper functions
 function getUpcomingMatches(tournament: Tournament, limit: number) {
-  const now = new Date();
+  // const now = new Date();
   const allMatches = tournament.rounds.flatMap(r => r.matches);
 
   return allMatches

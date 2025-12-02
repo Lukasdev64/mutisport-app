@@ -8,7 +8,7 @@ export function BasketballMatchModalWrapper({
   isOpen,
   onClose,
   match,
-  tournament,
+  // tournament,
   onUpdateResult,
 }: SportMatchModalProps) {
   return (

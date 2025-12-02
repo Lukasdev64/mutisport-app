@@ -40,11 +40,13 @@ export function Sidebar() {
     const getProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
+        const { data } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
-          .single() as { data: { full_name: string | null } | null };
+          .single();
+        
+        const profile = data as { full_name: string | null } | null;
 
         setUserProfile({
           name: profile?.full_name ?? user.user_metadata?.full_name ?? 'User Name',

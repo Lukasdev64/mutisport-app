@@ -339,7 +339,7 @@ export class TournamentEngine {
     const inProgressMatches = allMatches.filter(m => m.status === 'in_progress');
 
     // Find next upcoming match (scheduled, not completed, sorted by date)
-    const now = new Date();
+    // const now = new Date();
     const upcomingMatches = scheduledMatches
       .filter(m => m.status !== 'completed' && m.scheduledAt)
       .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());

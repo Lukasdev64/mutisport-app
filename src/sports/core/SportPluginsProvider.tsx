@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useSportStore } from '@/store/sportStore';
 import { tennisPlugin } from '@/sports/tennis/plugin';
 import { basketballPlugin } from '@/sports/basketball/plugin';
@@ -17,7 +17,7 @@ interface SportPluginsProviderProps {
  * - Handles cleanup on unmount
  */
 export function SportPluginsProvider({ children }: SportPluginsProviderProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  // const [isInitialized, setIsInitialized] = useState(false);
   const { registerPlugin, hasPlugin } = useSportStore();
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function SportPluginsProvider({ children }: SportPluginsProviderProps) {
       }
     });
 
-    setIsInitialized(true);
+    // setIsInitialized(true);
 
     // Cleanup is handled by the store's unregisterPlugin if needed
   }, [registerPlugin, hasPlugin]);

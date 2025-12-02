@@ -40,7 +40,7 @@ export const tennisPlugin: SportPlugin = {
 
   components: {
     MatchModal: TennisMatchModalWrapper,
-    RulesModule: TennisRulesModule,
+    RulesModule: TennisRulesModule as any,
     // RulesCustomizer and PresetSelector can be added later
   },
 

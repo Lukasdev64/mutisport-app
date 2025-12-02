@@ -115,7 +115,7 @@ const getInitialState = () => ({
 
 export const useTennisWizardStore = create<TennisWizardState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       ...getInitialState(),
 
       // Navigation

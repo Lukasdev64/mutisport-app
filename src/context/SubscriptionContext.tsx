@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
 
 interface SubscriptionContextType {
@@ -24,11 +25,13 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { data: profile, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('subscription_plan')
         .eq('id', user.id)
-        .single() as { data: { subscription_plan: string | null } | null; error: Error | null };
+        .single();
+
+      const profile = data as { subscription_plan: string | null } | null;
 
       if (error) {
         console.error('Error fetching profile:', error);

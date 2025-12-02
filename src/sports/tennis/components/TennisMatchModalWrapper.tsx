@@ -12,7 +12,7 @@ export function TennisMatchModalWrapper({
   onClose,
   match,
   tournament,
-  onUpdateResult,
+  // onUpdateResult,
 }: SportMatchModalProps) {
   // TennisMatchModal uses its own internal logic for updating results
   // through useTournamentStore, so we don't need to pass onUpdateResult

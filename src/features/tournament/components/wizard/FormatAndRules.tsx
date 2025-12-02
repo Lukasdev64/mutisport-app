@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
-import { Trophy, Users, GitMerge, Repeat, Calendar, TrendingUp, ArrowLeft, AlertCircle, Wrench } from 'lucide-react';
+import { Trophy, Users, GitMerge, Repeat, Calendar, TrendingUp, ArrowLeft, Wrench } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { AGE_CATEGORIES } from '@/config/categories';
@@ -13,7 +13,7 @@ import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
 import type { TennisMatchConfig } from '@/types/tennis';
 import {
   SPORT_IMPLEMENTATION_STATUS,
-  isSportImplemented,
+  // isSportImplemented,
   SPORTS
 } from '@/types/sport';
 import type { SportType } from '@/types/sport';
@@ -111,7 +111,8 @@ export function FormatAndRules() {
   };
   const sportType = sportTypeMap[sport] || 'generic';
   const implementationStatus = SPORT_IMPLEMENTATION_STATUS[sportType];
-  const isFullyImplemented = isSportImplemented(sportType);
+    // const { isSportImplemented } = useSportPlugin(sportType);
+  // const isFullyImplemented = isSportImplemented(sportType);
 
   // Detect if tennis based on sport selection
   const isTennis = sport === 'tennis';

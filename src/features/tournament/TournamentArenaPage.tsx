@@ -66,7 +66,7 @@ export function TournamentArenaPage() {
 
   // Tournament notifications
   const { isSubscribed } = useTournamentNotifications({
-    tournament,
+    tournament: tournament ?? undefined,
     lastUpdate
   });
 

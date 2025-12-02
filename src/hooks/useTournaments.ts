@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useTournamentStore } from '@/features/tournament/store/tournamentStore';
 import type { Tournament, Match, SyncStatus } from '@/types/tournament';
-import type { Database } from '@/types/supabase';
+// import type { Database } from '@/types/supabase';
 import { toast } from 'sonner';
 
 // ============================================
@@ -118,10 +118,12 @@ export const useTournaments = () => {
         // Get current user for filtering (defense-in-depth with RLS)
         const { data: { user } } = await supabase.auth.getUser();
 
+        if (!user) return [];
+
         const { data, error } = await supabase
           .from('tournaments')
           .select('*')
-          .eq('organizer_id', user?.id) // Explicit user filter alongside RLS
+          .eq('organizer_id', user.id) // Explicit user filter alongside RLS
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -361,9 +363,9 @@ export const useSyncTournamentToCloud = () => {
           if (isUpdate) {
             // Tournament exists - use UPDATE (omit unique_url_code)
             const updateData = mapTournamentToDb(tournament, user.id, true);
-            const result = await supabase
-              .from('tournaments')
-              .update(updateData as any)
+            const result = await (supabase
+              .from('tournaments') as any)
+              .update(updateData)
               .eq('id', tournament.id)
               .select()
               .single();
@@ -403,7 +405,7 @@ export const useSyncTournamentToCloud = () => {
       useTournamentStore.getState().setSyncStatus(tournament.id, 'local-only');
       throw new Error(`SYNC_FAILED: ${lastError?.message || 'Unknown error'}`);
     },
-    onSuccess: (syncedTournament, originalTournament) => {
+    onSuccess: (_syncedTournament, originalTournament) => {
       toast.success('Tournoi synchronisé avec le cloud');
       queryClient.invalidateQueries({ queryKey: ['tournaments'] });
       queryClient.invalidateQueries({ queryKey: ['tournament', originalTournament.id] });

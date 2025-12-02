@@ -10,7 +10,7 @@ import { SchedulingTab } from './SchedulingTab';
 import { SchedulePreview } from './SchedulePreview';
 import { useScheduleGeneration } from '../../hooks/useScheduleGeneration';
 import { cn } from '@/lib/utils';
-import { useSportPlugin, useSportConfig } from '@/sports/core/hooks';
+// import { useSportPlugin } from '@/sports/core/hooks';
 
 interface TournamentSettingsModalProps {
   isOpen: boolean;
@@ -147,8 +147,8 @@ export function TournamentSettingsModal({ isOpen, onClose, tournament, initialTa
   const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
   // Get sport plugin for dynamic presets and future customization
-  const plugin = useSportPlugin(tournament.sport);
-  const sportPresets = plugin?.presets || [];
+  // const plugin = useSportPlugin(tournament.sport);
+  // const sportPresets = plugin?.presets || [];
 
   // Update active tab when initialTab changes
   useEffect(() => {
