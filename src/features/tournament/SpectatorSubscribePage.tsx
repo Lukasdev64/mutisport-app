@@ -137,12 +137,13 @@ export function SpectatorSubscribePage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-slate-900 flex flex-col justify-center px-4 py-8 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md mx-auto"
-      >
+    <div className="min-h-[100dvh] bg-slate-900 overflow-auto">
+      <div className="min-h-[100dvh] flex flex-col justify-center px-4 py-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md mx-auto my-auto"
+        >
         {/* Tournament Card */}
         <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl">
           {/* Header */}
@@ -344,6 +345,7 @@ export function SpectatorSubscribePage() {
           </button>
         </p>
       </motion.div>
+      </div>
     </div>
   );
 }
