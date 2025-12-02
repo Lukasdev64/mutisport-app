@@ -1,4 +1,5 @@
 import { Sidebar } from './Sidebar';
+import { BottomNav } from './BottomNav';
 import { SupportChat } from '@/components/common/SupportChat';
 import { useSubscription } from '@/context/SubscriptionContext';
 
@@ -29,13 +30,14 @@ export function Layout({ children }: LayoutProps) {
       <div className="fixed inset-0 z-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,rgba(59,130,246,0.2),rgba(0,0,0,0))] opacity-30 pointer-events-none" />
 
       {/* --- CONTENT --- */}
-      <div className="relative z-10 flex w-full h-screen">
+      <div className="relative z-10 flex w-full h-screen overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-auto relative">
-          <div className="p-8 max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative scroll-smooth">
+          <div className="p-4 md:p-8 max-w-7xl mx-auto pb-24 md:pb-8">
             {children}
           </div>
         </main>
+        <BottomNav />
         {isPro && <SupportChat />}
       </div>
     </div>

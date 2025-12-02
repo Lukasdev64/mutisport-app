@@ -75,7 +75,7 @@ export function CampaignSetup() {
   const handleGenerateTally = () => {
     setIsGenerating(true);
     setTimeout(() => {
-      setTallyLink('https://tally.so/r/w7X8kL?tournament=summer2025');
+      setTallyLink(import.meta.env.VITE_TALLY_FORM_URL || 'https://tally.so/r/w7X8kL?tournament=summer2025');
       setIsGenerating(false);
     }, 1000);
   };

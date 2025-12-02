@@ -98,7 +98,7 @@ export const SupportChat = () => {
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsOpen(true)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-colors",
+          "fixed bottom-24 md:bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-colors",
           isOpen ? "hidden" : "bg-blue-600 hover:bg-blue-500 text-white"
         )}
       >
@@ -113,7 +113,7 @@ export const SupportChat = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] h-[600px] max-h-[80vh] bg-[#0f172a] border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 md:bottom-6 right-6 z-50 w-[calc(100vw-3rem)] md:w-[380px] h-[600px] max-h-[70vh] md:max-h-[80vh] bg-[#0f172a] border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="p-4 bg-slate-900/50 border-b border-slate-800 flex items-center justify-between backdrop-blur-sm">

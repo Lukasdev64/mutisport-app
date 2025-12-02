@@ -79,7 +79,7 @@ export function Sidebar() {
         opacity: { duration: 0.3 },
         x: { type: "spring", damping: 20, stiffness: 100 }
       }}
-      className="h-screen sticky top-0 border-r border-white/10 bg-slate-950/50 backdrop-blur-xl flex flex-col z-50"
+      className="hidden md:flex h-screen sticky top-0 border-r border-white/10 bg-slate-950/50 backdrop-blur-xl flex-col z-50"
     >
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-white/10 h-16">
