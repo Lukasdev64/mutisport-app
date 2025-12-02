@@ -47,6 +47,30 @@ interface UseMatchSubscriptionReturn {
  * });
  * ```
  */
+// Helper to check if string is valid UUID
+const isValidUUID = (uuid: string) => {
+  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return regex.test(uuid);
+};
+
+/**
+ * Hook for subscribing to real-time match updates via Supabase Realtime
+ *
+ * Note: This hook is designed for when tournaments are stored in Supabase.
+ * Currently, tournaments are stored in localStorage, so this serves as
+ * infrastructure for future migration.
+ *
+ * Usage:
+ * ```tsx
+ * const { isConnected, lastUpdate } = useMatchSubscription({
+ *   tournamentId: 'abc123',
+ *   onMatchUpdate: (update) => {
+ *     // Update local state with the new match data
+ *     updateMatchInStore(update.matchId, update.data);
+ *   }
+ * });
+ * ```
+ */
 export function useMatchSubscription({
   tournamentId,
   onMatchUpdate,
@@ -77,8 +101,8 @@ export function useMatchSubscription({
   }, [tournamentId, onMatchUpdate]);
 
   useEffect(() => {
-    // Skip if disabled or Supabase not configured
-    if (!enabled || !isSupabaseConfigured()) {
+    // Skip if disabled or Supabase not configured or invalid UUID
+    if (!enabled || !isSupabaseConfigured() || !isValidUUID(tournamentId)) {
       return;
     }
 
@@ -148,6 +172,11 @@ export function useBroadcastMatchUpdate() {
     if (!isSupabaseConfigured()) {
       console.warn('Supabase not configured, skipping broadcast');
       return { success: false, error: 'Supabase not configured' };
+    }
+
+    if (!isValidUUID(tournamentId)) {
+      console.warn('Invalid tournament ID, skipping broadcast');
+      return { success: false, error: 'Invalid tournament ID' };
     }
 
     try {

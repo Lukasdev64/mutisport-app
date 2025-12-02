@@ -33,6 +33,10 @@ Copy `.env.example` to `.env` and configure:
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
+
+# For RAG knowledge base seeding (seed-knowledge.ts)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+OPENAI_API_KEY=your-openai-key
 ```
 
 If credentials are missing, the app falls back to localStorage with mock Supabase responses (see `src/lib/supabase.ts`).
@@ -91,13 +95,15 @@ src/
 │   └── sportStore.ts   # Active sport + plugin registry (persisted)
 ├── hooks/              # React hooks
 │   ├── useTournaments.ts
-│   ├── useStripe.ts
+│   ├── useStripe.ts        # useCreateCheckoutSession, useStripePortal
 │   └── useSportFilter.ts
 ├── types/              # TypeScript types
 │   ├── tournament.ts   # Tournament (with sportConfig), Match, Player, Round
 │   ├── tennis.ts       # TennisMatchScore, TennisGameScore
 │   └── sport.ts        # SportType, SPORTS registry
 ├── components/         # Shared UI components
+│   ├── common/
+│   │   └── SupportChat.tsx      # RAG-powered floating chat widget
 │   ├── sport/
 │   │   ├── SportSwitcher.tsx    # Sidebar dropdown for switching sports (hot-switch)
 │   │   └── SportSelector.tsx    # Full grid selector (Settings page)
@@ -464,6 +470,7 @@ All tables have RLS enabled. Main tables:
 |-------|---------|-------------|
 | `profiles` | User profiles (linked to auth.users) | stripe_customer_id, subscription_plan, subscription_status |
 | `tournaments` | Tournament metadata | format, status, bracket_data (JSONB), match_results (JSONB) |
+| `documents` | RAG knowledge base (pgvector) | content, metadata (JSONB), embedding vector(1536) |
 | `tournament_players` | Players in tournaments | seed, wins/losses/draws/points, buchholz_score, opponents (JSONB) |
 | `tournament_rounds` | Tournament rounds | round_number, round_type, status |
 | `tournament_matches` | Individual matches | player1/2_id, winner_id, next_match_id, loser_next_match_id, details (JSONB) |
@@ -483,8 +490,10 @@ All tables have RLS enabled. Main tables:
 | Function | JWT | Purpose |
 |----------|-----|---------|
 | `create-checkout-session` | ✓ | Stripe checkout session creation |
+| `create-stripe-portal` | ✗ | Stripe billing portal session (manage subscription) |
 | `create-subscription` | ✓ | Stripe subscription management |
 | `stripe-webhook` | ✓ | Handle Stripe events |
+| `chat-bot` | ✗ | RAG-powered support chatbot (OpenAI + pgvector) |
 | `invite-team-member` | ✗ | Team invitation emails |
 | `tally-webhook` | ✗ | Tally form submissions |
 
@@ -500,6 +509,32 @@ supabase.channel('name')
 ### Fallback Mode
 
 If env vars missing, `src/lib/supabase.ts` returns mock client - app works offline with localStorage.
+
+### RAG Support (Knowledge Base)
+
+The app includes a **RAG (Retrieval-Augmented Generation)** system for the support chatbot.
+
+**Components:**
+- `documents` table with pgvector embeddings (1536 dimensions)
+- `match_documents()` SQL function for similarity search
+- `chat-bot` Edge Function using OpenAI + pgvector
+- `seed-knowledge.ts` script for seeding the knowledge base
+
+**Seeding the Knowledge Base:**
+```bash
+# Requires OPENAI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in .env
+bun run seed-knowledge.ts
+```
+
+**SQL Function:**
+```sql
+-- Returns documents matching a query embedding above threshold
+select * from match_documents(
+  query_embedding := '[...]'::vector(1536),
+  match_threshold := 0.7,
+  match_count := 5
+);
+```
 
 ## Debugging Tips
 
@@ -777,3 +812,4 @@ const dbStatus = appStatus === 'draft' ? 'setup'
 | @supabase/supabase-js | 2.x | Backend |
 | framer-motion | 12.x | Animations |
 | @stripe/react-stripe-js | 5.x | Payments |
+| openai | 4.x | RAG embeddings (chat-bot) |

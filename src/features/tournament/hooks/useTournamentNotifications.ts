@@ -1,5 +1,4 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '@/context/NotificationContext';
 import { useToast } from '@/components/ui/toast';
 import type { Tournament } from '@/types/tournament';
@@ -24,38 +23,18 @@ interface UseTournamentNotificationsOptions {
 
 /**
  * Hook that handles tournament notification logic:
- * - Auto-subscribes spectators coming from QR code links (?subscribe=spectator)
  * - Shows toast notifications for match updates
  * - Triggers push notifications via OneSignal tags
+ *
+ * Note: Subscription is handled by SpectatorSubscribePage (/tournaments/:id/spectator)
  */
 export function useTournamentNotifications({
   tournament,
   lastUpdate
 }: UseTournamentNotificationsOptions) {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { subscribeToTournament, activeSubscription, permission } = useNotifications();
   const { toast } = useToast();
   const previousUpdateRef = useRef<MatchUpdate | null>(null);
-  const hasAutoSubscribed = useRef(false);
-
-  // Auto-subscribe spectators from QR code/link
-  useEffect(() => {
-    if (!tournament || hasAutoSubscribed.current) return;
-
-    const subscribeParam = searchParams.get('subscribe');
-
-    if (subscribeParam === 'spectator' || subscribeParam === 'player') {
-      hasAutoSubscribed.current = true;
-
-      // Remove the param from URL
-      searchParams.delete('subscribe');
-      setSearchParams(searchParams, { replace: true });
-
-      // Subscribe to tournament
-      const role = subscribeParam as 'spectator' | 'player';
-      subscribeToTournament(tournament.id, role).catch(console.error);
-    }
-  }, [tournament, searchParams, setSearchParams, subscribeToTournament]);
 
   // Handle match updates and show toast notifications
   useEffect(() => {

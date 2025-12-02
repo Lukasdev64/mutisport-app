@@ -8,7 +8,56 @@
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1e293b" />
     <meta name="description" content="Tournament management for tennis and basketball - Live scores, brackets, and notifications" />
-    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Dynamic manifest injection for iOS Add to Home Screen -->
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        var startUrl = '/dashboard';
+        var appName = 'Multi-Sport Tournament';
+        var shortName = 'MultiSport';
+
+        // Check if on spectator page
+        if (path.includes('/spectator')) {
+          startUrl = path;
+          // Extract tournament ID for custom name
+          var match = path.match(/\/tournaments\/([^/]+)\/spectator/);
+          if (match) {
+            shortName = 'Tournoi';
+            appName = 'Tournoi en direct';
+          }
+        }
+
+        var manifest = {
+          name: appName,
+          short_name: shortName,
+          description: 'Tournament management - Live scores and notifications',
+          theme_color: '#1e293b',
+          background_color: '#0f172a',
+          display: 'standalone',
+          orientation: 'portrait-primary',
+          scope: '/',
+          start_url: startUrl,
+          icons: [
+            { src: '/icons/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/icons/pwa-512x512.png', sizes: '512x512', type: 'image/png' }
+          ]
+        };
+
+        var content = encodeURIComponent(JSON.stringify(manifest));
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = 'data:application/manifest+json,' + content;
+        document.head.appendChild(link);
+
+        // Also update iOS-specific meta tags
+        if (path.includes('/spectator')) {
+          var appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+          if (appleTitle) appleTitle.content = shortName;
+          document.title = appName;
+        }
+      })();
+    </script>
 
     <!-- iOS PWA Support -->
     <meta name="apple-mobile-web-app-capable" content="yes" />

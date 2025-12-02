@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
+import { useTournament, useSyncTournamentToCloud } from '@/hooks/useTournaments';
 import { BracketDisplay } from './components/arena/BracketDisplay';
 import { ArenaSidebar } from './components/arena/ArenaSidebar';
-import { Trophy, Users, Calendar, Share2, Bell, BellOff, Wifi } from 'lucide-react';
+import { Trophy, Users, Calendar, Share2, Bell, BellOff, Wifi, Loader2, CloudOff, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TournamentSettingsModal, type TabId } from './components/arena/TournamentSettingsModal';
 import { TournamentShareModal } from './components/arena/TournamentShareModal';
@@ -15,9 +16,39 @@ import { NotificationDebugPanel } from '@/components/debug/NotificationDebugPane
 
 export function TournamentArenaPage() {
   const { id } = useParams<{ id: string }>();
-  const tournament = useTournamentStore((state) =>
+
+  // First try local store (for organizer/offline)
+  const localTournament = useTournamentStore((state) =>
     state.tournaments.find((t) => t.id === id)
   );
+
+  // If not in local store, fetch from Supabase (for spectators)
+  const { data: remoteTournament, isLoading, error: fetchError } = useTournament(id || '');
+
+  // Use local first, fallback to remote
+  const tournament = localTournament || remoteTournament;
+
+  // Auto-sync local tournament to Supabase if it's local-only
+  const syncMutation = useSyncTournamentToCloud();
+
+  useEffect(() => {
+    // Only auto-sync if:
+    // 1. We have a local tournament
+    // 2. Not already synced (syncStatus !== 'synced')
+    // 3. Not currently syncing
+    // 4. Supabase query finished (not loading)
+    // 5. Remote doesn't exist yet
+    const shouldSync = localTournament
+      && localTournament.syncStatus !== 'synced'
+      && !syncMutation.isPending
+      && !isLoading
+      && !remoteTournament;
+
+    if (shouldSync) {
+      syncMutation.mutate(localTournament);
+    }
+  }, [localTournament?.id, localTournament?.syncStatus, remoteTournament, isLoading, syncMutation.isPending]);
+
   const [showSettings, setShowSettings] = useState(false);
   const [settingsTab, setSettingsTab] = useState<TabId>('general');
   const [showShare, setShowShare] = useState(false);
@@ -54,12 +85,48 @@ export function TournamentArenaPage() {
     }
   };
 
+  // Determine sync status for UI
+  const getSyncStatusDisplay = () => {
+    if (syncMutation.isPending) return { text: 'Synchronisation...', color: 'bg-yellow-500', icon: Cloud };
+    if (tournament?.syncStatus === 'synced') return { text: 'Synchronisé', color: 'bg-green-500', icon: Cloud };
+    if (tournament?.syncStatus === 'local-only') return { text: 'Local uniquement', color: 'bg-orange-500', icon: CloudOff };
+    if (tournament?.syncStatus === 'pending') return { text: 'En attente', color: 'bg-yellow-500', icon: Cloud };
+    return null; // Remote tournament - no sync status needed
+  };
+
+  const syncStatusDisplay = getSyncStatusDisplay();
+
+  // Loading state (only show if not found locally and still fetching from Supabase)
+  if (!localTournament && isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+        <Loader2 className="w-12 h-12 mb-4 animate-spin text-blue-500" />
+        <h2 className="text-lg font-semibold">Loading Tournament...</h2>
+        <p className="text-sm">Fetching tournament data</p>
+      </div>
+    );
+  }
+
+  // Syncing state
+  if (syncMutation.isPending) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
+        <Loader2 className="w-12 h-12 mb-4 animate-spin text-green-500" />
+        <h2 className="text-lg font-semibold">Synchronisation en cours...</h2>
+        <p className="text-sm">Upload du tournoi vers le cloud</p>
+      </div>
+    );
+  }
+
   if (!tournament) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-slate-400">
         <Trophy className="w-16 h-16 mb-4 opacity-20" />
         <h2 className="text-xl font-semibold">Tournament Not Found</h2>
         <p>The tournament you are looking for does not exist.</p>
+        {fetchError && (
+          <p className="text-xs text-red-400 mt-2">Error: {fetchError.message}</p>
+        )}
       </div>
     );
   }
@@ -74,6 +141,17 @@ export function TournamentArenaPage() {
               <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
                 {tournament.status}
               </span>
+              {/* Sync status indicator */}
+              {syncStatusDisplay && (
+                <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border ${
+                  syncStatusDisplay.color === 'bg-green-500' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                  syncStatusDisplay.color === 'bg-orange-500' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
+                  'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                }`}>
+                  <syncStatusDisplay.icon className="w-3 h-3" />
+                  <span>{syncStatusDisplay.text}</span>
+                </span>
+              )}
               {/* Live indicator */}
               <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 border border-slate-700">
                 <span className={`w-1.5 h-1.5 rounded-full ${connectionStatus.color} ${connectionStatus.pulse ? 'animate-pulse' : ''}`} />

@@ -1,7 +1,83 @@
 import type { Tournament, Player } from '@/types/tournament';
-// import { v4 as uuidv4 } from 'uuid';
 
 import { RANKINGS } from '@/config/rankings';
+
+// Deterministic UUID generator for consistent mock data
+// Uses a simple hash-based approach to generate valid UUIDs from seed strings
+function generateDeterministicUUID(seed: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+
+  // Convert hash to hex and pad to create UUID-like structure
+  const hex = Math.abs(hash).toString(16).padStart(8, '0');
+  const hex2 = Math.abs(hash * 31).toString(16).padStart(4, '0');
+  const hex3 = Math.abs(hash * 37).toString(16).padStart(4, '0');
+  const hex4 = Math.abs(hash * 41).toString(16).padStart(4, '0');
+  const hex5 = Math.abs(hash * 43).toString(16).padStart(12, '0');
+
+  return `${hex.slice(0, 8)}-${hex2.slice(0, 4)}-4${hex3.slice(1, 4)}-a${hex4.slice(1, 4)}-${hex5.slice(0, 12)}`;
+}
+
+// Pre-generated UUIDs for mock data consistency
+const MOCK_IDS = {
+  // Tournaments
+  t1: generateDeterministicUUID('tournament-roland-garros'),
+  t2: generateDeterministicUUID('tournament-wimbledon'),
+  t3: generateDeterministicUUID('tournament-us-open'),
+  t4: generateDeterministicUUID('tournament-australian-open'),
+  // Players (p1-p8 used in tournaments)
+  p1: generateDeterministicUUID('player-1'),
+  p2: generateDeterministicUUID('player-2'),
+  p3: generateDeterministicUUID('player-3'),
+  p4: generateDeterministicUUID('player-4'),
+  p5: generateDeterministicUUID('player-5'),
+  p6: generateDeterministicUUID('player-6'),
+  p7: generateDeterministicUUID('player-7'),
+  p8: generateDeterministicUUID('player-8'),
+  // Rounds
+  r1: generateDeterministicUUID('round-1'),
+  r2: generateDeterministicUUID('round-2'),
+  r3: generateDeterministicUUID('round-3'),
+  rr1: generateDeterministicUUID('round-robin-1'),
+  rr2: generateDeterministicUUID('round-robin-2'),
+  rr3: generateDeterministicUUID('round-robin-3'),
+  fr1: generateDeterministicUUID('football-round-1'),
+  fr2: generateDeterministicUUID('football-round-2'),
+  sw1: generateDeterministicUUID('swiss-round-1'),
+  sw2: generateDeterministicUUID('swiss-round-2'),
+  // Matches
+  m1: generateDeterministicUUID('match-1'),
+  m2: generateDeterministicUUID('match-2'),
+  m3: generateDeterministicUUID('match-3'),
+  m4: generateDeterministicUUID('match-4'),
+  sm1: generateDeterministicUUID('semi-match-1'),
+  sm2: generateDeterministicUUID('semi-match-2'),
+  final: generateDeterministicUUID('final-match'),
+  rm1: generateDeterministicUUID('rr-match-1'),
+  rm2: generateDeterministicUUID('rr-match-2'),
+  rm3: generateDeterministicUUID('rr-match-3'),
+  rm4: generateDeterministicUUID('rr-match-4'),
+  rm5: generateDeterministicUUID('rr-match-5'),
+  rm6: generateDeterministicUUID('rr-match-6'),
+  fm1: generateDeterministicUUID('fr-match-1'),
+  fm2: generateDeterministicUUID('fr-match-2'),
+  fm3: generateDeterministicUUID('fr-match-3'),
+  fm4: generateDeterministicUUID('fr-match-4'),
+  fm5: generateDeterministicUUID('fr-match-5'),
+  fm6: generateDeterministicUUID('fr-match-6'),
+  swm1: generateDeterministicUUID('swiss-match-1'),
+  swm2: generateDeterministicUUID('swiss-match-2'),
+  swm3: generateDeterministicUUID('swiss-match-3'),
+  swm4: generateDeterministicUUID('swiss-match-4'),
+  swm5: generateDeterministicUUID('swiss-match-5'),
+  swm6: generateDeterministicUUID('swiss-match-6'),
+  swm7: generateDeterministicUUID('swiss-match-7'),
+  swm8: generateDeterministicUUID('swiss-match-8'),
+};
 
 const FIRST_NAMES = [
   'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
@@ -30,21 +106,21 @@ function random() {
 
 function generateMockPlayers(count: number): Player[] {
   const players: Player[] = [
-    { id: 'p1', name: 'Alex Rivera', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p1&backgroundColor=b6e3f4', email: 'alex@example.com', age: 19, ranking: '15/1' },
-    { id: 'p2', name: 'Sarah Chen', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p2&backgroundColor=c0aede', email: 'sarah@example.com', age: 17, ranking: '15/3' },
-    { id: 'p3', name: 'Mike Johnson', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p3&backgroundColor=d1d4f9', email: 'mike@example.com', age: 14, ranking: '30/1' },
-    { id: 'p4', name: 'Emma Wilson', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p4&backgroundColor=ffdfbf', email: 'emma@example.com', age: 13, ranking: '30/3' },
-    { id: 'p5', name: 'David Kim', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p5&backgroundColor=ffd5dc', email: 'david@example.com', age: 12, ranking: '30/5' },
-    { id: 'p6', name: 'Lisa Park', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p6&backgroundColor=c0aede', email: 'lisa@example.com', age: 11, ranking: '40' },
-    { id: 'p7', name: 'James Bond', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p7&backgroundColor=b6e3f4', email: 'james@example.com', age: 25, ranking: 'NC' },
-    { id: 'p8', name: 'Diana Prince', avatar: 'https://api.dicebear.com/9.x/avataaars/svg?seed=p8&backgroundColor=ffdfbf', email: 'diana@example.com', age: 28, ranking: 'NC' },
+    { id: MOCK_IDS.p1, name: 'Alex Rivera', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p1}&backgroundColor=b6e3f4`, email: 'alex@example.com', age: 19, ranking: '15/1' },
+    { id: MOCK_IDS.p2, name: 'Sarah Chen', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p2}&backgroundColor=c0aede`, email: 'sarah@example.com', age: 17, ranking: '15/3' },
+    { id: MOCK_IDS.p3, name: 'Mike Johnson', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p3}&backgroundColor=d1d4f9`, email: 'mike@example.com', age: 14, ranking: '30/1' },
+    { id: MOCK_IDS.p4, name: 'Emma Wilson', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p4}&backgroundColor=ffdfbf`, email: 'emma@example.com', age: 13, ranking: '30/3' },
+    { id: MOCK_IDS.p5, name: 'David Kim', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p5}&backgroundColor=ffd5dc`, email: 'david@example.com', age: 12, ranking: '30/5' },
+    { id: MOCK_IDS.p6, name: 'Lisa Park', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p6}&backgroundColor=c0aede`, email: 'lisa@example.com', age: 11, ranking: '40' },
+    { id: MOCK_IDS.p7, name: 'James Bond', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p7}&backgroundColor=b6e3f4`, email: 'james@example.com', age: 25, ranking: 'NC' },
+    { id: MOCK_IDS.p8, name: 'Diana Prince', avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${MOCK_IDS.p8}&backgroundColor=ffdfbf`, email: 'diana@example.com', age: 28, ranking: 'NC' },
   ];
 
   for (let i = players.length; i < count; i++) {
     const firstName = FIRST_NAMES[Math.floor(random() * FIRST_NAMES.length)];
     const lastName = LAST_NAMES[Math.floor(random() * LAST_NAMES.length)];
     const name = `${firstName} ${lastName}`;
-    
+
     // Age distribution: mostly 18-40, some younger, some older
     let age;
     const r = random();
@@ -68,11 +144,14 @@ function generateMockPlayers(count: number): Player[] {
     const bgColors = ['b6e3f4', 'c0aede', 'd1d4f9'];
     const bg = bgColors[Math.floor(random() * bgColors.length)];
 
+    // Generate UUID for additional players
+    const playerId = generateDeterministicUUID(`player-${i + 1}`);
+
     players.push({
-      id: `p${i + 1}`,
+      id: playerId,
       name,
       // Use ID as seed for guaranteed uniqueness and v9 API
-      avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(`p${i + 1}`)}&backgroundColor=${bg}`,
+      avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(playerId)}&backgroundColor=${bg}`,
       email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
       age,
       ranking
@@ -86,7 +165,7 @@ export const MOCK_PLAYERS: Player[] = generateMockPlayers(200);
 
 export const MOCK_TOURNAMENTS: Tournament[] = [
   {
-    id: 't1',
+    id: MOCK_IDS.t1,
     name: 'Roland Garros 2025',
     sport: 'tennis',
     format: 'single_elimination',
@@ -94,28 +173,28 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     players: MOCK_PLAYERS.slice(0, 8),
     rounds: [
       {
-        id: 'r1',
+        id: MOCK_IDS.r1,
         name: 'Quarter Finals',
         matches: [
-          { id: 'm1', roundId: 'r1', player1Id: 'p1', player2Id: 'p8', status: 'completed', result: { player1Score: 3, player2Score: 0, winnerId: 'p1' }, nextMatchId: 'sm1' },
-          { id: 'm2', roundId: 'r1', player1Id: 'p4', player2Id: 'p5', status: 'completed', result: { player1Score: 2, player2Score: 3, winnerId: 'p5' }, nextMatchId: 'sm1' },
-          { id: 'm3', roundId: 'r1', player1Id: 'p3', player2Id: 'p6', status: 'pending', result: undefined, nextMatchId: 'sm2' },
-          { id: 'm4', roundId: 'r1', player1Id: 'p2', player2Id: 'p7', status: 'pending', result: undefined, nextMatchId: 'sm2' },
+          { id: MOCK_IDS.m1, roundId: MOCK_IDS.r1, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p8, status: 'completed', result: { player1Score: 3, player2Score: 0, winnerId: MOCK_IDS.p1 }, nextMatchId: MOCK_IDS.sm1 },
+          { id: MOCK_IDS.m2, roundId: MOCK_IDS.r1, player1Id: MOCK_IDS.p4, player2Id: MOCK_IDS.p5, status: 'completed', result: { player1Score: 2, player2Score: 3, winnerId: MOCK_IDS.p5 }, nextMatchId: MOCK_IDS.sm1 },
+          { id: MOCK_IDS.m3, roundId: MOCK_IDS.r1, player1Id: MOCK_IDS.p3, player2Id: MOCK_IDS.p6, status: 'pending', result: undefined, nextMatchId: MOCK_IDS.sm2 },
+          { id: MOCK_IDS.m4, roundId: MOCK_IDS.r1, player1Id: MOCK_IDS.p2, player2Id: MOCK_IDS.p7, status: 'pending', result: undefined, nextMatchId: MOCK_IDS.sm2 },
         ]
       },
       {
-        id: 'r2',
+        id: MOCK_IDS.r2,
         name: 'Semi Finals',
         matches: [
-          { id: 'sm1', roundId: 'r2', player1Id: 'p1', player2Id: 'p5', status: 'pending', result: undefined, nextMatchId: 'final' },
-          { id: 'sm2', roundId: 'r2', player1Id: undefined, player2Id: undefined, status: 'pending', result: undefined, nextMatchId: 'final' },
+          { id: MOCK_IDS.sm1, roundId: MOCK_IDS.r2, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p5, status: 'pending', result: undefined, nextMatchId: MOCK_IDS.final },
+          { id: MOCK_IDS.sm2, roundId: MOCK_IDS.r2, player1Id: undefined, player2Id: undefined, status: 'pending', result: undefined, nextMatchId: MOCK_IDS.final },
         ]
       },
       {
-        id: 'r3',
+        id: MOCK_IDS.r3,
         name: 'Final',
         matches: [
-          { id: 'final', roundId: 'r3', player1Id: undefined, player2Id: undefined, status: 'pending', result: undefined }
+          { id: MOCK_IDS.final, roundId: MOCK_IDS.r3, player1Id: undefined, player2Id: undefined, status: 'pending', result: undefined }
         ]
       }
     ],
@@ -124,7 +203,7 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     settings: { pointsForWin: 3, pointsForDraw: 1, pointsForLoss: 0 }
   },
   {
-    id: 't2',
+    id: MOCK_IDS.t2,
     name: 'Wimbledon 2025',
     sport: 'tennis',
     format: 'round_robin',
@@ -132,27 +211,27 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     players: MOCK_PLAYERS.slice(0, 4),
     rounds: [
       {
-        id: 'rr1',
+        id: MOCK_IDS.rr1,
         name: 'Round 1',
         matches: [
-          { id: 'rm1', roundId: 'rr1', player1Id: 'p1', player2Id: 'p2', status: 'completed', result: { player1Score: 11, player2Score: 9, winnerId: 'p1' } },
-          { id: 'rm2', roundId: 'rr1', player1Id: 'p3', player2Id: 'p4', status: 'completed', result: { player1Score: 5, player2Score: 11, winnerId: 'p4' } }
+          { id: MOCK_IDS.rm1, roundId: MOCK_IDS.rr1, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p2, status: 'completed', result: { player1Score: 11, player2Score: 9, winnerId: MOCK_IDS.p1 } },
+          { id: MOCK_IDS.rm2, roundId: MOCK_IDS.rr1, player1Id: MOCK_IDS.p3, player2Id: MOCK_IDS.p4, status: 'completed', result: { player1Score: 5, player2Score: 11, winnerId: MOCK_IDS.p4 } }
         ]
       },
       {
-        id: 'rr2',
+        id: MOCK_IDS.rr2,
         name: 'Round 2',
         matches: [
-          { id: 'rm3', roundId: 'rr2', player1Id: 'p1', player2Id: 'p3', status: 'completed', result: { player1Score: 11, player2Score: 7, winnerId: 'p1' } },
-          { id: 'rm4', roundId: 'rr2', player1Id: 'p2', player2Id: 'p4', status: 'completed', result: { player1Score: 12, player2Score: 10, winnerId: 'p2' } }
+          { id: MOCK_IDS.rm3, roundId: MOCK_IDS.rr2, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p3, status: 'completed', result: { player1Score: 11, player2Score: 7, winnerId: MOCK_IDS.p1 } },
+          { id: MOCK_IDS.rm4, roundId: MOCK_IDS.rr2, player1Id: MOCK_IDS.p2, player2Id: MOCK_IDS.p4, status: 'completed', result: { player1Score: 12, player2Score: 10, winnerId: MOCK_IDS.p2 } }
         ]
       },
       {
-        id: 'rr3',
+        id: MOCK_IDS.rr3,
         name: 'Round 3',
         matches: [
-          { id: 'rm5', roundId: 'rr3', player1Id: 'p1', player2Id: 'p4', status: 'completed', result: { player1Score: 8, player2Score: 11, winnerId: 'p4' } },
-          { id: 'rm6', roundId: 'rr3', player1Id: 'p2', player2Id: 'p3', status: 'completed', result: { player1Score: 11, player2Score: 4, winnerId: 'p2' } }
+          { id: MOCK_IDS.rm5, roundId: MOCK_IDS.rr3, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p4, status: 'completed', result: { player1Score: 8, player2Score: 11, winnerId: MOCK_IDS.p4 } },
+          { id: MOCK_IDS.rm6, roundId: MOCK_IDS.rr3, player1Id: MOCK_IDS.p2, player2Id: MOCK_IDS.p3, status: 'completed', result: { player1Score: 11, player2Score: 4, winnerId: MOCK_IDS.p2 } }
         ]
       }
     ],
@@ -161,7 +240,7 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     settings: { pointsForWin: 3, pointsForDraw: 1, pointsForLoss: 0 }
   },
   {
-    id: 't3',
+    id: MOCK_IDS.t3,
     name: 'US Open 2025',
     sport: 'tennis',
     format: 'round_robin',
@@ -169,21 +248,21 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     players: MOCK_PLAYERS.slice(0, 6),
     rounds: [
       {
-        id: 'fr1',
+        id: MOCK_IDS.fr1,
         name: 'Week 1',
         matches: [
-          { id: 'fm1', roundId: 'fr1', player1Id: 'p1', player2Id: 'p2', status: 'completed', result: { player1Score: 3, player2Score: 1, winnerId: 'p1' } },
-          { id: 'fm2', roundId: 'fr1', player1Id: 'p3', player2Id: 'p4', status: 'completed', result: { player1Score: 2, player2Score: 2, winnerId: undefined } },
-          { id: 'fm3', roundId: 'fr1', player1Id: 'p5', player2Id: 'p6', status: 'active', result: undefined }
+          { id: MOCK_IDS.fm1, roundId: MOCK_IDS.fr1, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p2, status: 'completed', result: { player1Score: 3, player2Score: 1, winnerId: MOCK_IDS.p1 } },
+          { id: MOCK_IDS.fm2, roundId: MOCK_IDS.fr1, player1Id: MOCK_IDS.p3, player2Id: MOCK_IDS.p4, status: 'completed', result: { player1Score: 2, player2Score: 2, winnerId: undefined } },
+          { id: MOCK_IDS.fm3, roundId: MOCK_IDS.fr1, player1Id: MOCK_IDS.p5, player2Id: MOCK_IDS.p6, status: 'active', result: undefined }
         ]
       },
       {
-        id: 'fr2',
+        id: MOCK_IDS.fr2,
         name: 'Week 2',
         matches: [
-          { id: 'fm4', roundId: 'fr2', player1Id: 'p1', player2Id: 'p3', status: 'scheduled', result: undefined },
-          { id: 'fm5', roundId: 'fr2', player1Id: 'p2', player2Id: 'p5', status: 'scheduled', result: undefined },
-          { id: 'fm6', roundId: 'fr2', player1Id: 'p4', player2Id: 'p6', status: 'scheduled', result: undefined }
+          { id: MOCK_IDS.fm4, roundId: MOCK_IDS.fr2, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p3, status: 'scheduled', result: undefined },
+          { id: MOCK_IDS.fm5, roundId: MOCK_IDS.fr2, player1Id: MOCK_IDS.p2, player2Id: MOCK_IDS.p5, status: 'scheduled', result: undefined },
+          { id: MOCK_IDS.fm6, roundId: MOCK_IDS.fr2, player1Id: MOCK_IDS.p4, player2Id: MOCK_IDS.p6, status: 'scheduled', result: undefined }
         ]
       }
     ],
@@ -192,7 +271,7 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     settings: { pointsForWin: 3, pointsForDraw: 1, pointsForLoss: 0 }
   },
   {
-    id: 't4',
+    id: MOCK_IDS.t4,
     name: 'Australian Open 2025',
     sport: 'tennis',
     format: 'swiss',
@@ -200,23 +279,23 @@ export const MOCK_TOURNAMENTS: Tournament[] = [
     players: MOCK_PLAYERS.slice(0, 7),
     rounds: [
       {
-        id: 'sw1',
+        id: MOCK_IDS.sw1,
         name: 'Round 1',
         matches: [
-          { id: 'swm1', roundId: 'sw1', player1Id: 'p1', player2Id: 'p2', status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: 'p1' } },
-          { id: 'swm2', roundId: 'sw1', player1Id: 'p3', player2Id: 'p4', status: 'completed', result: { player1Score: 0, player2Score: 1, winnerId: 'p4' } },
-          { id: 'swm3', roundId: 'sw1', player1Id: 'p5', player2Id: 'p6', status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: 'p5' } },
-          { id: 'swm4', roundId: 'sw1', player1Id: 'p7', status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: 'p7', isWalkover: true } }
+          { id: MOCK_IDS.swm1, roundId: MOCK_IDS.sw1, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p2, status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: MOCK_IDS.p1 } },
+          { id: MOCK_IDS.swm2, roundId: MOCK_IDS.sw1, player1Id: MOCK_IDS.p3, player2Id: MOCK_IDS.p4, status: 'completed', result: { player1Score: 0, player2Score: 1, winnerId: MOCK_IDS.p4 } },
+          { id: MOCK_IDS.swm3, roundId: MOCK_IDS.sw1, player1Id: MOCK_IDS.p5, player2Id: MOCK_IDS.p6, status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: MOCK_IDS.p5 } },
+          { id: MOCK_IDS.swm4, roundId: MOCK_IDS.sw1, player1Id: MOCK_IDS.p7, status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: MOCK_IDS.p7, isWalkover: true } }
         ]
       },
       {
-        id: 'sw2',
+        id: MOCK_IDS.sw2,
         name: 'Round 2',
         matches: [
-          { id: 'swm5', roundId: 'sw2', player1Id: 'p1', player2Id: 'p7', status: 'completed', result: { player1Score: 0, player2Score: 1, winnerId: 'p7' } },
-          { id: 'swm6', roundId: 'sw2', player1Id: 'p4', player2Id: 'p5', status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: 'p4' } },
-          { id: 'swm7', roundId: 'sw2', player1Id: 'p2', player2Id: 'p3', status: 'pending', result: undefined },
-          { id: 'swm8', roundId: 'sw2', player1Id: 'p6', status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: 'p6', isWalkover: true } }
+          { id: MOCK_IDS.swm5, roundId: MOCK_IDS.sw2, player1Id: MOCK_IDS.p1, player2Id: MOCK_IDS.p7, status: 'completed', result: { player1Score: 0, player2Score: 1, winnerId: MOCK_IDS.p7 } },
+          { id: MOCK_IDS.swm6, roundId: MOCK_IDS.sw2, player1Id: MOCK_IDS.p4, player2Id: MOCK_IDS.p5, status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: MOCK_IDS.p4 } },
+          { id: MOCK_IDS.swm7, roundId: MOCK_IDS.sw2, player1Id: MOCK_IDS.p2, player2Id: MOCK_IDS.p3, status: 'pending', result: undefined },
+          { id: MOCK_IDS.swm8, roundId: MOCK_IDS.sw2, player1Id: MOCK_IDS.p6, status: 'completed', result: { player1Score: 1, player2Score: 0, winnerId: MOCK_IDS.p6, isWalkover: true } }
         ]
       }
     ],

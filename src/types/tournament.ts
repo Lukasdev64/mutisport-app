@@ -5,6 +5,9 @@ export type TournamentFormat = 'single_elimination' | 'double_elimination' | 'ro
 
 export type TournamentStatus = 'draft' | 'active' | 'completed';
 
+// Sync status for local-first architecture
+export type SyncStatus = 'synced' | 'pending' | 'local-only';
+
 export interface Player {
   id: string;
   name: string;
@@ -118,6 +121,8 @@ export interface Tournament {
   // Scheduling & Notifications
   schedulingConfig?: SchedulingConfig;
   reminderConfig?: ReminderConfig;
+  // Sync status for cloud synchronization
+  syncStatus?: SyncStatus;
 }
 
 export interface Standing {

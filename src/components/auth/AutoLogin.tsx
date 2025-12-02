@@ -10,8 +10,10 @@ export function AutoLogin() {
 
   useEffect(() => {
     const attemptAutoLogin = async () => {
-      // Attempt auto-login regardless of the path (for testing purposes)
-      // if (location.pathname !== '/') return;
+      // Skip auto-login for public spectator pages
+      if (location.pathname.includes('/spectator')) {
+        return;
+      }
 
       const email = import.meta.env.VITE_TEST_EMAIL;
       const password = import.meta.env.VITE_TEST_PASSWORD;
@@ -19,7 +21,7 @@ export function AutoLogin() {
       if (!email || !password) return;
 
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         console.log('Attempting auto-login with test credentials...');
         const { error } = await supabase.auth.signInWithPassword({
@@ -33,11 +35,11 @@ export function AutoLogin() {
         } else {
           console.log('Auto-login successful');
           toast('Connexion automatique réussie (Mode Test)', 'success');
-          navigate('/dashboard');
+          // Only redirect to dashboard if on landing page
+          if (location.pathname === '/') {
+            navigate('/dashboard');
+          }
         }
-      } else {
-        // Already logged in, maybe redirect to dashboard if on landing page?
-        // navigate('/dashboard');
       }
     };
 

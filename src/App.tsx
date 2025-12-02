@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ToastProvider } from '@/components/ui/toast';
+import { Toaster } from 'sonner';
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { SportPluginsProvider } from '@/sports/core/SportPluginsProvider';
@@ -25,9 +26,13 @@ const SportSelectionHub = lazy(() => import('@/features/tournament/components/wi
 const TennisWizardPage = lazy(() => import('@/sports/tennis/wizard/TennisWizardPage').then(module => ({ default: module.TennisWizardPage })));
 const BasketballWizardPage = lazy(() => import('@/sports/basketball/wizard/BasketballWizardPage').then(module => ({ default: module.BasketballWizardPage })));
 
+// Public Spectator Page (no sidebar)
+const SpectatorSubscribePage = lazy(() => import('@/features/tournament/SpectatorSubscribePage').then(module => ({ default: module.SpectatorSubscribePage })));
+
 function App() {
   return (
     <ToastProvider>
+      <Toaster position="top-right" richColors theme="dark" />
       <SportPluginsProvider>
         <SubscriptionProvider>
           <NotificationProvider>
@@ -45,13 +50,23 @@ function App() {
               } 
             />
 
-            <Route 
-              path="/pricing" 
+            <Route
+              path="/pricing"
               element={
                 <Suspense fallback={<LoadingSpinner fullScreen />}>
                   <PricingPage />
                 </Suspense>
-              } 
+              }
+            />
+
+            {/* Public Spectator Page - No Sidebar */}
+            <Route
+              path="/tournaments/:id/spectator"
+              element={
+                <Suspense fallback={<LoadingSpinner fullScreen />}>
+                  <SpectatorSubscribePage />
+                </Suspense>
+              }
             />
 
             {/* App Routes - With Sidebar */}
