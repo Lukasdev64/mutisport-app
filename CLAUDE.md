@@ -65,12 +65,17 @@ src/
 │   ├── dashboard/      # Main dashboard
 │   ├── players/        # Player management
 │   ├── teams/          # Team management
+│   ├── rules/          # Sport rules library (multi-sport)
+│   │   ├── RulesLibraryPage.tsx    # Main page with WIP support
+│   │   ├── RuleDetailPage.tsx      # Single rule detail
+│   │   └── components/             # Reusable components
 │   └── settings/
 ├── sports/             # Sport-specific logic (PLUGIN ARCHITECTURE)
 │   ├── core/              # Plugin system infrastructure
 │   │   ├── types.ts           # SportPlugin interface
 │   │   ├── hooks.ts           # useSportPlugin, useSportConfig
 │   │   ├── loader.ts          # Lazy loading utilities
+│   │   ├── rulesRegistry.ts   # Central rules registry for all sports
 │   │   └── SportPluginsProvider.tsx
 │   ├── tennis/
 │   │   ├── plugin.ts          # Tennis plugin definition
@@ -81,6 +86,9 @@ src/
 │   │   │   ├── store.ts           # Dedicated Zustand store
 │   │   │   ├── TennisWizardPage.tsx
 │   │   │   └── steps/             # Wizard step components
+│   │   ├── rules/             # Tennis rules library (ITF 2025)
+│   │   │   ├── index.ts
+│   │   │   └── fallbackData.ts    # Offline rules data
 │   │   └── components/        # Tennis-specific UI
 │   │       ├── TennisMatchModalWrapper.tsx
 │   │       └── TennisRulesModule.tsx
@@ -89,17 +97,23 @@ src/
 │       ├── scoring.ts
 │       ├── wizard/            # Basketball wizard (WIP)
 │       │   └── BasketballWizardPage.tsx
+│       ├── rules/             # Basketball rules (WIP template)
+│       │   ├── index.ts
+│       │   ├── categories.ts      # Category definitions
+│       │   └── fallbackData.ts    # Fallback rules data
 │       └── components/
 │           └── BasketballMatchModalWrapper.tsx
 ├── store/              # Global Zustand stores
 │   └── sportStore.ts   # Active sport + plugin registry (persisted)
 ├── hooks/              # React hooks
 │   ├── useTournaments.ts
+│   ├── useRules.ts         # Rules library hooks (multi-sport)
 │   ├── useStripe.ts        # useCreateCheckoutSession, useStripePortal
 │   └── useSportFilter.ts
 ├── types/              # TypeScript types
 │   ├── tournament.ts   # Tournament (with sportConfig), Match, Player, Round
 │   ├── tennis.ts       # TennisMatchScore, TennisGameScore
+│   ├── rules.ts        # SportRule, RuleCategory, RULES_IMPLEMENTATION_STATUS
 │   └── sport.ts        # SportType, SPORTS registry
 ├── components/         # Shared UI components
 │   ├── common/
@@ -158,8 +172,8 @@ updateMatchMutation.mutate({
 ```
 
 **Status Mapping** (App ↔ Database):
-- `draft` ↔ `setup`
-- `active` ↔ `in_progress`
+- `draft` ↔ `draft`
+- `active` ↔ `ongoing`
 - `completed` ↔ `completed`
 
 **Sport Type Convention**: Always use lowercase (`tennis`, `basketball`) - the database stores lowercase values.
@@ -285,6 +299,129 @@ getImplementationStatusLabel('wip')     // "Bientot"
 3. Register components in the sport plugin
 4. Update status from `wip` → `partial` → `implemented`
 
+### Sport Rules Library Architecture
+
+The app includes a **modular rules library** that displays official sport rules. Each sport can have its own rules with categories, full-text search, and fallback data for offline mode.
+
+**Implementation Status** (`src/types/rules.ts`):
+```typescript
+type RulesImplementationStatus = 'implemented' | 'partial' | 'wip';
+
+const RULES_IMPLEMENTATION_STATUS: Record<SportType, RulesImplementationStatus> = {
+  tennis: 'implemented',    // Full ITF rules library
+  basketball: 'wip',        // Coming soon
+  football: 'wip',          // Coming soon
+  ping_pong: 'wip',         // Coming soon
+  chess: 'wip',             // Coming soon
+  generic: 'wip'            // N/A
+};
+```
+
+**Current Status Matrix:**
+
+| Sport | Rules Status | Categories | Fallback Data | Source |
+|-------|--------------|------------|---------------|--------|
+| Tennis | `implemented` | 9 categories | 15+ rules | ITF Rules 2025 |
+| Basketball | `wip` | - | - | FIBA Rules 2024 |
+| Football | `wip` | - | - | FIFA Laws 2024 |
+| Ping Pong | `wip` | - | - | ITTF Handbook 2024 |
+| Chess | `wip` | - | - | FIDE Laws 2024 |
+
+**File Structure:**
+```
+src/
+├── types/
+│   └── rules.ts                    # Core types + status + TENNIS_RULE_CATEGORIES
+├── hooks/
+│   └── useRules.ts                 # React Query hooks for rules
+├── features/rules/
+│   ├── RulesLibraryPage.tsx        # Main rules page (multi-sport)
+│   ├── RuleDetailPage.tsx          # Single rule view
+│   └── components/                 # Reusable UI components
+└── sports/
+    ├── core/
+    │   └── rulesRegistry.ts        # Central registry for all sports
+    ├── tennis/rules/
+    │   ├── index.ts
+    │   └── fallbackData.ts         # ITF rules for offline mode
+    └── basketball/rules/           # WIP template
+        ├── index.ts
+        ├── categories.ts           # Category definitions
+        └── fallbackData.ts         # Fallback rules data
+```
+
+**Rules Registry** (`src/sports/core/rulesRegistry.ts`):
+```typescript
+// Get categories for a sport
+import { getRuleCategoriesForSport, hasCategoriesForSport } from '@/sports/core/rulesRegistry';
+const categories = getRuleCategoriesForSport('tennis'); // RuleCategory[]
+
+// Get fallback data for offline mode
+import { getFallbackRulesForSport, getFallbackRuleBySlug } from '@/sports/core/rulesRegistry';
+const rules = getFallbackRulesForSport('tennis'); // SportRule[]
+
+// Get official source info
+import { getRulesSource } from '@/sports/core/rulesRegistry';
+const source = getRulesSource('tennis'); // { name: 'ITF Rules of Tennis', url: '...', year: '2025' }
+```
+
+**Helper Functions:**
+```typescript
+import { hasRulesImplemented, hasRulesAvailable, getRulesStatusLabel } from '@/types/rules';
+
+// Check if sport has full rules library
+hasRulesImplemented('tennis')     // true
+hasRulesImplemented('basketball') // false
+
+// Check if sport has any rules (implemented or partial)
+hasRulesAvailable('basketball')   // false
+hasRulesAvailable('tennis')       // true
+
+// Get UI label for badges
+getRulesStatusLabel('wip')        // "Bientot"
+getRulesStatusLabel('partial')    // "Partiel"
+```
+
+**UI Behavior:**
+- **RulesLibraryPage**: Adapts to active sport, shows WIP banner if rules not available
+- **Sidebar**: Rules link visible for all sports, content varies by implementation status
+- **Search**: Full-text search works with fallback data when Supabase unavailable
+
+**Adding Rules for a New Sport:**
+1. Create folder `src/sports/[sport]/rules/`
+2. Create `categories.ts` with `RuleCategory[]` definitions
+3. Create `fallbackData.ts` with `SportRule[]` for offline mode
+4. Create `index.ts` exporting both
+5. Register in `src/sports/core/rulesRegistry.ts`:
+   - Add to `SPORT_RULE_CATEGORIES`
+   - Add to `SPORT_FALLBACK_RULES`
+   - Add source info to `RULES_SOURCES`
+6. Update `RULES_IMPLEMENTATION_STATUS` in `src/types/rules.ts`
+
+**Example - Adding Basketball Rules:**
+```typescript
+// src/sports/basketball/rules/categories.ts
+export const BASKETBALL_RULE_CATEGORIES: RuleCategory[] = [
+  { id: 'court', name: 'Le Terrain', icon: 'Square', color: 'orange', displayOrder: 1 },
+  { id: 'scoring', name: 'Le Scoring', icon: 'Target', color: 'emerald', displayOrder: 2 },
+  // ...
+];
+
+// src/sports/basketball/rules/fallbackData.ts
+export const BASKETBALL_FALLBACK_RULES: SportRule[] = [
+  {
+    id: 'court-1',
+    sport: 'basketball',
+    categoryId: 'court',
+    categoryName: 'Le Terrain',
+    title: 'Dimensions du Terrain',
+    // ...
+  },
+];
+
+// Then register in rulesRegistry.ts and update status to 'implemented'
+```
+
 ### Sport-Specific Wizard Architecture
 
 Each sport has its own **completely isolated wizard** for tournament creation. This ensures sport-specific logic doesn't contaminate other sports.
@@ -401,8 +538,11 @@ getWizardStatusLabel('football') // 'Bientot'
 /tournaments/:id               → Live tournament arena
 /players                       → Player management
 /teams                         → Team management
+/rules                         → Sport rules library (multi-sport, WIP-aware)
+/rules/:categoryId             → Rules by category
+/rules/:categoryId/:slug       → Single rule detail
 /billing                       → Stripe billing
-/settings            → User settings
+/settings                      → User settings
 ```
 
 ### Lazy Loading

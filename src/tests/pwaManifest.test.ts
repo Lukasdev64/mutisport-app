@@ -132,9 +132,10 @@ describe('HTML PWA Meta Tags', () => {
     htmlContent = '';
   }
 
-  it('should have manifest link', () => {
-    expect(htmlContent).toContain('rel="manifest"');
-    expect(htmlContent).toContain('manifest.json');
+  it('should have dynamic manifest injection script', () => {
+    // Manifest is now injected dynamically for iOS PWA support
+    expect(htmlContent).toContain("link.rel = 'manifest'");
+    expect(htmlContent).toContain('application/manifest+json');
   });
 
   it('should have theme-color meta tag', () => {
