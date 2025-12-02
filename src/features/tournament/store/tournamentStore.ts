@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Tournament, Match } from '@/types/tournament';
+import type { Tournament, Match, SyncStatus } from '@/types/tournament';
 import { MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { TournamentEngine } from '../logic/engine';
 import { TENNIS_TOURNAMENT_PRESETS } from '@/sports/tennis/tournamentPresets';
@@ -24,6 +24,8 @@ interface TournamentStore {
   getTournament: (id: string) => Tournament | undefined;
   archiveTournament: (id: string) => void;
   unarchiveTournament: (id: string) => void;
+  // Sync status actions
+  setSyncStatus: (id: string, status: SyncStatus) => void;
 }
 
 export const useTournamentStore = create<TournamentStore>()(
@@ -123,7 +125,13 @@ export const useTournamentStore = create<TournamentStore>()(
     )
   })),
 
-  getTournament: (id) => get().tournaments.find((t) => t.id === id)
+  getTournament: (id) => get().tournaments.find((t) => t.id === id),
+
+  setSyncStatus: (id, status) => set((state) => ({
+    tournaments: state.tournaments.map((t) =>
+      t.id === id ? { ...t, syncStatus: status } : t
+    )
+  }))
 }),
     {
       name: 'tournament-storage', // LocalStorage key
