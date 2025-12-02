@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#1e293b" rx="24"/>
+  <circle cx="96" cy="80" r="32" fill="#22c55e"/>
+  <path d="M60 140 L96 100 L132 140" stroke="#22c55e" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="96" y="170" text-anchor="middle" fill="#fff" font-family="system-ui" font-size="16" font-weight="bold">SPORT</text>
+</svg>

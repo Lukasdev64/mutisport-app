@@ -2,28 +2,30 @@ name: CI
 
 on:
   push:
-    branches: [ guillaume, feature/* ]
+    branches: [ main, dev, feature/* ]
   pull_request:
-    branches: [ guillaume ]
+    branches: [ main, dev ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
       with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'multi-sport-platform/package-lock.json'
+        bun-version: "1.2.19"
 
     - name: Install dependencies
-      working-directory: ./multi-sport-platform
-      run: npm ci
+      run: bun install --frozen-lockfile
+
+    - name: Type check
+      run: bunx tsc --noEmit
 
     - name: Run tests
-      working-directory: ./multi-sport-platform
-      run: npm test -- --run
+      run: bun test
+
+    - name: Build
+      run: bun run build

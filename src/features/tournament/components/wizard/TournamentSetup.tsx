@@ -1,14 +1,33 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
-import { Calendar, MapPin, FileText } from 'lucide-react';
+import { Calendar, MapPin, FileText, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import {
+  SPORT_IMPLEMENTATION_STATUS,
+  getImplementationStatusLabel,
+  isSportUsable
+} from '@/types/sport';
+import type { SportType } from '@/types/sport';
 
 export function TournamentSetup() {
-  const { 
-    tournamentName, setTournamentName,
-    startDate, setStartDate,
-    venue, setVenue,
-    description, setDescription
-  } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const {
+    tournamentName, sport, startDate, venue, description
+  } = useWizardStore(useShallow((s) => ({
+    tournamentName: s.tournamentName,
+    sport: s.sport,
+    startDate: s.startDate,
+    venue: s.venue,
+    description: s.description
+  })));
+
+  // Actions - stable references, no useShallow needed
+  const setTournamentName = useWizardStore((s) => s.setTournamentName);
+  const setSport = useWizardStore((s) => s.setSport);
+  const setStartDate = useWizardStore((s) => s.setStartDate);
+  const setVenue = useWizardStore((s) => s.setVenue);
+  const setDescription = useWizardStore((s) => s.setDescription);
 
   return (
     <motion.div
@@ -38,6 +57,74 @@ export function TournamentSetup() {
         />
         <p className="text-xs text-slate-500">
           Ce nom sera visible par tous les participants
+        </p>
+      </div>
+
+      {/* Sport Selection */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <Trophy className="w-4 h-4" />
+          Sport
+          <span className="text-red-400">*</span>
+        </label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { id: 'tennis' as const, name: 'Tennis', emoji: '🎾' },
+            { id: 'football' as const, name: 'Football', emoji: '⚽' },
+            { id: 'basketball' as const, name: 'Basketball', emoji: '🏀' },
+            { id: 'other' as const, name: 'Autre', emoji: '🏆' }
+          ].map((sportOption) => {
+            // Map wizard sport IDs to SportType for status check
+            const sportTypeMap: Record<string, SportType> = {
+              'tennis': 'tennis',
+              'football': 'football',
+              'basketball': 'basketball',
+              'other': 'generic'
+            };
+            const sportType = sportTypeMap[sportOption.id];
+            const status = SPORT_IMPLEMENTATION_STATUS[sportType];
+            const statusLabel = getImplementationStatusLabel(status);
+            const isUsable = isSportUsable(sportType);
+            const isSelected = sport === sportOption.id;
+
+            return (
+              <button
+                key={sportOption.id}
+                onClick={() => isUsable && setSport(sportOption.id)}
+                disabled={!isUsable}
+                className={cn(
+                  "relative p-4 rounded-xl border-2 transition-all text-center",
+                  isSelected
+                    ? "bg-blue-500/20 border-blue-500 shadow-lg"
+                    : isUsable
+                      ? "bg-slate-900/50 border-white/10 hover:border-white/20 hover:bg-slate-800"
+                      : "bg-slate-900/30 border-white/5 opacity-60 cursor-not-allowed"
+                )}
+              >
+                {/* Status Badge */}
+                {statusLabel && (
+                  <div className={cn(
+                    "absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
+                    status === 'partial'
+                      ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                      : "bg-slate-700/80 text-slate-400 border border-slate-600"
+                  )}>
+                    {statusLabel}
+                  </div>
+                )}
+                <div className="text-3xl mb-2">{sportOption.emoji}</div>
+                <div className={cn(
+                  "font-medium text-sm",
+                  isSelected ? "text-blue-400" : isUsable ? "text-slate-300" : "text-slate-500"
+                )}>
+                  {sportOption.name}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-slate-500">
+          Le sport sélectionné déterminera les options de règles disponibles
         </p>
       </div>
 
@@ -107,6 +194,10 @@ export function TournamentSetup() {
             <div className="flex justify-between">
               <span className="text-slate-400">Tournoi:</span>
               <span className="text-white font-medium">{tournamentName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Sport:</span>
+              <span className="text-white font-medium capitalize">{sport}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Début:</span>

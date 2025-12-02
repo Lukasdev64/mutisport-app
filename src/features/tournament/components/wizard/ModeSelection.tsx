@@ -1,12 +1,25 @@
 import { useWizardStore } from '../../store/wizardStore';
-import { Zap, Calendar, ArrowRight } from 'lucide-react';
+import { Zap, Calendar, ArrowRight, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export function ModeSelection() {
   const { mode, setMode } = useWizardStore();
+  const navigate = useNavigate();
 
   const modes = [
+    {
+      id: 'quickstart',
+      name: 'Quick Start Tennis',
+      description: 'Un seul écran - lancez votre tournoi en 30 secondes.',
+      icon: Rocket,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      hover: 'group-hover:border-emerald-500/50',
+      isQuickStart: true
+    },
     {
       id: 'instant',
       name: 'Jouer tout de suite',
@@ -36,14 +49,18 @@ export function ModeSelection() {
         <p className="text-slate-400">Choisissez le mode qui correspond à votre besoin</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {modes.map((item) => (
           <motion.button
             key={item.id}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => {
-              setMode(item.id);
+              if ('isQuickStart' in item && item.isQuickStart) {
+                navigate('/tournaments/quickstart');
+                return;
+              }
+              setMode(item.id as 'instant' | 'planned');
               useWizardStore.getState().nextStep();
             }}
             className={cn(

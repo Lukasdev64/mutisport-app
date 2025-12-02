@@ -1,8 +1,17 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Trophy, Users, Calendar, CheckCircle2 } from 'lucide-react';
 
 export function TournamentSummary() {
-  const { tournamentName, format, players, selectedPlayers } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const { tournamentName, format, players, selectedPlayers } = useWizardStore(
+    useShallow((s) => ({
+      tournamentName: s.tournamentName,
+      format: s.format,
+      players: s.players,
+      selectedPlayers: s.selectedPlayers
+    }))
+  );
   
   // Use selectedPlayers if available (Planned mode), fallback to players (Instant mode)
   const finalPlayers = selectedPlayers.length > 0 ? selectedPlayers : players;
@@ -75,9 +84,9 @@ export function TournamentSummary() {
                 <div className="text-sm font-medium text-white truncate">
                   {player.name}
                 </div>
-                {(player as any).email && (
+                {player.email && (
                   <div className="text-xs text-slate-500 truncate">
-                    {(player as any).email}
+                    {player.email}
                   </div>
                 )}
               </div>

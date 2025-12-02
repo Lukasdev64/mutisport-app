@@ -17,7 +17,7 @@ export const RANKINGS = [
  */
 export function getRankingValue(ranking: string | undefined): number {
   if (!ranking) return -1;
-  return RANKINGS.indexOf(ranking as any);
+  return RANKINGS.indexOf(ranking as typeof RANKINGS[number]);
 }
 
 /**

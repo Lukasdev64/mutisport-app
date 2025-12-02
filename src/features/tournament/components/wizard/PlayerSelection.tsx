@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Button } from '@/components/ui/button';
 import { Plus, X, User, Users } from 'lucide-react';
@@ -9,10 +10,20 @@ import { isRankingEligible } from '@/config/rankings';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
 
 export function PlayerSelection() {
-  const { 
-    players, addPlayer, addExistingPlayer, removePlayer, 
-    ageCategory, isRanked, rankingRange 
-  } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const { players, ageCategory, isRanked, rankingRange } = useWizardStore(
+    useShallow((s) => ({
+      players: s.players,
+      ageCategory: s.ageCategory,
+      isRanked: s.isRanked,
+      rankingRange: s.rankingRange
+    }))
+  );
+
+  // Actions - stable references, no useShallow needed
+  const addPlayer = useWizardStore((s) => s.addPlayer);
+  const addExistingPlayer = useWizardStore((s) => s.addExistingPlayer);
+  const removePlayer = useWizardStore((s) => s.removePlayer);
   const [inputValue, setInputValue] = useState('');
 
   const handleAdd = (e?: React.FormEvent) => {

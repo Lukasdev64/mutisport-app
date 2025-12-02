@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #020617; /* Slate 950 */
-  --color-foreground: #f8fafc; /* Slate 50 */
+  --color-background: #020617;
+  --color-foreground: #f8fafc;
   
-  --color-primary: #3b82f6; /* Blue 500 */
+  --color-primary: #3b82f6;
   --color-primary-foreground: #ffffff;
   
-  --color-secondary: #1e293b; /* Slate 800 */
+  --color-secondary: #1e293b;
   --color-secondary-foreground: #f8fafc;
   
-  --color-accent: #10b981; /* Emerald 500 */
+  --color-accent: #10b981;
   --color-accent-foreground: #ffffff;
   
-  --color-destructive: #ef4444; /* Red 500 */
+  --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
   
-  --color-muted: #334155; /* Slate 700 */
-  --color-muted-foreground: #94a3b8; /* Slate 400 */
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
   
-  --color-card: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+  --color-card: rgba(30, 41, 59, 0.7);
   --color-card-foreground: #f8fafc;
   
-  --color-border: #334155; /* Slate 700 */
+  --color-border: #334155;
   
   --font-sans: "Inter", sans-serif;
   --font-heading: "Outfit", sans-serif;
@@ -45,8 +45,6 @@
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
   width: 100%;
@@ -64,4 +62,48 @@ body {
   background: var(--color-card);
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-border);
+}
+
+/* Touch Target Utilities - Minimum 48px for accessibility */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.touch-target-lg {
+  min-height: 64px;
+  min-width: 64px;
+}
+
+.touch-target-xl {
+  min-height: 80px;
+  min-width: 80px;
+}
+
+/* Large touch targets for scoring buttons */
+.touch-target-score {
+  min-height: 120px;
+  min-width: 120px;
+  touch-action: manipulation;
+}
+
+/* Prevent zoom on double-tap for interactive elements */
+.no-zoom {
+  touch-action: manipulation;
+}
+
+/* Score display text sizes */
+.score-text-lg {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.score-text-xl {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.score-text-2xl {
+  font-size: 64px;
+  line-height: 1;
 }

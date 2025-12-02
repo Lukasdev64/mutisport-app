@@ -26,7 +26,7 @@ const events = [
 
 export const Events = () => {
   return (
-    <section className="relative py-32">
+    <section id="events" className="relative py-32 scroll-mt-20">
       <div className="container relative z-10 px-4 md:px-6 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div className="space-y-2">

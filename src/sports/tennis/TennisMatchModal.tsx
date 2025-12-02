@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import type { Tournament } from '@/types/tournament';
+import type { TennisMatchScore } from '@/types/tennis';
 import { DEFAULT_TENNIS_CONFIG } from '@/sports/tennis/config';
-import { useTournamentStore } from '@/features/tournament/store/tournamentStore';
+import { useUpdateMatch } from '@/hooks/useTournaments';
 import { useToast } from '@/components/ui/toast';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import { TennisLiveScoring } from './components/TennisLiveScoring';
 
 interface TennisMatchModalProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export function TennisMatchModal({
   player2Id,
   tournament
 }: TennisMatchModalProps) {
-  const { updateMatch } = useTournamentStore();
+  const updateMatchMutation = useUpdateMatch();
   const { toast } = useToast();
   
   const player1 = tournament.players.find(p => p.id === player1Id);
@@ -144,12 +146,16 @@ export function TennisMatchModal({
       }
     }
 
-    updateMatch(tournament.id, matchId, {
-      status: 'completed',
-      result: {
-        player1Score: p1SetsWon,
-        player2Score: p2SetsWon,
-        winnerId: winner === '1' ? player1Id : player2Id
+    updateMatchMutation.mutate({
+      tournamentId: tournament.id,
+      matchId,
+      data: {
+        status: 'completed',
+        result: {
+          player1Score: p1SetsWon,
+          player2Score: p2SetsWon,
+          winnerId: winner === '1' ? player1Id : player2Id
+        }
       }
     });
 
@@ -257,6 +263,8 @@ export function TennisMatchModal({
                   <div className="text-sm text-slate-400">Set {idx + 1}</div>
                   <input
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-7]*"
                     min="0"
                     max="7"
                     placeholder="0"
@@ -266,11 +274,13 @@ export function TennisMatchModal({
                       newScores[idx].p1 = e.target.value;
                       setSetScores(newScores);
                     }}
-                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-center text-white focus:border-emerald-500 focus:outline-none"
+                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-center text-white focus:border-emerald-500 focus:outline-none touch-target no-zoom"
                   />
                   <div className="text-slate-500 text-center">-</div>
                   <input
                     type="number"
+                    inputMode="numeric"
+                    pattern="[0-7]*"
                     min="0"
                     max="7"
                     placeholder="0"
@@ -280,7 +290,7 @@ export function TennisMatchModal({
                       newScores[idx].p2 = e.target.value;
                       setSetScores(newScores);
                     }}
-                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-center text-white focus:border-blue-500 focus:outline-none"
+                    className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-center text-white focus:border-blue-500 focus:outline-none touch-target no-zoom"
                   />
                 </div>
               ))}
@@ -297,13 +307,32 @@ export function TennisMatchModal({
           </div>
         ) : (
           // LIVE SCORING MODE
-          <div className="p-6 flex items-center justify-center" style={{ minHeight: '400px' }}>
-            <div className="text-center text-slate-400">
-              <div className="text-4xl mb-4">⚡</div>
-              <div className="text-lg font-semibold mb-2">Live Scoring</div>
-              <div className="text-sm">Coming soon...</div>
-              <div className="text-xs mt-2">Point-by-point tracking will be available here</div>
-            </div>
+          <div className="relative" style={{ minHeight: '500px' }}>
+            <TennisLiveScoring
+              config={tournament.tennisConfig ?? DEFAULT_TENNIS_CONFIG}
+              player1Id={player1Id}
+              player2Id={player2Id}
+              player1Name={player1?.name || 'Player 1'}
+              player2Name={player2?.name || 'Player 2'}
+              onMatchComplete={(finalScore: TennisMatchScore) => {
+                // Convert score to match result
+                updateMatchMutation.mutate({
+                  tournamentId: tournament.id,
+                  matchId,
+                  data: {
+                    status: 'completed',
+                    result: {
+                      player1Score: finalScore.player1Sets,
+                      player2Score: finalScore.player2Sets,
+                      winnerId: finalScore.winnerId
+                    }
+                  }
+                });
+                toast('Match terminé!', 'success');
+                onClose();
+              }}
+              onCancel={onClose}
+            />
           </div>
         )}
       </motion.div>

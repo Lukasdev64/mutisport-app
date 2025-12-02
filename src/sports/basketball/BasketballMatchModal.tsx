@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Match } from '@/types/tournament';
+import type { Match, MatchResult } from '@/types/tournament';
 import { useState } from 'react';
 import { calculateBasketballScore } from './scoring';
 
@@ -9,7 +9,7 @@ interface BasketballMatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   match: Match;
-  onUpdateResult: (matchId: string, result: any) => void;
+  onUpdateResult: (matchId: string, result: MatchResult) => void;
 }
 
 export function BasketballMatchModal({
@@ -38,7 +38,7 @@ export function BasketballMatchModal({
     onUpdateResult(match.id, {
       player1Score: p1Score,
       player2Score: p2Score,
-      winnerId
+      winnerId: winnerId ?? undefined
     });
     onClose();
   };

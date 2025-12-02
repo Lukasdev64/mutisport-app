@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useWizardStore } from '../../store/wizardStore';
 import { Trophy, Users, GitMerge, Repeat } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -49,14 +50,25 @@ const formats = [
 ] as const;
 
 export function FormatSelection() {
-  const { 
-    format, setFormat, 
-    tournamentName, setTournamentName, 
-    ageCategory, setAgeCategory,
-    customAgeRules, setCustomAgeRules,
-    isRanked, setIsRanked,
-    rankingRange, setRankingRange
-  } = useWizardStore();
+  // State values - use useShallow to prevent unnecessary re-renders
+  const {
+    format, tournamentName, ageCategory, customAgeRules, isRanked, rankingRange
+  } = useWizardStore(useShallow((s) => ({
+    format: s.format,
+    tournamentName: s.tournamentName,
+    ageCategory: s.ageCategory,
+    customAgeRules: s.customAgeRules,
+    isRanked: s.isRanked,
+    rankingRange: s.rankingRange
+  })));
+
+  // Actions - stable references, no useShallow needed
+  const setFormat = useWizardStore((s) => s.setFormat);
+  const setTournamentName = useWizardStore((s) => s.setTournamentName);
+  const setAgeCategory = useWizardStore((s) => s.setAgeCategory);
+  const setCustomAgeRules = useWizardStore((s) => s.setCustomAgeRules);
+  const setIsRanked = useWizardStore((s) => s.setIsRanked);
+  const setRankingRange = useWizardStore((s) => s.setRankingRange);
 
   return (
     <div className="space-y-8">

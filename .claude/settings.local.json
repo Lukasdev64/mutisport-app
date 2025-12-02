@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun test:*)",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__write_file",
+      "mcp__supabase__list_projects",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__list_edge_functions",
+      "mcp__perplexity__reason",
+      "mcp__perplexity__search",
+      "Bash(bun add:*)",
+      "Bash(bun run build)",
+      "mcp__supabase__execute_sql",
+      "mcp__filesystem__directory_tree",
+      "Bash(git checkout:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(bun run dev)",
+      "Bash(npx tsc:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -318,6 +318,83 @@ export class TournamentEngine {
     if (roundNumber === totalRounds - 2) return 'Quarter-Finals';
     return `Round ${roundNumber}`;
   }
+  /**
+   * Get the current scheduling state of a tournament
+   * Used for displaying contextual UI and suggestions
+   */
+  static getTournamentSchedulingState(tournament: Tournament): {
+    state: 'no_bracket' | 'ready_to_schedule' | 'partially_scheduled' | 'fully_scheduled' | 'in_progress' | 'completed';
+    stats: {
+      totalMatches: number;
+      scheduledMatches: number;
+      completedMatches: number;
+      inProgressMatches: number;
+      nextMatch?: Match;
+      firstMatchDate?: string;
+    };
+  } {
+    const allMatches = tournament.rounds.flatMap(r => r.matches);
+    const scheduledMatches = allMatches.filter(m => m.scheduledAt);
+    const completedMatches = allMatches.filter(m => m.status === 'completed');
+    const inProgressMatches = allMatches.filter(m => m.status === 'in_progress');
+
+    // Find next upcoming match (scheduled, not completed, sorted by date)
+    // const now = new Date();
+    const upcomingMatches = scheduledMatches
+      .filter(m => m.status !== 'completed' && m.scheduledAt)
+      .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
+
+    const nextMatch = upcomingMatches[0];
+
+    // Find first match date
+    const firstMatchDate = scheduledMatches.length > 0
+      ? scheduledMatches
+          .filter(m => m.scheduledAt)
+          .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime())[0]?.scheduledAt
+      : undefined;
+
+    // Determine state
+    let state: 'no_bracket' | 'ready_to_schedule' | 'partially_scheduled' | 'fully_scheduled' | 'in_progress' | 'completed';
+
+    if (allMatches.length === 0) {
+      state = 'no_bracket';
+    } else if (completedMatches.length === allMatches.length) {
+      state = 'completed';
+    } else if (inProgressMatches.length > 0 || completedMatches.length > 0) {
+      state = 'in_progress';
+    } else if (scheduledMatches.length === allMatches.length) {
+      state = 'fully_scheduled';
+    } else if (scheduledMatches.length > 0) {
+      state = 'partially_scheduled';
+    } else {
+      state = 'ready_to_schedule';
+    }
+
+    return {
+      state,
+      stats: {
+        totalMatches: allMatches.length,
+        scheduledMatches: scheduledMatches.length,
+        completedMatches: completedMatches.length,
+        inProgressMatches: inProgressMatches.length,
+        nextMatch,
+        firstMatchDate
+      }
+    };
+  }
+
+  /**
+   * Get upcoming matches sorted by scheduled time
+   */
+  static getUpcomingMatches(tournament: Tournament, limit = 5): Match[] {
+    const allMatches = tournament.rounds.flatMap(r => r.matches);
+
+    return allMatches
+      .filter(m => m.scheduledAt && m.status !== 'completed')
+      .sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime())
+      .slice(0, limit);
+  }
+
   static getStandings(tournament: Tournament): Standing[] {
     const standings: Map<string, Standing> = new Map();
 

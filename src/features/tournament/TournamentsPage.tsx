@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTournamentStore } from './store/tournamentStore';
-import { useTournaments } from '@/hooks/useTournaments';
+import { useTournaments, useArchiveTournament } from '@/hooks/useTournaments';
 import { ALL_MOCK_TOURNAMENTS } from '@/lib/mockData';
 import { Button } from '@/components/ui/button';
 import { Plus, Search, Filter, Trophy, Calendar, Users, Archive, ArchiveRestore, MoreVertical } from 'lucide-react';
@@ -9,23 +9,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSportStore } from '@/store/sportStore';
 import { SPORTS } from '@/types/sport';
+import { getWizardUrl, canCreateTournament, getWizardStatusLabel } from '@/hooks/useWizardNavigation';
 
 export function TournamentsPage() {
   const navigate = useNavigate();
   const activeSport = useSportStore((state) => state.activeSport);
   const activeSportInfo = SPORTS[activeSport];
-  const { archiveTournament, unarchiveTournament } = useTournamentStore();
+  const { tournaments: localTournaments } = useTournamentStore();
+  const archiveMutation = useArchiveTournament();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  
-  // Use React Query hook for data fetching
-  const { data: tournaments = [] } = useTournaments();
-  
-  // Filter by sport
-  const storeTournaments = tournaments.filter(t => t.sport === activeSport);
+
+  // Use React Query hook for data fetching (Supabase)
+  const { data: remoteTournaments = [] } = useTournaments();
+
+  // Combine local Zustand store + remote Supabase tournaments (deduplicate by ID)
+  const localForSport = localTournaments.filter(t => t.sport === activeSport);
+  const remoteForSport = remoteTournaments.filter(t => t.sport === activeSport);
   const mockTournamentsForSport = ALL_MOCK_TOURNAMENTS.filter(mt => mt.sport === activeSport);
-  
-  // Combine store tournaments and mock tournaments (deduplicating by ID)
-  const allTournaments = [...storeTournaments, ...mockTournamentsForSport.filter(mt => !storeTournaments.find(st => st.id === mt.id))];
+
+  // Merge all sources, keeping first occurrence (local > remote > mock)
+  const allTournaments = [...localForSport, ...remoteForSport, ...mockTournamentsForSport]
+    .filter((t, i, arr) => arr.findIndex(x => x.id === t.id) === i);
   
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'draft' | 'archived'>('all');
   const [search, setSearch] = useState('');
@@ -51,10 +55,22 @@ export function TournamentsPage() {
           </div>
           <p className="text-slate-400">Manage and track your {activeSportInfo.name.toLowerCase()} competitions</p>
         </div>
-        <Button onClick={() => navigate('/tournaments/new')} className="bg-blue-600 hover:bg-blue-500">
-          <Plus className="w-4 h-4 mr-2" />
-          Create Tournament
-        </Button>
+{canCreateTournament(activeSport) ? (
+          <Button onClick={() => navigate(getWizardUrl(activeSport))} className="bg-blue-600 hover:bg-blue-500">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Tournament
+          </Button>
+        ) : (
+          <Button disabled className="bg-slate-700/50 border border-slate-600/50 text-slate-400 cursor-not-allowed">
+            <Plus className="w-4 h-4 mr-2 opacity-50" />
+            Create Tournament
+            {getWizardStatusLabel(activeSport) && (
+              <span className="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+                {getWizardStatusLabel(activeSport)}
+              </span>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -125,7 +141,7 @@ export function TournamentsPage() {
                     {tournament.archived ? (
                       <button
                         onClick={() => {
-                          unarchiveTournament(tournament.id);
+                          archiveMutation.mutate({ id: tournament.id, archived: false });
                           setActiveMenu(null);
                         }}
                         className="w-full px-4 py-2.5 text-left text-sm text-white hover:bg-white/10 transition-colors flex items-center gap-2"
@@ -136,7 +152,7 @@ export function TournamentsPage() {
                     ) : (
                       <button
                         onClick={() => {
-                          archiveTournament(tournament.id);
+                          archiveMutation.mutate({ id: tournament.id, archived: true });
                           setActiveMenu(null);
                         }}
                         className="w-full px-4 py-2.5 text-left text-sm text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-2"
