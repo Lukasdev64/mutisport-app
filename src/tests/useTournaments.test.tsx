@@ -201,8 +201,8 @@ describe('useUpdateTournament', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    // Status should be mapped: 'active' -> 'in_progress'
-    expect(capturedUpdate?.status).toBe('in_progress');
+    // Status should be mapped: 'active' -> 'ongoing'
+    expect(capturedUpdate?.status).toBe('ongoing');
   });
 });
 

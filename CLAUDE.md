@@ -172,8 +172,8 @@ updateMatchMutation.mutate({
 ```
 
 **Status Mapping** (App ↔ Database):
-- `draft` ↔ `setup`
-- `active` ↔ `in_progress`
+- `draft` ↔ `draft`
+- `active` ↔ `ongoing`
 - `completed` ↔ `completed`
 
 **Sport Type Convention**: Always use lowercase (`tennis`, `basketball`) - the database stores lowercase values.
