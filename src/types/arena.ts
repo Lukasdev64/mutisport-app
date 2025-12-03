@@ -1,4 +1,4 @@
-import type { Tournament, Match, Player } from './tournament';
+import type { Tournament, Match, Player, Round, TournamentFormat } from './tournament';
 
 /**
  * User roles for tournament arena access control
@@ -119,4 +119,62 @@ export interface MatchGroup {
   date: string; // ISO date string or 'today' / 'tomorrow' / 'upcoming'
   label: string; // Display label
   matches: Match[];
+}
+
+// ============================================================================
+// Bracket Carousel Types (Mobile)
+// ============================================================================
+
+/**
+ * Props for bracket round carousel container
+ */
+export interface BracketRoundCarouselProps {
+  rounds: Round[];
+  players: Player[];
+  format: TournamentFormat;
+  onMatchSelect: (match: Match) => void;
+}
+
+/**
+ * Props for individual round slide in carousel
+ */
+export interface RoundSlideProps {
+  round: Round;
+  roundIndex: number;
+  totalRounds: number;
+  players: Player[];
+  format: TournamentFormat;
+  onMatchSelect: (match: Match) => void;
+}
+
+/**
+ * Props for bracket-optimized match card
+ */
+export interface BracketMatchCardProps {
+  match: Match;
+  player1?: Player;
+  player2?: Player;
+  size: 'large' | 'compact';
+  showProgression?: boolean;
+  matchNumber?: number;
+  isLastRound?: boolean;
+  onTap: () => void;
+}
+
+/**
+ * Props for round indicator (dots/pills)
+ */
+export interface RoundIndicatorProps {
+  rounds: Round[];
+  currentIndex: number;
+  onRoundSelect: (index: number) => void;
+}
+
+/**
+ * Layout configuration for bracket match cards
+ */
+export interface BracketLayoutConfig {
+  columns: 1 | 2;
+  cardSize: 'large' | 'compact';
+  gap: string;
 }

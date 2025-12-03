@@ -23,8 +23,11 @@ describe('Wizard Navigation', () => {
       expect(getWizardUrl('basketball')).toBe('/tournaments/new/basketball');
     });
 
+    test('returns football wizard URL for football', () => {
+      expect(getWizardUrl('football')).toBe('/tournaments/new/football');
+    });
+
     test('returns hub URL for WIP sports', () => {
-      expect(getWizardUrl('football')).toBe('/tournaments/new');
       expect(getWizardUrl('ping_pong')).toBe('/tournaments/new');
       expect(getWizardUrl('chess')).toBe('/tournaments/new');
       expect(getWizardUrl('generic')).toBe('/tournaments/new');
@@ -39,6 +42,7 @@ describe('Wizard Navigation', () => {
   describe('canCreateTournament', () => {
     test('returns true for implemented sports', () => {
       expect(canCreateTournament('tennis')).toBe(true);
+      expect(canCreateTournament('football')).toBe(true);
     });
 
     test('returns false for partial sports', () => {
@@ -46,7 +50,6 @@ describe('Wizard Navigation', () => {
     });
 
     test('returns false for WIP sports', () => {
-      expect(canCreateTournament('football')).toBe(false);
       expect(canCreateTournament('ping_pong')).toBe(false);
       expect(canCreateTournament('chess')).toBe(false);
       expect(canCreateTournament('generic')).toBe(false);
@@ -56,6 +59,7 @@ describe('Wizard Navigation', () => {
   describe('getWizardStatusLabel', () => {
     test('returns null for implemented sports', () => {
       expect(getWizardStatusLabel('tennis')).toBeNull();
+      expect(getWizardStatusLabel('football')).toBeNull();
     });
 
     test('returns "Beta" for partial sports', () => {
@@ -63,7 +67,6 @@ describe('Wizard Navigation', () => {
     });
 
     test('returns "Bientot" for WIP sports', () => {
-      expect(getWizardStatusLabel('football')).toBe('Bientot');
       expect(getWizardStatusLabel('ping_pong')).toBe('Bientot');
       expect(getWizardStatusLabel('chess')).toBe('Bientot');
       expect(getWizardStatusLabel('generic')).toBe('Bientot');
@@ -78,8 +81,8 @@ describe('Wizard Navigation', () => {
       label: string | null;
     }> = [
       { sport: 'tennis', expectedUrl: '/tournaments/new/tennis', canCreate: true, label: null },
+      { sport: 'football', expectedUrl: '/tournaments/new/football', canCreate: true, label: null },
       { sport: 'basketball', expectedUrl: '/tournaments/new/basketball', canCreate: false, label: 'Beta' },
-      { sport: 'football', expectedUrl: '/tournaments/new', canCreate: false, label: 'Bientot' },
       { sport: 'ping_pong', expectedUrl: '/tournaments/new', canCreate: false, label: 'Bientot' },
       { sport: 'chess', expectedUrl: '/tournaments/new', canCreate: false, label: 'Bientot' },
       { sport: 'generic', expectedUrl: '/tournaments/new', canCreate: false, label: 'Bientot' },
