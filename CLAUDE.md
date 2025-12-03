@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-Sport Platform is a React 19 + TypeScript application for managing sports tournaments (tennis, basketball). Uses Bun runtime, Vite, Supabase backend, Stripe payments, and Zustand state management.
+Multi-Sport Platform is a React 19 + TypeScript application for managing sports tournaments (tennis, football, basketball). Uses Bun runtime, Vite, Supabase backend, Stripe payments, and Zustand state management. Features a mobile-first responsive arena UI with pinch-to-zoom bracket navigation.
 
 ## Development Commands
 
@@ -51,6 +51,14 @@ src/
 │   ├── tournament/     # Tournament system (largest feature)
 │   │   ├── components/
 │   │   │   ├── arena/        # Live tournament view
+│   │   │   │   ├── mobile/       # Mobile-first arena UI
+│   │   │   │   │   ├── ArenaMobileLayout.tsx   # Main mobile layout orchestrator
+│   │   │   │   │   ├── MobileBracketView.tsx   # Pinch-to-zoom bracket
+│   │   │   │   │   ├── MobileMatchSheet.tsx    # Bottom sheet for match details
+│   │   │   │   │   ├── MobileMatchList.tsx     # List view of matches
+│   │   │   │   │   └── MobileStandingsView.tsx # Standings display
+│   │   │   │   ├── BracketDisplay.tsx    # Desktop bracket with connectors
+│   │   │   │   └── TournamentWinnerModal.tsx  # Victory celebration modal
 │   │   │   ├── wizard-hub/   # Sport selection entry point
 │   │   │   │   └── SportSelectionHub.tsx
 │   │   │   ├── registration/
@@ -92,6 +100,21 @@ src/
 │   │   └── components/        # Tennis-specific UI
 │   │       ├── TennisMatchModalWrapper.tsx
 │   │       └── TennisRulesModule.tsx
+│   ├── football/
+│   │   ├── plugin.ts          # Football plugin definition
+│   │   ├── scoring.ts         # Football scoring engine
+│   │   ├── config.ts          # Football configurations
+│   │   ├── wizard/            # Football wizard (beta)
+│   │   │   ├── store.ts           # Football wizard Zustand store
+│   │   │   ├── FootballWizardPage.tsx
+│   │   │   └── steps/             # Wizard step components
+│   │   ├── logic/             # Football-specific logic
+│   │   │   ├── standings.ts       # League standings calculation
+│   │   │   ├── qualifications.ts  # Qualification rules
+│   │   │   └── structure-generation.ts  # Tournament structure
+│   │   └── components/
+│   │       ├── FootballMatchModal.tsx
+│   │       └── FootballRulesModule.tsx
 │   └── basketball/
 │       ├── plugin.ts          # Basketball plugin definition
 │       ├── scoring.ts
@@ -109,10 +132,16 @@ src/
 │   ├── useTournaments.ts
 │   ├── useRules.ts         # Rules library hooks (multi-sport)
 │   ├── useStripe.ts        # useCreateCheckoutSession, useStripePortal
-│   └── useSportFilter.ts
+│   ├── useSportFilter.ts
+│   ├── useIsMobile.ts      # Mobile detection (breakpoint + touch)
+│   ├── useUserRole.ts      # Tournament role detection (organizer/spectator)
+│   ├── usePinchZoom.ts     # Pinch-to-zoom gesture handler
+│   └── useArenaNavigation.ts  # Mobile arena tab navigation
 ├── types/              # TypeScript types
 │   ├── tournament.ts   # Tournament (with sportConfig), Match, Player, Round
 │   ├── tennis.ts       # TennisMatchScore, TennisGameScore
+│   ├── football.ts     # FootballMatchScore, FootballConfig
+│   ├── arena.ts        # Mobile arena types (ArenaTab, UserRole, etc.)
 │   ├── rules.ts        # SportRule, RuleCategory, RULES_IMPLEMENTATION_STATUS
 │   └── sport.ts        # SportType, SPORTS registry
 ├── components/         # Shared UI components
@@ -265,8 +294,8 @@ type SportImplementationStatus = 'implemented' | 'partial' | 'wip';
 | Sport | Status | Wizard | Quick Start | Rules Customizer |
 |-------|--------|--------|-------------|------------------|
 | Tennis | `implemented` | Full | Yes | Yes |
+| Football | `partial` | Full wizard | No | Yes |
 | Basketball | `partial` | Format only | No (link to wizard) | Coming soon |
-| Football | `wip` | Blocked | No | No |
 | Ping Pong | `wip` | Blocked | No | No |
 | Chess | `wip` | Blocked | No | No |
 | Generic | `wip` | Blocked | No | No |
@@ -512,6 +541,43 @@ getWizardStatusLabel('football') // 'Bientot'
 | Basketball | `false` | `"Beta"` | Disabled + badge |
 | Football | `false` | `"Bientot"` | Disabled + badge |
 
+### Mobile Arena Architecture
+
+The tournament arena features a **mobile-first responsive design** that automatically switches between desktop and mobile layouts based on screen size and touch capability.
+
+**Detection Logic** (`src/hooks/useIsMobile.ts`):
+```typescript
+const isMobile = useIsMobile(); // true if width < 768px OR touch device
+```
+
+**Mobile Layout Components** (`src/features/tournament/components/arena/mobile/`):
+
+| Component | Purpose |
+|-----------|---------|
+| `ArenaMobileLayout` | Main orchestrator - manages tabs and views |
+| `MobileBracketView` | Pinch-to-zoom bracket with connectors |
+| `MobileMatchSheet` | Bottom sheet for match details/scoring |
+| `MobileMatchList` | List view grouped by round |
+| `MobileStandingsView` | Player standings with stats |
+| `ArenaBottomNav` | Tab navigation (Bracket/Matches/Standings) |
+| `MobileQuickActions` | FAB with quick action menu |
+
+**User Roles** (`src/hooks/useUserRole.ts`):
+```typescript
+type UserRole = 'organizer' | 'spectator';
+const role = useUserRole(tournamentId); // Determines available actions
+```
+
+**Pinch-to-Zoom** (`src/hooks/usePinchZoom.ts`):
+- Supports touch gestures (pinch/pan) and mouse (scroll/drag)
+- Configurable min/max scale (default: 0.5x - 2.5x)
+- Smooth animations via Framer Motion
+
+**Winner Celebration** (`TournamentWinnerModal`):
+- Displays on tournament completion
+- Confetti animation + winner info
+- Share functionality (native share API or download)
+
 ### Key Classes
 
 **TournamentEngine** (`src/features/tournament/logic/engine.ts`):
@@ -534,6 +600,7 @@ getWizardStatusLabel('football') // 'Bientot'
 /tournaments                   → Tournament listing
 /tournaments/new               → Sport Selection Hub
 /tournaments/new/tennis        → Tennis wizard (fully implemented)
+/tournaments/new/football      → Football wizard (beta)
 /tournaments/new/basketball    → Basketball wizard (WIP placeholder)
 /tournaments/:id               → Live tournament arena
 /players                       → Player management
@@ -953,3 +1020,6 @@ const dbStatus = appStatus === 'draft' ? 'setup'
 | framer-motion | 12.x | Animations |
 | @stripe/react-stripe-js | 5.x | Payments |
 | openai | 4.x | RAG embeddings (chat-bot) |
+| react-confetti | 6.x | Winner celebration effects |
+| html-to-image | 1.x | Screenshot for sharing |
+| react-use | 17.x | Utility hooks (useWindowSize, etc.) |
