@@ -13,6 +13,77 @@ interface BracketDisplayProps {
 export function BracketDisplay({ tournament }: BracketDisplayProps) {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
+  // Check for Group Stage (Football specific for now, but could be generic)
+  // Also check if matches have "Groupe" location as a fallback
+  const hasGroupMatches = tournament.rounds.some(r => r.matches.some(m => m.location?.startsWith('Groupe')));
+  const isGroupStage = (tournament.sportConfig as any)?.footballFormat?.type === 'PHASE_POULES' || hasGroupMatches;
+
+  if (isGroupStage) {
+    // Extract groups from matches
+    const groups = new Set<string>();
+    tournament.rounds.forEach(round => {
+      round.matches.forEach(match => {
+        if (match.location && match.location.startsWith('Groupe')) {
+          groups.add(match.location);
+        }
+      });
+    });
+    
+    if (groups.size > 0) {
+      const sortedGroups = Array.from(groups).sort();
+
+      return (
+        <>
+          <div className="space-y-12 pb-12">
+            {sortedGroups.map(groupName => (
+              <div key={groupName} className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-1 bg-blue-500 rounded-full" />
+                  <h3 className="text-xl font-bold text-white">
+                    {groupName}
+                  </h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-4">
+                  {tournament.rounds.map((round, roundIndex) => {
+                    // Filter matches for this group and round
+                    const groupMatches = round.matches.filter(m => m.location === groupName);
+                    if (groupMatches.length === 0) return null;
+
+                    return (
+                      <div key={round.id} className="space-y-4 min-w-[250px]">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider text-center border-b border-white/10 pb-2">
+                          {round.name}
+                        </h4>
+                        <div className="space-y-3">
+                          {groupMatches.map((match) => (
+                            <MatchCard 
+                              key={match.id} 
+                              match={match} 
+                              tournament={tournament}
+                              roundIndex={roundIndex}
+                              onClick={() => setSelectedMatch(match)}
+                              compact
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <MatchModalWrapper 
+            selectedMatch={selectedMatch} 
+            onClose={() => setSelectedMatch(null)} 
+            tournament={tournament} 
+          />
+        </>
+      );
+    }
+  }
+
   // Round Robin Layout (Grid)
   if (tournament.format === 'round_robin') {
     return (

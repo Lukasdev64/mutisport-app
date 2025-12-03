@@ -22,8 +22,8 @@ const mapStatusToDb = (appStatus: AppStatus): DbStatus => {
 };
 
 const mapStatusFromDb = (dbStatus: string): AppStatus => {
-  if (dbStatus === 'draft' || dbStatus === 'upcoming') return 'draft';
-  if (dbStatus === 'ongoing') return 'active';
+  if (dbStatus === 'draft' || dbStatus === 'upcoming' || dbStatus === 'setup') return 'draft';
+  if (dbStatus === 'ongoing' || dbStatus === 'in_progress') return 'active';
   return 'completed';
 };
 
@@ -50,7 +50,8 @@ const mapFormatFromDb = (dbFormat: string): AppFormat => {
 
 // Helper to map Supabase row to Tournament type
 const mapSupabaseToTournament = (row: any): Tournament => {
-  const bracketData = row.bracket_data || {};
+  // Use settings column as the bracket data container if bracket_data is missing
+  const bracketData = row.bracket_data || row.settings || {};
 
   return {
     id: row.id,

@@ -102,7 +102,7 @@ serve(async (req) => {
     ];
 
     const systemPrompt = `
-      Tu es l'assistant virtuel expert de l'application MultiSport Platform.
+      Tu es l'assistant virtuel expert de l'application Tournaly.
       Utilise le contexte ci-dessous pour répondre à la question.
       
       Contexte (Documentation):

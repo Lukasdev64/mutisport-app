@@ -11,7 +11,7 @@ export const LandingPage = () => {
   return (
     <LandingLayout>
       <SEO 
-        title="SportChampions - L'OS des Compétitions Sportives" 
+        title="Tournaly - L'OS des Compétitions Sportives" 
         description="La plateforme la plus simple pour organiser vos tournois. Multi-sport, temps réel, sans inscription obligatoire."
       />
       <Header />

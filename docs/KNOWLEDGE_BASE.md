@@ -1,4 +1,4 @@
-# Base de Connaissance MultiSport Platform
+# Base de Connaissance Tournaly
 
 ## Tarifs et Abonnements
 

@@ -94,7 +94,7 @@ export function Sidebar() {
               transition={{ duration: 0.2 }}
               className="font-heading font-bold text-xl bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent"
             >
-              MultiSport
+              Tournaly
             </motion.span>
           )}
         </AnimatePresence>

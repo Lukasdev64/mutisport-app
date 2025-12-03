@@ -34,7 +34,7 @@ export const Events = () => {
               Événements à la une
             </h2>
             <p className="text-slate-400">
-              Découvrez les tournois organisés avec SportChampions.
+              Découvrez les tournois organisés avec Tournaly.
             </p>
           </div>
           <Link to="/events">

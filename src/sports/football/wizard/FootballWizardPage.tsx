@@ -134,7 +134,7 @@ export function FootballWizardPage() {
         tournamentDate: new Date(startDate).toISOString(),
         sport: 'football',
         format: finalFormat,
-        status: 'draft',
+        status: 'active',
         sportConfig: {
           ...config,
           footballFormat: finalFootballConfig // Store the advanced config

@@ -25,7 +25,7 @@ export const SupportChat = () => {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Bonjour ! Je suis l\'assistant virtuel de SportChampions. Comment puis-je vous aider aujourd\'hui ?',
+      content: 'Bonjour ! Je suis l\'assistant virtuel de Tournaly. Comment puis-je vous aider aujourd\'hui ?',
       timestamp: new Date()
     }
   ]);
@@ -129,7 +129,7 @@ export const SupportChat = () => {
                   <Bot className="h-6 w-6 text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white">Assistant SportChampions</h3>
+                  <h3 className="font-semibold text-white">Assistant Tournaly</h3>
                   <p className="text-xs text-slate-400 flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     En ligne

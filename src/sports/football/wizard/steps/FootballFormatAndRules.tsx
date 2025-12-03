@@ -11,7 +11,10 @@ export function FootballFormatAndRules() {
     setFootballFormatConfig, 
     config, 
     setConfig,
-    setFormat // Legacy setter for compatibility
+    setFormat, // Legacy setter for compatibility
+    mode,
+    tournamentName,
+    setTournamentInfo
   } = useFootballWizardStore();
 
   const currentType = footballFormatConfig?.type || 'ELIMINATION_DIRECTE';
@@ -65,7 +68,7 @@ export function FootballFormatAndRules() {
         setFormat('single_elimination');
         break;
       case 'PHASE_POULES':
-        newConfig = { ...baseConfig, type, numberOfGroups: 4, qualifiersPerGroup: 2, bestThirdsQualifiers: 0, hasReturnLeg: false };
+        newConfig = { ...baseConfig, type, numberOfGroups: 2, qualifiersPerGroup: 2, bestThirdsQualifiers: 0, hasReturnLeg: false };
         setFormat('round_robin'); // Approximate
         break;
       case 'LIGUE_PLUS_PLAYOFFS':
@@ -94,6 +97,19 @@ export function FootballFormatAndRules() {
 
   return (
     <div className="space-y-8">
+      {/* Name Input for Instant Mode */}
+      {mode === 'instant' && (
+        <div className="max-w-md mx-auto space-y-2">
+          <label className="text-sm font-medium text-white/80">Nom du Tournoi</label>
+          <Input
+            value={tournamentName}
+            onChange={(e) => setTournamentInfo({ tournamentName: e.target.value })}
+            placeholder="ex: Tournoi Express"
+            className="bg-white/5 border-white/10 text-white"
+          />
+        </div>
+      )}
+
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-white">Format & Règles</h2>
         <p className="text-white/60">Configurez le déroulement du tournoi</p>

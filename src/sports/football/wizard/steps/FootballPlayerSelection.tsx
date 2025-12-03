@@ -120,7 +120,19 @@ export function FootballPlayerSelection() {
       { name: 'Real Madrid', formation: '4-3-3' },
       { name: 'FC Barcelona', formation: '4-3-3' },
       { name: 'Manchester City', formation: '4-2-3-1' },
-      { name: 'Bayern Munich', formation: '4-2-3-1' }
+      { name: 'Bayern Munich', formation: '4-2-3-1' },
+      { name: 'Liverpool', formation: '4-3-3' },
+      { name: 'PSG', formation: '4-3-3' },
+      { name: 'Juventus', formation: '3-5-2' },
+      { name: 'Inter Milan', formation: '3-5-2' },
+      { name: 'Arsenal', formation: '4-3-3' },
+      { name: 'Chelsea', formation: '4-2-3-1' },
+      { name: 'Man United', formation: '4-2-3-1' },
+      { name: 'Atletico Madrid', formation: '4-4-2' },
+      { name: 'Dortmund', formation: '4-2-3-1' },
+      { name: 'AC Milan', formation: '4-2-3-1' },
+      { name: 'Napoli', formation: '4-3-3' },
+      { name: 'Tottenham', formation: '4-2-3-1' }
     ];
 
     const positions: Position[] = ['GK', 'DEF', 'DEF', 'DEF', 'DEF', 'MID', 'MID', 'MID', 'FWD', 'FWD', 'FWD'];

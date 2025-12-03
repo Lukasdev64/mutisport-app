@@ -115,7 +115,7 @@ export const Header = () => {
                 <LayoutDashboard size={18} />
               </div>
               <Link to="/" className="text-xl font-bold tracking-tight text-white">
-                SportChampions
+                Tournaly
               </Link>
             </div>
 

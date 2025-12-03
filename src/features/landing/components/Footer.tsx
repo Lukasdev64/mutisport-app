@@ -80,7 +80,7 @@ export const Footer = () => {
             <div className="col-span-2 space-y-4">
               <Link to="/" className="inline-block">
                 <span className="text-2xl font-bold tracking-tighter bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
-                  SportChampions
+                  Tournaly
                 </span>
               </Link>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
@@ -174,7 +174,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-border/40">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2025 SportChampions. Tous droits réservés.</p>
+            <p>© 2025 Tournaly. Tous droits réservés.</p>
             <p className="flex items-center gap-2">
               Fait avec <span className="text-red-500 animate-pulse">❤️</span> pour les passionnés de sport
             </p>

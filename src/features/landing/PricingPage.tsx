@@ -41,7 +41,7 @@ export const PricingPage = () => {
   return (
     <LandingLayout>
       <SEO 
-        title="Tarifs - SportChampions" 
+        title="Tarifs - Tournaly" 
         description="Des plans adaptés à tous les organisateurs. Commencez gratuitement et évoluez selon vos besoins."
       />
       <Header />
