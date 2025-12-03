@@ -50,6 +50,16 @@ const mockTournamentStore = {
   unarchiveTournament: mock(),
   deleteTournament: mock(),
   createTournament: mock(),
+  setSyncStatus: mock(),
+  getTournament: mock(() => ({
+    id: 'tournament-1',
+    settings: {},
+    players: [],
+    rounds: [],
+    tennisConfig: null,
+    sportConfig: null,
+    status: 'active',
+  })),
   getState: () => mockTournamentStore
 };
 
