@@ -1,5 +1,5 @@
 import type { SportType } from './sport';
-import type { TennisMatchConfig } from './tennis';
+import type { TennisMatchConfig, TennisMatchScore } from './tennis';
 
 export type TournamentFormat = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
 
@@ -28,6 +28,8 @@ export interface MatchResult {
   player2Score: number;
   winnerId?: string;
   isWalkover?: boolean;
+  /** Score détaillé pour tennis - permet l'édition fine */
+  tennisScore?: TennisMatchScore;
 }
 
 export interface Match {

@@ -1,8 +1,9 @@
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Clock, MapPin, Zap, Trophy } from 'lucide-react';
+import { X, Clock, MapPin, Zap, Trophy, Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlayerAvatar } from '@/components/ui/PlayerAvatar';
+import { Button } from '@/components/ui/button';
 import { MatchModal } from '../MatchModal';
 import type { MobileMatchSheetProps } from '@/types/arena';
 import { getMatchDisplayStatus } from '@/types/arena';
@@ -21,6 +22,9 @@ export function MobileMatchSheet({
 }: MobileMatchSheetProps) {
   const dragControls = useDragControls();
   const canScore = role === 'organizer' || role === 'referee';
+
+  // État pour contrôler l'ouverture du modal de scoring
+  const [isScoringModalOpen, setIsScoringModalOpen] = useState(false);
 
   // Get players
   const player1 = tournament.players.find((p) => p.id === match?.player1Id);
@@ -91,6 +95,7 @@ export function MobileMatchSheet({
             {/* Drag handle */}
             <div
               className="flex justify-center py-3 cursor-grab active:cursor-grabbing"
+              style={{ touchAction: 'none' }}
               onPointerDown={(e) => dragControls.start(e)}
             >
               <div className="sheet-handle" />
@@ -125,8 +130,8 @@ export function MobileMatchSheet({
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto custom-scrollbar-mobile">
-              {/* Match info */}
-              <div className="p-4 space-y-4">
+              {/* Match info - pb-24 pour compenser la barre de navigation */}
+              <div className="p-4 pb-24 space-y-4">
                 {/* Time & Location */}
                 <div className="flex items-center gap-4 text-sm text-slate-400">
                   {match.scheduledAt && (
@@ -177,14 +182,21 @@ export function MobileMatchSheet({
                 {/* Scoring section - only for referees/organizers */}
                 {canScore && !isCompleted && (
                   <div className="mt-4 p-4 bg-slate-800/50 rounded-xl">
-                    <p className="text-sm text-slate-400 text-center mb-2">
-                      Tapez sur le match pour accéder au scoring
-                    </p>
+                    <Button
+                      onClick={() => setIsScoringModalOpen(true)}
+                      className="w-full py-6 bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-semibold"
+                    >
+                      <Play className="w-5 h-5 mr-2" />
+                      Scorer ce match
+                    </Button>
                     <MatchModal
                       match={match}
                       tournament={tournament}
-                      isOpen={false}
-                      onClose={onClose}
+                      isOpen={isScoringModalOpen}
+                      onClose={() => {
+                        setIsScoringModalOpen(false);
+                        // Optionnel: fermer aussi le sheet parent si le match est terminé
+                      }}
                     />
                   </div>
                 )}
