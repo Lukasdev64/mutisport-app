@@ -44,10 +44,10 @@ describe('Sport Implementation Status', () => {
   });
 
   describe('isSportImplemented', () => {
-    it('should return true only for tennis', () => {
+    it('should return true for tennis and football', () => {
       expect(isSportImplemented('tennis')).toBe(true);
+      expect(isSportImplemented('football')).toBe(true);
       expect(isSportImplemented('basketball')).toBe(false);
-      expect(isSportImplemented('football')).toBe(false);
       expect(isSportImplemented('ping_pong')).toBe(false);
       expect(isSportImplemented('chess')).toBe(false);
       expect(isSportImplemented('generic')).toBe(false);
@@ -57,11 +57,11 @@ describe('Sport Implementation Status', () => {
   describe('isSportUsable', () => {
     it('should return true for implemented and partial sports', () => {
       expect(isSportUsable('tennis')).toBe(true);
+      expect(isSportUsable('football')).toBe(true);
       expect(isSportUsable('basketball')).toBe(true);
     });
 
     it('should return false for WIP sports', () => {
-      expect(isSportUsable('football')).toBe(false);
       expect(isSportUsable('ping_pong')).toBe(false);
       expect(isSportUsable('chess')).toBe(false);
       expect(isSportUsable('generic')).toBe(false);
@@ -83,22 +83,24 @@ describe('Sport Implementation Status', () => {
   });
 
   describe('Sport wizard isolation', () => {
-    it('should have exactly one fully implemented sport', () => {
+    it('should have tennis and football as fully implemented sports', () => {
       const implementedSports = (Object.keys(SPORT_IMPLEMENTATION_STATUS) as SportType[])
         .filter(sport => SPORT_IMPLEMENTATION_STATUS[sport] === 'implemented');
 
-      expect(implementedSports).toEqual(['tennis']);
+      expect(implementedSports).toContain('tennis');
+      expect(implementedSports).toContain('football');
+      expect(implementedSports.length).toBe(2);
     });
 
     it('should have tennis config not required for non-tennis usable sports', () => {
       // This test documents the expected behavior:
-      // Basketball tournaments should NOT require tennisConfig
+      // Basketball and football tournaments should NOT require tennisConfig
       const usableSports = (Object.keys(SPORT_IMPLEMENTATION_STATUS) as SportType[])
         .filter(sport => isSportUsable(sport));
 
       expect(usableSports).toContain('tennis');
+      expect(usableSports).toContain('football');
       expect(usableSports).toContain('basketball');
-      expect(usableSports).not.toContain('football');
     });
 
     it('should block WIP sports from tournament creation', () => {
