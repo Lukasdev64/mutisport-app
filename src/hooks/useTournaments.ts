@@ -67,6 +67,7 @@ const mapSupabaseToTournament = (row: any): Tournament => {
     archived: row.archived || false,
     settings: bracketData.settings || { pointsForWin: 3, pointsForDraw: 1, pointsForLoss: 0 },
     tennisConfig: bracketData.tennisConfig,
+    sportConfig: bracketData.sportConfig,
     syncStatus: 'synced' as SyncStatus, // Data from Supabase is always synced
   };
 };
@@ -87,6 +88,7 @@ const mapTournamentToDb = (tournament: Tournament, userId: string, isUpdate = fa
       players: tournament.players,
       rounds: tournament.rounds,
       tennisConfig: tournament.tennisConfig,
+      sportConfig: tournament.sportConfig,
     },
     location: tournament.location || null,
     date: tournament.tournamentDate ? new Date(tournament.tournamentDate).toISOString().split('T')[0] : null,
@@ -297,8 +299,8 @@ export const useUpdateMatch = () => {
       useTournamentStore.getState().updateMatch(tournamentId, matchId, data);
 
       if (isSupabaseConfigured()) {
-        // Update match in Supabase
-        const { error } = await (supabase
+        // 1. Update match in relational table (tournament_matches)
+        const { error: matchError } = await (supabase
           .from('tournament_matches') as any)
           .update({
             winner_id: data.result?.winnerId,
@@ -307,9 +309,37 @@ export const useUpdateMatch = () => {
           })
           .eq('id', matchId);
 
-        if (error) {
-          console.error('Failed to sync match update to Supabase:', error);
-          // Don't throw - local update already happened
+        if (matchError) {
+          console.error('Failed to sync match update to Supabase (relational):', matchError);
+        }
+
+        // 2. Update tournament bracket_data JSON to keep it in sync (Source of Truth for UI)
+        const updatedTournament = useTournamentStore.getState().getTournament(tournamentId);
+        if (updatedTournament) {
+          const bracketData = {
+            settings: updatedTournament.settings,
+            players: updatedTournament.players,
+            rounds: updatedTournament.rounds,
+            tennisConfig: updatedTournament.tennisConfig,
+            sportConfig: updatedTournament.sportConfig,
+          };
+
+          // Prepare updates object
+          const updates: any = { bracket_data: bracketData };
+          
+          // If tournament is completed locally, sync that status to DB
+          if (updatedTournament.status === 'completed') {
+            updates.status = 'completed';
+          }
+
+          const { error: tournamentError } = await supabase
+            .from('tournaments')
+            .update(updates)
+            .eq('id', tournamentId);
+
+          if (tournamentError) {
+            console.error('Failed to sync match update to Supabase (JSON):', tournamentError);
+          }
         }
       }
 

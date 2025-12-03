@@ -21,6 +21,7 @@ export interface Player {
     unavailableDates: string[];
     maxMatchesPerDay: number;
   };
+  metadata?: any; // Flexible field for sport-specific data (e.g., team roster, formation)
 }
 
 export interface MatchResult {

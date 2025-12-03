@@ -25,6 +25,7 @@ const BillingPage = lazy(() => import('@/features/billing/BillingPage'));
 // Sport Selection Hub & Sport-Specific Wizards
 const SportSelectionHub = lazy(() => import('@/features/tournament/components/wizard-hub/SportSelectionHub').then(module => ({ default: module.SportSelectionHub })));
 const TennisWizardPage = lazy(() => import('@/sports/tennis/wizard/TennisWizardPage').then(module => ({ default: module.TennisWizardPage })));
+const FootballWizardPage = lazy(() => import('@/sports/football/wizard/FootballWizardPage').then(module => ({ default: module.FootballWizardPage })));
 const BasketballWizardPage = lazy(() => import('@/sports/basketball/wizard/BasketballWizardPage').then(module => ({ default: module.BasketballWizardPage })));
 
 // Public Spectator Page (no sidebar)
@@ -83,6 +84,7 @@ function App() {
                       <Route path="/tournaments/new" element={<SportSelectionHub />} />
                       {/* Sport-Specific Wizards */}
                       <Route path="/tournaments/new/tennis" element={<TennisWizardPage />} />
+                      <Route path="/tournaments/new/football" element={<FootballWizardPage />} />
                       <Route path="/tournaments/new/basketball" element={<BasketballWizardPage />} />
                       <Route path="/tournaments/:id" element={<TournamentArenaPage />} />
                       <Route path="/tournaments" element={<TournamentsPage />} />

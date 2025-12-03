@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useSportStore } from '@/store/sportStore';
 import { tennisPlugin } from '@/sports/tennis/plugin';
 import { basketballPlugin } from '@/sports/basketball/plugin';
+import { footballPlugin } from '@/sports/football/plugin';
 import type { SportPlugin } from './types';
 
 interface SportPluginsProviderProps {
@@ -25,6 +26,7 @@ export function SportPluginsProvider({ children }: SportPluginsProviderProps) {
     const plugins: SportPlugin[] = [
       tennisPlugin,
       basketballPlugin,
+      footballPlugin,
     ];
 
     // Register each plugin if not already registered

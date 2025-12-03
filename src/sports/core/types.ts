@@ -44,6 +44,8 @@ export interface SportMatchModalProps {
 
 export interface SportRulesModuleProps {
   config: unknown;
+  onChange?: (config: unknown) => void;
+  readOnly?: boolean;
   compact?: boolean;
 }
 

@@ -48,31 +48,58 @@ export function BracketDisplay({ tournament }: BracketDisplayProps) {
   }
 
   // Single Elimination Layout (Tree)
-  // We use a more compact layout to fit 8 players on screen
   return (
     <>
-      <div className="flex items-center justify-center w-full h-full p-4">
-        <div className="flex gap-8">
-          {tournament.rounds.map((round, roundIndex) => (
-            <div key={round.id} className="flex flex-col justify-around gap-4 relative">
-              <div className="absolute -top-8 left-0 w-full text-center">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  {round.name}
-                </h3>
+      <div className="flex items-center justify-start overflow-x-auto w-full h-full px-8 pb-8 pt-20 custom-scrollbar">
+        <div className="flex flex-row h-full min-h-[500px]">
+          {tournament.rounds.map((round, roundIndex) => {
+            const isLastRound = roundIndex === tournament.rounds.length - 1;
+            const nextRound = tournament.rounds[roundIndex + 1];
+            
+            return (
+              <div key={round.id} className="flex flex-row">
+                {/* Matches Column */}
+                <div className="flex flex-col justify-around gap-4 w-64 relative z-10">
+                  <div className="absolute -top-10 left-0 w-full text-center">
+                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      {round.name}
+                    </h3>
+                  </div>
+                  
+                  {round.matches.map((match) => (
+                    <MatchCard 
+                      key={match.id} 
+                      match={match} 
+                      tournament={tournament}
+                      roundIndex={roundIndex}
+                      onClick={() => setSelectedMatch(match)}
+                      compact={false}
+                    />
+                  ))}
+                </div>
+
+                {/* Connectors Column (if not last round) */}
+                {!isLastRound && (
+                  <div className="flex flex-col justify-around w-16">
+                    {Array.from({ length: Math.floor(round.matches.length / 2) }).map((_, i) => (
+                      <div 
+                        key={i}
+                        className="relative border-r border-t border-b border-white/20"
+                        style={{ height: `${100 / round.matches.length}%`, width: '50%' }}
+                      >
+                        {/* Line to next match */}
+                        <div className="absolute top-1/2 -right-8 w-8 border-b border-white/20" />
+                      </div>
+                    ))}
+                    {/* Handle odd match if any (straight line) */}
+                    {round.matches.length % 2 !== 0 && (
+                      <div className="relative h-px border-b border-white/20 w-full" />
+                    )}
+                  </div>
+                )}
               </div>
-              
-              {round.matches.map((match) => (
-                <MatchCard 
-                  key={match.id} 
-                  match={match} 
-                  tournament={tournament}
-                  roundIndex={roundIndex}
-                  onClick={() => setSelectedMatch(match)}
-                  compact={true} // Force compact mode for better fit
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <MatchModalWrapper 

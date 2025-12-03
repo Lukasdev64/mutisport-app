@@ -32,8 +32,11 @@ describe('Sport Implementation Status', () => {
       expect(SPORT_IMPLEMENTATION_STATUS.basketball).toBe('partial');
     });
 
-    it('should mark football, ping_pong, chess, generic as wip', () => {
-      expect(SPORT_IMPLEMENTATION_STATUS.football).toBe('wip');
+    it('should mark football as implemented', () => {
+      expect(SPORT_IMPLEMENTATION_STATUS.football).toBe('implemented');
+    });
+
+    it('should mark ping_pong, chess, generic as wip', () => {
       expect(SPORT_IMPLEMENTATION_STATUS.ping_pong).toBe('wip');
       expect(SPORT_IMPLEMENTATION_STATUS.chess).toBe('wip');
       expect(SPORT_IMPLEMENTATION_STATUS.generic).toBe('wip');

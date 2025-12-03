@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Clock, Trophy, BookOpen } from 'lucide-react';
+import { Clock, Trophy, BookOpen, Users } from 'lucide-react';
 import type { Tournament } from '@/types/tournament';
 import { StandingsTable } from './StandingsTable';
+import { TeamList } from './TeamList';
 import { cn } from '@/lib/utils';
 import { useSportPlugin, useSportConfig } from '@/sports/core/hooks';
 
@@ -9,7 +10,7 @@ interface ArenaSidebarProps {
   tournament: Tournament;
 }
 
-type TabId = 'matches' | 'standings' | 'rules';
+type TabId = 'matches' | 'standings' | 'rules' | 'teams';
 
 export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
   // Default to matches if there are upcoming, otherwise standings
@@ -30,6 +31,7 @@ export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
   const tabs: { id: TabId; label: string; icon: React.ReactNode; show: boolean }[] = [
     { id: 'matches', label: 'Matchs', icon: <Clock size={12} />, show: true },
     { id: 'standings', label: 'Classement', icon: <Trophy size={12} />, show: true },
+    { id: 'teams', label: 'Équipes', icon: <Users size={12} />, show: true },
     { id: 'rules', label: 'Règles', icon: <BookOpen size={12} />, show: !!hasRulesModule },
   ];
 
@@ -67,6 +69,10 @@ export function ArenaSidebar({ tournament }: ArenaSidebarProps) {
             <div className="p-2">
               <StandingsTable tournament={tournament} compact />
             </div>
+          )}
+
+          {activeTab === 'teams' && (
+            <TeamList tournament={tournament} />
           )}
 
           {activeTab === 'rules' && hasRulesModule && (

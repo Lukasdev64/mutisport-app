@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, MapPin, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Match, Tournament } from '@/types/tournament';
-import { useTournamentStore } from '../../store/tournamentStore';
+import { useUpdateMatch } from '@/hooks/useTournaments';
 import { cn } from '@/lib/utils';
 
 interface SchedulePopoverProps {
@@ -14,7 +14,7 @@ interface SchedulePopoverProps {
 }
 
 export function SchedulePopover({ match, tournament, isOpen, onClose }: SchedulePopoverProps) {
-  const updateMatch = useTournamentStore((state) => state.updateMatch);
+  const updateMatchMutation = useUpdateMatch();
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Local form state
@@ -81,22 +81,30 @@ export function SchedulePopover({ match, tournament, isOpen, onClose }: Schedule
     const resource = tournament.schedulingConfig?.resources.find(r => r.id === resourceId);
     const location = resource?.name;
 
-    updateMatch(tournament.id, match.id, {
-      scheduledAt,
-      resourceId: resourceId || undefined,
-      location,
-      status: scheduledAt ? 'scheduled' : match.status,
+    updateMatchMutation.mutate({
+      tournamentId: tournament.id,
+      matchId: match.id,
+      data: {
+        scheduledAt,
+        resourceId: resourceId || undefined,
+        location,
+        status: scheduledAt ? 'scheduled' : match.status,
+      }
     });
 
     onClose();
   };
 
   const handleClear = () => {
-    updateMatch(tournament.id, match.id, {
-      scheduledAt: undefined,
-      resourceId: undefined,
-      location: undefined,
-      status: 'pending',
+    updateMatchMutation.mutate({
+      tournamentId: tournament.id,
+      matchId: match.id,
+      data: {
+        scheduledAt: undefined,
+        resourceId: undefined,
+        location: undefined,
+        status: 'pending',
+      }
     });
     onClose();
   };
@@ -123,11 +131,11 @@ export function SchedulePopover({ match, tournament, isOpen, onClose }: Schedule
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden w-72"
+            className="relative bg-slate-900 border border-slate-700 rounded-xl shadow-2xl w-72"
             onClick={(e) => e.stopPropagation()}
           >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-slate-800/50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700 bg-slate-800/50 rounded-t-xl">
             <h4 className="text-sm font-semibold text-white">Planifier le match</h4>
             <button
               onClick={onClose}
@@ -138,9 +146,9 @@ export function SchedulePopover({ match, tournament, isOpen, onClose }: Schedule
           </div>
 
           {/* Form */}
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-4 relative z-50">
             {/* Date */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative z-20">
               <label className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
                 <Calendar className="w-3 h-3" />
                 Date
@@ -160,7 +168,7 @@ export function SchedulePopover({ match, tournament, isOpen, onClose }: Schedule
             </div>
 
             {/* Time */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 relative z-10">
               <label className="text-xs font-medium text-slate-400 flex items-center gap-1.5">
                 <Clock className="w-3 h-3" />
                 Heure
@@ -209,7 +217,7 @@ export function SchedulePopover({ match, tournament, isOpen, onClose }: Schedule
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700 bg-slate-800/30">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700 bg-slate-800/30 rounded-b-xl relative z-0">
             {match.scheduledAt ? (
               <Button
                 size="sm"

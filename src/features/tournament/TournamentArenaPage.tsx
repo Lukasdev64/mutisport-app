@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { TournamentSettingsModal, type TabId } from './components/arena/TournamentSettingsModal';
 import { TournamentShareModal } from './components/arena/TournamentShareModal';
 import { TournamentStateIndicator } from './components/arena/TournamentStateIndicator';
+import { TournamentWinnerModal } from './components/arena/TournamentWinnerModal';
 import { useMatchSubscription } from '@/hooks/useMatchSubscription';
 import { useTournamentNotifications, useConnectionStatus } from './hooks/useTournamentNotifications';
 import { useNotifications } from '@/context/NotificationContext';
@@ -248,6 +249,14 @@ export function TournamentArenaPage() {
         tournament={tournament}
         isOpen={showShare}
         onClose={() => setShowShare(false)}
+      />
+
+      {/* Winner Celebration Modal */}
+      <TournamentWinnerModal
+        tournament={tournament}
+        onClose={() => {
+          // Optional: Add logic to prevent it from showing again immediately if desired
+        }}
       />
 
       {/* Debug Panel (dev only) */}

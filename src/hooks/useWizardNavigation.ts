@@ -22,7 +22,7 @@ const SPORT_WIZARD_ROUTES: Partial<Record<SportType, string>> = {
   tennis: '/tournaments/new/tennis',
   basketball: '/tournaments/new/basketball',
   // Add more sports as wizards are implemented:
-  // football: '/tournaments/new/football',
+  football: '/tournaments/new/football',
   // ping_pong: '/tournaments/new/ping-pong',
 };
 

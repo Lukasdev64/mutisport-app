@@ -17,7 +17,7 @@ export type SportImplementationStatus = 'implemented' | 'partial' | 'wip';
 export const SPORT_IMPLEMENTATION_STATUS: Record<SportType, SportImplementationStatus> = {
   tennis: 'implemented',      // Full support: presets, rules customizer, scoring
   basketball: 'partial',      // Has plugin but no wizard UI for rules
-  football: 'wip',            // No plugin registered
+  football: 'implemented',    // Full support (Active)
   ping_pong: 'wip',           // No plugin registered
   chess: 'wip',               // No plugin registered
   generic: 'wip'              // No plugin registered

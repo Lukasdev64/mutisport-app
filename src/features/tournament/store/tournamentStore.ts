@@ -76,23 +76,33 @@ export const useTournamentStore = create<TournamentStore>()(
       }));
 
       // 2. If there's a winner and a next match, update the next match
-      if (nextMatchId && winnerId) {
-        newTournament.rounds = newTournament.rounds.map((round) => ({
-          ...round,
-          matches: round.matches.map((match) => {
-            if (match.id === nextMatchId) {
-              // Determine if player should be player1 or player2 in the next match
-              // This is a simplified logic. Ideally, the bracket generation should define this.
-              // For now, we fill the first empty slot.
-              if (!match.player1Id) {
-                return { ...match, player1Id: winnerId };
-              } else if (!match.player2Id && match.player1Id !== winnerId) {
-                return { ...match, player2Id: winnerId };
+      if (winnerId) {
+        if (nextMatchId) {
+          newTournament.rounds = newTournament.rounds.map((round) => ({
+            ...round,
+            matches: round.matches.map((match) => {
+              if (match.id === nextMatchId) {
+                // Determine if player should be player1 or player2 in the next match
+                if (!match.player1Id) {
+                  return { ...match, player1Id: winnerId };
+                } else if (!match.player2Id && match.player1Id !== winnerId) {
+                  return { ...match, player2Id: winnerId };
+                }
               }
-            }
-            return match;
-          })
-        }));
+              return match;
+            })
+          }));
+        } else {
+          // 3. If no next match, check if it's the final to complete the tournament
+          // We check if this match is in the last round
+          const lastRound = newTournament.rounds[newTournament.rounds.length - 1];
+          const isLastRoundMatch = lastRound.matches.some(m => m.id === matchId);
+          
+          if (isLastRoundMatch) {
+            console.log('🏆 Tournament Completed! Winner:', winnerId);
+            newTournament.status = 'completed';
+          }
+        }
       }
 
       return newTournament;
