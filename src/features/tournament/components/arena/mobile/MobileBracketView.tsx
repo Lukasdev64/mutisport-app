@@ -114,35 +114,59 @@ function SingleEliminationBracket({
   onMatchSelect,
 }: BracketProps) {
   return (
-    <div className="flex gap-8 items-center min-w-max">
-      {rounds.map((round, roundIndex) => (
-        <div
-          key={round.id}
-          className="flex flex-col gap-4"
-          style={{
-            // Increase gap between matches as we progress through rounds
-            gap: `${Math.pow(2, roundIndex) * 16}px`,
-          }}
-        >
-          {/* Round header */}
-          <div className="text-center mb-2">
-            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
-              {round.name}
-            </span>
-          </div>
+    <div className="flex items-center min-w-max min-h-[400px]">
+      {rounds.map((round, roundIndex) => {
+        const isLastRound = roundIndex === rounds.length - 1;
 
-          {/* Matches */}
-          {round.matches.map((match) => (
-            <MobileBracketMatchCard
-              key={match.id}
-              match={match}
-              player1={getPlayer(match.player1Id)}
-              player2={getPlayer(match.player2Id)}
-              onTap={() => onMatchSelect(match)}
-            />
-          ))}
-        </div>
-      ))}
+        return (
+          <div key={round.id} className="flex flex-row h-full">
+            {/* Matches Column */}
+            <div className="flex flex-col justify-around w-48 relative z-10">
+              {/* Round header */}
+              <div className="absolute -top-8 left-0 w-full text-center">
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                  {round.name}
+                </span>
+              </div>
+
+              {/* Matches */}
+              {round.matches.map((match) => (
+                <MobileBracketMatchCard
+                  key={match.id}
+                  match={match}
+                  player1={getPlayer(match.player1Id)}
+                  player2={getPlayer(match.player2Id)}
+                  onTap={() => onMatchSelect(match)}
+                />
+              ))}
+            </div>
+
+            {/* Connectors Column (if not last round) */}
+            {!isLastRound && (
+              <div className="flex flex-col justify-around w-10">
+                {Array.from({ length: Math.floor(round.matches.length / 2) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="relative border-r border-t border-b border-white/20"
+                    style={{
+                      height: `${100 / round.matches.length}%`,
+                      minHeight: '60px',
+                      width: '50%'
+                    }}
+                  >
+                    {/* Line to next match */}
+                    <div className="absolute top-1/2 -right-5 w-5 border-b border-white/20" />
+                  </div>
+                ))}
+                {/* Handle odd match if any (straight line) */}
+                {round.matches.length % 2 !== 0 && (
+                  <div className="relative h-px border-b border-white/20 w-full" />
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

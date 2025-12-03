@@ -166,6 +166,12 @@ export function TournamentArenaPage() {
           isOpen={showShare}
           onClose={() => setShowShare(false)}
         />
+
+        {/* Winner Celebration Modal */}
+        <TournamentWinnerModal
+          tournament={tournament}
+          onClose={() => {}}
+        />
       </>
     );
   }
