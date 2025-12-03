@@ -4,6 +4,7 @@ import { useTournamentStore } from './store/tournamentStore';
 import { useTournament, useSyncTournamentToCloud } from '@/hooks/useTournaments';
 import { BracketDisplay } from './components/arena/BracketDisplay';
 import { ArenaSidebar } from './components/arena/ArenaSidebar';
+import { ArenaMobileLayout } from './components/arena/mobile';
 import { Trophy, Users, Calendar, Share2, Bell, BellOff, Wifi, Loader2, CloudOff, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TournamentSettingsModal, type TabId } from './components/arena/TournamentSettingsModal';
@@ -13,9 +14,17 @@ import { useMatchSubscription } from '@/hooks/useMatchSubscription';
 import { useTournamentNotifications, useConnectionStatus } from './hooks/useTournamentNotifications';
 import { useNotifications } from '@/context/NotificationContext';
 import { NotificationDebugPanel } from '@/components/debug/NotificationDebugPanel';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export function TournamentArenaPage() {
   const { id } = useParams<{ id: string }>();
+
+  // Mobile detection
+  const isMobile = useIsMobile();
+
+  // User role detection
+  const role = useUserRole(id || '');
 
   // First try local store (for organizer/offline)
   const localTournament = useTournamentStore((state) =>
@@ -131,6 +140,36 @@ export function TournamentArenaPage() {
     );
   }
 
+  // Mobile layout - full-screen optimized experience
+  if (isMobile) {
+    return (
+      <>
+        <ArenaMobileLayout
+          tournament={tournament}
+          role={role}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenShare={() => setShowShare(true)}
+        />
+
+        {/* Settings Modal */}
+        <TournamentSettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          tournament={tournament}
+          initialTab={settingsTab}
+        />
+
+        {/* Share Modal */}
+        <TournamentShareModal
+          tournament={tournament}
+          isOpen={showShare}
+          onClose={() => setShowShare(false)}
+        />
+      </>
+    );
+  }
+
+  // Desktop layout
   return (
     <div className="h-[calc(100vh-2rem)] flex flex-col gap-4">
       {/* Header & Stats */}
