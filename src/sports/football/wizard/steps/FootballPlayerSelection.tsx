@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, X, Users, UserPlus, Trash2, Shirt, LayoutTemplate, Wand2 } from 'lucide-react';
+import { Plus, X, Users, Trash2, Wand2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

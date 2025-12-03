@@ -6,10 +6,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Button } from '@/components/ui/button';
-import { useTournamentStore } from '@/features/tournament/store/tournamentStore';
 import { useCreateTournament } from '@/hooks/useTournaments';
 import { useToast } from '@/components/ui/toast';
-import { TournamentEngine } from '@/features/tournament/logic/engine';
 import type { Tournament } from '@/types/tournament';
 import { generateTournamentStructure } from '../logic/structure-generation';
 import type { FootballTournamentConfig } from '../models/tournament-formats';
@@ -29,10 +27,9 @@ export function FootballWizardPage() {
 
   // Store state
   const {
-    step, totalSteps, mode, tournamentName, venue, startDate, config, format, teams, footballFormatConfig
+    step, mode, tournamentName, venue, startDate, config, format, teams, footballFormatConfig
   } = useFootballWizardStore(useShallow((s) => ({
     step: s.step,
-    totalSteps: s.totalSteps,
     mode: s.mode,
     tournamentName: s.tournamentName,
     venue: s.venue,
@@ -50,7 +47,6 @@ export function FootballWizardPage() {
   const reset = useFootballWizardStore((s) => s.reset);
 
   // Tournament creation
-  const createLocalTournament = useTournamentStore((s) => s.createTournament);
   const createTournamentMutation = useCreateTournament();
 
   // Handle quickstart mode from URL
@@ -103,9 +99,9 @@ export function FootballWizardPage() {
       // Use the advanced football config if available, otherwise fallback to default
       const finalFootballConfig: FootballTournamentConfig = footballFormatConfig || {
         type: 'ELIMINATION_DIRECTE',
-        matchDuration: config.matchDuration,
-        extraTime: config.extraTime,
-        penaltyShootout: config.penalties,
+        matchDuration: config.halfDurationMinutes * config.halvesCount,
+        extraTime: config.extraTimeEnabled,
+        penaltyShootout: config.penaltiesEnabled,
         points: { win: 3, draw: 1, loss: 0 },
         tieBreakers: ['points', 'difference_buts'],
         hasReturnLeg: false,

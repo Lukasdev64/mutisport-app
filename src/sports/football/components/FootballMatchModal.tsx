@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { X, Trophy, Timer, Minus, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Match } from '@/types/tournament';
@@ -15,6 +13,7 @@ interface FootballMatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   match: Match;
+  tournamentId: string;
   onUpdateResult?: (matchId: string, result: any) => void;
 }
 
@@ -22,6 +21,7 @@ export function FootballMatchModal({
   isOpen,
   onClose,
   match,
+  tournamentId,
   onUpdateResult
 }: FootballMatchModalProps) {
   const updateMatchMutation = useUpdateMatch();
@@ -81,9 +81,9 @@ export function FootballMatchModal({
         onUpdateResult(match.id, result);
       } else {
         await updateMatchMutation.mutateAsync({
+          tournamentId,
           matchId: match.id,
-          result,
-          status: 'completed'
+          data: { result, status: 'completed' }
         });
       }
       

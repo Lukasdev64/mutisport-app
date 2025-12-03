@@ -1,4 +1,4 @@
-import { Trophy, Users, GitBranch, RotateCw, Grid, ListOrdered } from 'lucide-react';
+import { Trophy, GitBranch, RotateCw, Grid } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/input';
 import { FootballRulesModule } from '../../components/FootballRulesModule';
@@ -49,7 +49,7 @@ export function FootballFormatAndRules() {
   const handleFormatSelect = (type: FootballFormatType) => {
     // Create default config for the selected type
     const baseConfig = {
-      matchDuration: config.matchDuration || 90,
+      matchDuration: (config.halfDurationMinutes * config.halvesCount) || 90,
       extraTime: false,
       penaltyShootout: false,
       points: { win: 3, draw: 1, loss: 0 },
@@ -194,7 +194,7 @@ export function FootballFormatAndRules() {
         <h3 className="text-lg font-semibold text-white">Match Rules</h3>
         <FootballRulesModule
           config={config}
-          onChange={setConfig}
+          onChange={setConfig as (config: unknown) => void}
           readOnly={false}
         />
       </div>

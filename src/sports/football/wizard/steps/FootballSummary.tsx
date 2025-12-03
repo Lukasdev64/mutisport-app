@@ -1,4 +1,4 @@
-import { Trophy, Calendar, Users, Settings } from 'lucide-react';
+import { Trophy, Users, Settings } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { useFootballWizardStore } from '../store';
 
@@ -46,11 +46,11 @@ export function FootballSummary() {
             </div>
             <div className="flex justify-between">
               <span className="text-white/60">Durée du Match</span>
-              <span className="text-white font-medium">{config.matchDuration} min</span>
+              <span className="text-white font-medium">{config.halfDurationMinutes * config.halvesCount} min</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-white/60">Taille de l'Équipe</span>
-              <span className="text-white font-medium">{config.playersPerTeam}v{config.playersPerTeam}</span>
+              <span className="text-white/60">Format</span>
+              <span className="text-white font-medium">{config.format === 'standard' ? '11v11' : config.format === 'futsal' ? '5v5' : config.format === 'seven_a_side' ? '7v7' : '5v5'}</span>
             </div>
           </div>
         </Card>

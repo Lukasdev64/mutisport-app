@@ -233,15 +233,20 @@ export function ArenaMobileLayout({
           <motion.div
             key={activeTab}
             custom={direction}
-            initial={(dir: number) => ({
-              x: dir > 0 ? '100%' : '-100%',
-              opacity: 0,
-            })}
-            animate={{ x: 0, opacity: 1 }}
-            exit={(dir: number) => ({
-              x: dir < 0 ? '100%' : '-100%',
-              opacity: 0,
-            })}
+            variants={{
+              enter: (dir: number) => ({
+                x: dir > 0 ? '100%' : '-100%',
+                opacity: 0,
+              }),
+              center: { x: 0, opacity: 1 },
+              exit: (dir: number) => ({
+                x: dir < 0 ? '100%' : '-100%',
+                opacity: 0,
+              }),
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
             transition={{
               type: 'spring',
               damping: 30,

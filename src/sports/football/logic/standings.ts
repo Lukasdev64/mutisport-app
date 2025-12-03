@@ -88,9 +88,9 @@ function updateTeamStats(
  * Trie le classement selon les critères configurés.
  */
 function sortStandings(
-  standings: FootballStanding[], 
+  standings: FootballStanding[],
   criteria: TieBreakerCriteria[],
-  matches: Match[] // Nécessaire pour confrontation directe
+  _matches: Match[] // Reserved for head-to-head comparison (confrontation directe)
 ): FootballStanding[] {
   return standings.sort((a, b) => {
     for (const criterion of criteria) {

@@ -5,6 +5,7 @@ export function FootballMatchModalWrapper({
   isOpen,
   onClose,
   match,
+  tournament,
   onUpdateResult,
 }: SportMatchModalProps) {
   return (
@@ -12,6 +13,7 @@ export function FootballMatchModalWrapper({
       isOpen={isOpen}
       onClose={onClose}
       match={match}
+      tournamentId={tournament.id}
       onUpdateResult={onUpdateResult}
     />
   );

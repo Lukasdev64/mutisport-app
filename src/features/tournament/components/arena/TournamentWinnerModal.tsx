@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
-import { Trophy, Share2, X, Download } from 'lucide-react';
+import { Trophy, Share2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Tournament } from '@/types/tournament';
 import { useWindowSize } from 'react-use';
@@ -44,7 +44,7 @@ export function TournamentWinnerModal({ tournament, onClose }: TournamentWinnerM
     try {
       const blob = await toBlob(modalRef.current, {
         cacheBust: true,
-        skipOnError: true, // Skip images that fail to load (avoids crash on CORS issues)
+        skipFonts: true, // Skip fonts that fail to load (avoids crash on CORS issues)
         backgroundColor: '#1e293b', // Set a background color to avoid transparency issues
         filter: (node) => {
           // Ignore the close button and buttons at the bottom for the screenshot
@@ -58,7 +58,7 @@ export function TournamentWinnerModal({ tournament, onClose }: TournamentWinnerM
       const file = new File([blob], `winner-${tournament.name}.png`, { type: 'image/png' });
       const shareData = {
         title: 'Vainqueur du tournoi !',
-        text: `Félicitations à ${winner.name} pour sa victoire au tournoi ${tournament.name} ! 🏆`,
+        text: `Félicitations à ${winner?.name ?? 'le vainqueur'} pour sa victoire au tournoi ${tournament.name} ! 🏆`,
         files: [file]
       };
 

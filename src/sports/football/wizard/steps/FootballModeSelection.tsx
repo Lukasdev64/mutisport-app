@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion';
-import { Zap, Calendar, Trophy } from 'lucide-react';
+import { Zap, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { useFootballWizardStore } from '../store';
 

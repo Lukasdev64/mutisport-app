@@ -125,7 +125,7 @@ export function BracketDisplay({ tournament }: BracketDisplayProps) {
         <div className="flex flex-row h-full min-h-[500px]">
           {tournament.rounds.map((round, roundIndex) => {
             const isLastRound = roundIndex === tournament.rounds.length - 1;
-            const nextRound = tournament.rounds[roundIndex + 1];
+            // nextRound available for connector logic: tournament.rounds[roundIndex + 1]
             
             return (
               <div key={round.id} className="flex flex-row">

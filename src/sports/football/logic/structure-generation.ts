@@ -104,16 +104,15 @@ function generateChampionship(teams: Player[], config: ChampionshipConfig): Roun
 /**
  * Génère un tableau à élimination directe.
  */
-function generateKnockout(teams: Player[], config: KnockoutConfig): Round[] {
+function generateKnockout(teams: Player[], _config: KnockoutConfig): Round[] {
   const rounds: Round[] = [];
   const n = teams.length;
-  
+
   // Trouver la puissance de 2 supérieure ou égale
   let size = 1;
   while (size < n) size *= 2;
 
-  // Calculer les Byes
-  const byes = size - n;
+  // Byes calculation: size - n (reserved for future seeding logic)
   
   // Mélanger les équipes (optionnel, ici on prend l'ordre d'entrée)
   // const shuffled = [...teams].sort(() => Math.random() - 0.5);
@@ -214,7 +213,7 @@ function getRoundName(matchesCount: number): string {
 function generateGroupStage(teams: Player[], config: GroupStageConfig): Round[] {
   const rounds: Round[] = [];
   const numGroups = config.numberOfGroups;
-  const teamsPerGroup = Math.ceil(teams.length / numGroups);
+  // teamsPerGroup = Math.ceil(teams.length / numGroups) - Reserved for validation
   
   // Répartition des équipes (Snake draft ou aléatoire)
   const groups: Player[][] = Array.from({ length: numGroups }, () => []);

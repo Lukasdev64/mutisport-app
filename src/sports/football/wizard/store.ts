@@ -98,7 +98,7 @@ const getInitialState = () => ({
 
 export const useFootballWizardStore = create<FootballWizardState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       ...getInitialState(),
 
       setStep: (step) => set({ step }),

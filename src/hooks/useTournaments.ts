@@ -333,8 +333,8 @@ export const useUpdateMatch = () => {
             updates.status = 'completed';
           }
 
-          const { error: tournamentError } = await supabase
-            .from('tournaments')
+          const { error: tournamentError } = await (supabase
+            .from('tournaments') as any)
             .update(updates)
             .eq('id', tournamentId);
 
