@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-Sport Platform is a React 19 + TypeScript application for managing sports tournaments (tennis, football, basketball). Uses Bun runtime, Vite, Supabase backend, Stripe payments, and Zustand state management. Features a mobile-first responsive arena UI with pinch-to-zoom bracket navigation.
+Multi-Sport Platform is a React 19 + TypeScript application for managing sports tournaments (tennis, football, basketball). Uses Bun runtime, Vite, Supabase backend, Stripe payments, and Zustand state management. Features a mobile-first responsive arena UI with swipe carousel bracket navigation.
 
 ## Development Commands
 
@@ -53,10 +53,15 @@ src/
 │   │   │   ├── arena/        # Live tournament view
 │   │   │   │   ├── mobile/       # Mobile-first arena UI
 │   │   │   │   │   ├── ArenaMobileLayout.tsx   # Main mobile layout orchestrator
-│   │   │   │   │   ├── MobileBracketView.tsx   # Pinch-to-zoom bracket
+│   │   │   │   │   ├── MobileBracketView.tsx   # Swipe carousel bracket container
 │   │   │   │   │   ├── MobileMatchSheet.tsx    # Bottom sheet for match details
 │   │   │   │   │   ├── MobileMatchList.tsx     # List view of matches
-│   │   │   │   │   └── MobileStandingsView.tsx # Standings display
+│   │   │   │   │   ├── MobileStandingsView.tsx # Standings display
+│   │   │   │   │   └── bracket/               # Bracket carousel components
+│   │   │   │   │       ├── BracketRoundCarousel.tsx  # Swipe carousel container
+│   │   │   │   │       ├── RoundSlide.tsx            # Individual round view
+│   │   │   │   │       ├── BracketMatchCard.tsx      # Match card for bracket
+│   │   │   │   │       └── RoundIndicator.tsx        # Round dots/pills navigation
 │   │   │   │   ├── BracketDisplay.tsx    # Desktop bracket with connectors
 │   │   │   │   └── TournamentWinnerModal.tsx  # Victory celebration modal
 │   │   │   ├── wizard-hub/   # Sport selection entry point
@@ -135,7 +140,8 @@ src/
 │   ├── useSportFilter.ts
 │   ├── useIsMobile.ts      # Mobile detection (breakpoint + touch)
 │   ├── useUserRole.ts      # Tournament role detection (organizer/spectator)
-│   ├── usePinchZoom.ts     # Pinch-to-zoom gesture handler
+│   ├── usePinchZoom.ts     # Pinch-to-zoom gesture handler (desktop)
+│   ├── useBracketNavigation.ts  # Bracket carousel navigation + round names
 │   └── useArenaNavigation.ts  # Mobile arena tab navigation
 ├── types/              # TypeScript types
 │   ├── tournament.ts   # Tournament (with sportConfig), Match, Player, Round
@@ -554,13 +560,22 @@ const isMobile = useIsMobile(); // true if width < 768px OR touch device
 
 | Component | Purpose |
 |-----------|---------|
-| `ArenaMobileLayout` | Main orchestrator - manages tabs and views |
-| `MobileBracketView` | Pinch-to-zoom bracket with connectors |
+| `ArenaMobileLayout` | Main orchestrator - swipeable tabs between views |
+| `MobileBracketView` | Swipe carousel for bracket rounds |
 | `MobileMatchSheet` | Bottom sheet for match details/scoring |
 | `MobileMatchList` | List view grouped by round |
 | `MobileStandingsView` | Player standings with stats |
 | `ArenaBottomNav` | Tab navigation (Bracket/Matches/Standings) |
 | `MobileQuickActions` | FAB with quick action menu |
+
+**Bracket Carousel Components** (`mobile/bracket/`):
+
+| Component | Purpose |
+|-----------|---------|
+| `BracketRoundCarousel` | Main carousel container with swipe navigation |
+| `RoundSlide` | Individual round view with adaptive layout |
+| `BracketMatchCard` | Match card optimized for bracket (large/compact) |
+| `RoundIndicator` | Dots/pills for round navigation |
 
 **User Roles** (`src/hooks/useUserRole.ts`):
 ```typescript
@@ -568,7 +583,43 @@ type UserRole = 'organizer' | 'spectator';
 const role = useUserRole(tournamentId); // Determines available actions
 ```
 
-**Pinch-to-Zoom** (`src/hooks/usePinchZoom.ts`):
+**Swipe Navigation Architecture**:
+
+The mobile bracket uses a **horizontal carousel** pattern with Framer Motion's drag system:
+
+```typescript
+// Separated animation layers to prevent conflicts
+<AnimatePresence mode="popLayout">
+  <motion.div  // Outer: transition animation
+    initial={{ x: '100%' }}
+    animate={{ x: 0 }}
+    exit={{ x: '-100%' }}
+  >
+    <motion.div  // Inner: drag behavior
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      onDragEnd={handleDragEnd}
+      style={{ x: dragX }}
+    >
+      <RoundSlide ... />
+    </motion.div>
+  </motion.div>
+</AnimatePresence>
+```
+
+**Key Design Decisions:**
+- **Two-layer animation**: Outer div handles enter/exit transitions, inner div handles drag - prevents `style={{ x }}` from overwriting AnimatePresence animations
+- **Rubber band effect**: 0.3x resistance at boundaries for native feel
+- **Velocity detection**: Fast swipes (>500px/s) trigger navigation even with short distance
+- **Auto-navigate**: Opens first incomplete round on mount
+
+**Round Display Names** (`useBracketNavigation.ts`):
+```typescript
+getRoundDisplayName(round, index, total)
+// Returns: "Finale" | "Demi-finales" | "Quarts de finale" | "Round X"
+```
+
+**Pinch-to-Zoom** (`src/hooks/usePinchZoom.ts`) - Desktop only:
 - Supports touch gestures (pinch/pan) and mouse (scroll/drag)
 - Configurable min/max scale (default: 0.5x - 2.5x)
 - Smooth animations via Framer Motion
@@ -631,6 +682,7 @@ import type { Match } from '@/types/tournament';
 
 Test files in `src/tests/`:
 - `bracketGeneration.test.ts` - Tournament bracket algorithms
+- `bracketNavigation.test.ts` - Bracket carousel navigation & arena utilities
 - `tennisScoring.test.ts` - Tennis scoring engine
 - `matchService.test.ts` - Match operations
 - `useTournaments.test.tsx` - React hooks (uses happy-dom)
