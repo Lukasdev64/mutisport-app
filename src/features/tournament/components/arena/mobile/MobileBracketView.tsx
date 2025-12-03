@@ -56,8 +56,8 @@ export function MobileBracketView({
         </div>
       </motion.div>
 
-      {/* Zoom controls overlay */}
-      <div className="absolute bottom-24 right-4 flex flex-col gap-2 z-20">
+      {/* Zoom controls overlay - positioned above the FAB */}
+      <div className="absolute bottom-40 right-4 flex flex-col gap-2 z-20">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={zoomIn}
