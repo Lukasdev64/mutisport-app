@@ -12,6 +12,8 @@ interface UseTennisScoreOptions {
 
 interface UseTennisScoreReturn {
   score: TennisMatchScore;
+  /** Permet de définir directement le score (utilisé par l'éditeur) */
+  setScore: (score: TennisMatchScore) => void;
   history: TennisMatchScore[];
   awardPoint: (player: 1 | 2) => void;
   undo: () => void;
@@ -130,6 +132,7 @@ export function useTennisScore({
 
   return {
     score,
+    setScore,
     history,
     awardPoint,
     undo,

@@ -1,9 +1,10 @@
 import type {
   TennisMatchScore,
   TennisGameScore,
-  // TennisSetScore,
+  TennisSetScore,
   TennisMatchConfig
 } from '@/types/tennis';
+import { validateSetScore, getSetWinner } from './validation';
 
 /**
  * Interface pour passer les IDs réels des joueurs aux méthodes de scoring
@@ -262,5 +263,346 @@ export class TennisScoringEngine {
       p1: pointsMap[game.player1Points] || '40',
       p2: pointsMap[game.player2Points] || '40'
     };
+  }
+
+  // ============================================
+  // MÉTHODES D'ÉDITION DIRECTE
+  // ============================================
+
+  /**
+   * Définir directement le score d'un set (bypass point/jeu cascade)
+   * Utilisé pour l'édition rapide et les corrections
+   * Pour le set en cours (dernier set), les scores partiels sont autorisés
+   */
+  static setSetScore(
+    score: TennisMatchScore,
+    setIndex: number,
+    player1Games: number,
+    player2Games: number,
+    tiebreakScore?: { player1: number; player2: number },
+    playerIds?: PlayerIds,
+    config?: TennisMatchConfig
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+
+    // Valider les limites basiques
+    if (player1Games < 0 || player2Games < 0) return score;
+    if (player1Games > 7 || player2Games > 7) return score;
+
+    // S'assurer que le tableau de sets est assez grand
+    while (newScore.sets.length <= setIndex) {
+      newScore.sets.push({
+        player1Games: 0,
+        player2Games: 0,
+        isTiebreak: false
+      });
+    }
+
+    // Déterminer si c'est le set en cours (dernier set non terminé)
+    const isCurrentSet = setIndex === newScore.sets.length - 1;
+
+    // Pour les sets terminés (pas le set en cours), valider strictement
+    if (!isCurrentSet) {
+      const validation = validateSetScore(player1Games, player2Games, tiebreakScore);
+      if (!validation.isValid) {
+        console.warn('Score de set invalide:', validation.error);
+        return score; // Retourner le score original si invalide
+      }
+    }
+
+    // Détecter si c'est un tiebreak (6-6 ou 7-6)
+    const isTiebreak = (player1Games === 6 && player2Games === 6) ||
+                       (player1Games === 7 && player2Games === 6) ||
+                       (player1Games === 6 && player2Games === 7);
+
+    // Mettre à jour le set
+    newScore.sets[setIndex] = {
+      player1Games,
+      player2Games,
+      isTiebreak,
+      tiebreakScore: isTiebreak ? (tiebreakScore || { player1: 0, player2: 0 }) : undefined
+    };
+
+    // Recalculer les compteurs de sets gagnés
+    return this.recalculateMatchState(newScore, playerIds, config);
+  }
+
+  /**
+   * Ajouter un set terminé au match
+   */
+  static addCompletedSet(
+    score: TennisMatchScore,
+    player1Games: number,
+    player2Games: number,
+    tiebreakScore?: { player1: number; player2: number },
+    playerIds?: PlayerIds,
+    config?: TennisMatchConfig
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+
+    // Valider le score
+    const validation = validateSetScore(player1Games, player2Games, tiebreakScore);
+    if (!validation.isValid) {
+      console.warn('Score de set invalide:', validation.error);
+      return score;
+    }
+
+    // Ajouter le nouveau set
+    const newSet: TennisSetScore = {
+      player1Games,
+      player2Games,
+      isTiebreak: validation.isTiebreak,
+      tiebreakScore
+    };
+
+    newScore.sets.push(newSet);
+    newScore.currentSet = newScore.sets.length - 1;
+
+    // Recalculer l'état du match
+    return this.recalculateMatchState(newScore, playerIds, config);
+  }
+
+  /**
+   * Supprimer le dernier set (pour corrections)
+   */
+  static removeLastSet(
+    score: TennisMatchScore,
+    playerIds?: PlayerIds,
+    config?: TennisMatchConfig
+  ): TennisMatchScore {
+    if (score.sets.length <= 1) {
+      console.warn('Impossible de supprimer le dernier set');
+      return score;
+    }
+
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+    newScore.sets.pop();
+    newScore.currentSet = newScore.sets.length - 1;
+
+    // Recalculer l'état
+    return this.recalculateMatchState(newScore, playerIds, config);
+  }
+
+  /**
+   * Définir directement le score des jeux dans le set en cours
+   */
+  static setGameScore(
+    score: TennisMatchScore,
+    player1Games: number,
+    player2Games: number
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+    const currentSet = newScore.sets[newScore.currentSet];
+
+    if (!currentSet) {
+      return score;
+    }
+
+    // Valider les limites
+    if (player1Games < 0 || player2Games < 0) return score;
+    if (player1Games > 7 || player2Games > 7) return score;
+
+    currentSet.player1Games = player1Games;
+    currentSet.player2Games = player2Games;
+
+    // Gérer le tiebreak à 6-6
+    if (player1Games === 6 && player2Games === 6) {
+      currentSet.isTiebreak = true;
+      currentSet.tiebreakScore = currentSet.tiebreakScore || { player1: 0, player2: 0 };
+    } else {
+      currentSet.isTiebreak = false;
+      currentSet.tiebreakScore = undefined;
+    }
+
+    // Réinitialiser le score du jeu en cours
+    newScore.currentGame = {
+      player1Points: 0,
+      player2Points: 0,
+      isDeuce: false,
+      advantage: undefined
+    };
+
+    return newScore;
+  }
+
+  /**
+   * Ajuster le nombre de jeux d'un joueur (+1 ou -1)
+   */
+  static adjustGameCount(
+    score: TennisMatchScore,
+    playerId: 1 | 2,
+    delta: 1 | -1
+  ): TennisMatchScore {
+    const currentSet = score.sets[score.currentSet];
+    if (!currentSet) return score;
+
+    const newP1Games = playerId === 1
+      ? currentSet.player1Games + delta
+      : currentSet.player1Games;
+    const newP2Games = playerId === 2
+      ? currentSet.player2Games + delta
+      : currentSet.player2Games;
+
+    // Vérifier les limites
+    if (newP1Games < 0 || newP2Games < 0) return score;
+    if (newP1Games > 7 || newP2Games > 7) return score;
+
+    return this.setGameScore(score, newP1Games, newP2Games);
+  }
+
+  /**
+   * Définir directement le score des points dans le jeu en cours
+   */
+  static setPointScore(
+    score: TennisMatchScore,
+    player1Points: number,
+    player2Points: number
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+
+    // Valider les points
+    if (player1Points < 0 || player2Points < 0) return score;
+
+    newScore.currentGame = {
+      player1Points,
+      player2Points,
+      isDeuce: player1Points >= 3 && player2Points >= 3 && player1Points === player2Points,
+      advantage: player1Points >= 3 && player2Points >= 3 && player1Points !== player2Points
+        ? (player1Points > player2Points ? 1 : 2)
+        : undefined
+    };
+
+    return newScore;
+  }
+
+  /**
+   * Définir le score du tiebreak directement
+   */
+  static setTiebreakScore(
+    score: TennisMatchScore,
+    player1Points: number,
+    player2Points: number
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+    const currentSet = newScore.sets[newScore.currentSet];
+
+    if (!currentSet?.isTiebreak) {
+      console.warn('Pas de tiebreak en cours');
+      return score;
+    }
+
+    currentSet.tiebreakScore = { player1: player1Points, player2: player2Points };
+    return newScore;
+  }
+
+  /**
+   * Reconstruire un match complet à partir d'un tableau de scores de sets
+   * Utilisé pour l'édition de matchs terminés
+   */
+  static reconstructMatch(
+    config: TennisMatchConfig,
+    setScores: Array<{
+      player1Games: number;
+      player2Games: number;
+      tiebreakScore?: { player1: number; player2: number };
+    }>,
+    playerIds: PlayerIds
+  ): TennisMatchScore {
+    // Initialiser un nouveau match
+    let score = this.initializeMatch(config);
+    score.sets = []; // Vider les sets initiaux
+
+    // Ajouter chaque set
+    for (const setData of setScores) {
+      const validation = validateSetScore(
+        setData.player1Games,
+        setData.player2Games,
+        setData.tiebreakScore
+      );
+
+      if (!validation.isValid) {
+        console.warn('Set invalide ignoré:', validation.error);
+        continue;
+      }
+
+      score.sets.push({
+        player1Games: setData.player1Games,
+        player2Games: setData.player2Games,
+        isTiebreak: validation.isTiebreak,
+        tiebreakScore: setData.tiebreakScore
+      });
+    }
+
+    // S'assurer qu'il y a au moins un set
+    if (score.sets.length === 0) {
+      score.sets.push({
+        player1Games: 0,
+        player2Games: 0,
+        isTiebreak: false
+      });
+    }
+
+    score.currentSet = score.sets.length - 1;
+
+    // Recalculer l'état du match
+    return this.recalculateMatchState(score, playerIds, config);
+  }
+
+  /**
+   * Réouvrir un match terminé pour édition
+   * Efface isComplete et winnerId mais conserve tous les scores
+   */
+  static reopenMatch(score: TennisMatchScore): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+    newScore.isComplete = false;
+    newScore.winnerId = undefined;
+    return newScore;
+  }
+
+  /**
+   * Recalculer l'état du match (sets gagnés, completion) à partir des scores
+   * Méthode interne utilisée après les éditions
+   */
+  private static recalculateMatchState(
+    score: TennisMatchScore,
+    playerIds?: PlayerIds,
+    config?: TennisMatchConfig
+  ): TennisMatchScore {
+    const newScore = JSON.parse(JSON.stringify(score)) as TennisMatchScore;
+
+    // Utiliser la config si disponible, sinon inférer du nombre de sets
+    const setsToWin = config?.format === 'best_of_5' ? 3 :
+                      config?.format === 'best_of_3' ? 2 :
+                      newScore.sets.length >= 5 ? 3 : 2;
+
+    // Recalculer les sets gagnés
+    let p1Sets = 0;
+    let p2Sets = 0;
+
+    for (const set of newScore.sets) {
+      const winner = getSetWinner(set);
+      if (winner === 1) p1Sets++;
+      else if (winner === 2) p2Sets++;
+    }
+
+    newScore.player1Sets = p1Sets;
+    newScore.player2Sets = p2Sets;
+
+    // Vérifier si le match est terminé
+    if (p1Sets >= setsToWin) {
+      newScore.isComplete = true;
+      newScore.winnerId = playerIds?.player1Id ?? '1';
+    } else if (p2Sets >= setsToWin) {
+      newScore.isComplete = true;
+      newScore.winnerId = playerIds?.player2Id ?? '2';
+    } else {
+      newScore.isComplete = false;
+      newScore.winnerId = undefined;
+    }
+
+    // Mettre à jour currentSet
+    newScore.currentSet = newScore.sets.length - 1;
+
+    return newScore;
   }
 }

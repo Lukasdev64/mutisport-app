@@ -8,8 +8,8 @@ import { ArenaBottomNav } from './ArenaBottomNav';
 import { MobileBracketView } from './MobileBracketView';
 import { MobileMatchList } from './MobileMatchList';
 import { MobileStandingsView } from './MobileStandingsView';
-import { MobileMatchSheet } from './MobileMatchSheet';
 import { MobileQuickActions } from './MobileQuickActions';
+import { MatchModal } from '../MatchModal';
 import type { ArenaMobileLayoutProps, ArenaTab } from '@/types/arena';
 import type { Match } from '@/types/tournament';
 
@@ -204,20 +204,18 @@ export function ArenaMobileLayout({
       {/* Bottom navigation */}
       <ArenaBottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Match detail sheet */}
-      <MobileMatchSheet
-        match={selectedMatch}
-        tournament={tournament}
-        role={role}
-        isOpen={isSheetOpen}
-        onClose={() => {
-          setIsSheetOpen(false);
-          setSelectedMatch(null);
-        }}
-        onScoreUpdate={() => {
-          // Refresh will happen automatically via store
-        }}
-      />
+      {/* Match scoring modal - direct, sans intermédiaire */}
+      {selectedMatch && (
+        <MatchModal
+          match={selectedMatch}
+          tournament={tournament}
+          isOpen={isSheetOpen}
+          onClose={() => {
+            setIsSheetOpen(false);
+            setSelectedMatch(null);
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1,9 +1,12 @@
+import { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Undo2, Check, Trophy } from 'lucide-react';
+import { Undo2, Check, Trophy, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTennisScore, getTiebreakDisplay } from '../hooks/useTennisScore';
 import type { TennisMatchConfig, TennisMatchScore } from '@/types/tennis';
+
+export type EditTab = 'sets' | 'games' | 'tiebreak';
 
 interface TennisLiveScoringProps {
   config: TennisMatchConfig;
@@ -14,6 +17,10 @@ interface TennisLiveScoringProps {
   initialScore?: TennisMatchScore;
   onMatchComplete: (score: TennisMatchScore) => void;
   onCancel: () => void;
+  /** Callback pour ouvrir l'éditeur de score (géré par le parent) */
+  onOpenEdit?: (tab: EditTab) => void;
+  /** Expose le score actuel au parent */
+  onScoreChange?: (score: TennisMatchScore) => void;
 }
 
 export function TennisLiveScoring({
@@ -24,7 +31,9 @@ export function TennisLiveScoring({
   player2Name,
   initialScore,
   onMatchComplete,
-  onCancel
+  onCancel,
+  onOpenEdit,
+  onScoreChange
 }: TennisLiveScoringProps) {
   const {
     score,
@@ -51,8 +60,14 @@ export function TennisLiveScoring({
   // Determine winner name
   const winnerName = winnerId === player1Id ? player1Name : player2Name;
 
+  // Handler pour ouvrir l'éditeur (délègue au parent)
+  const handleOpenEdit = useCallback((tab: EditTab) => {
+    onScoreChange?.(score); // Expose le score actuel au parent
+    onOpenEdit?.(tab);
+  }, [onOpenEdit, onScoreChange, score]);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Match Complete Overlay */}
       <AnimatePresence>
         {isComplete && (
@@ -84,20 +99,27 @@ export function TennisLiveScoring({
         )}
       </AnimatePresence>
 
-      {/* Score Header */}
+      {/* Score Header - Tappable pour édition */}
       <div className="bg-slate-800/80 border-b border-slate-700 px-4 py-3">
-        {/* Sets Score */}
-        <div className="flex items-center justify-center gap-4 mb-2">
+        {/* Sets Score - Tappable */}
+        <button
+          onClick={() => handleOpenEdit('sets')}
+          className="flex items-center justify-center gap-4 mb-2 w-full py-2 rounded-lg hover:bg-slate-700/50 transition-colors touch-target"
+        >
           <span className="text-sm text-slate-400">SETS</span>
           <div className="flex items-center gap-2">
             <span className="score-text-lg font-bold text-white">{score.player1Sets}</span>
             <span className="text-slate-500">-</span>
             <span className="score-text-lg font-bold text-white">{score.player2Sets}</span>
           </div>
-        </div>
+          <Pencil className="w-3 h-3 text-slate-500 ml-2" />
+        </button>
 
-        {/* Games in Current Set */}
-        <div className="flex items-center justify-center gap-4">
+        {/* Games in Current Set - Tappable */}
+        <button
+          onClick={() => handleOpenEdit('games')}
+          className="flex items-center justify-center gap-4 w-full py-2 rounded-lg hover:bg-slate-700/50 transition-colors touch-target"
+        >
           <span className="text-xs text-slate-500 uppercase">Jeux</span>
           <div className="flex items-center gap-2 text-lg">
             <span className="text-white font-medium">{currentSet?.player1Games ?? 0}</span>
@@ -105,20 +127,31 @@ export function TennisLiveScoring({
             <span className="text-white font-medium">{currentSet?.player2Games ?? 0}</span>
           </div>
           {isTiebreak && tiebreakDisplay && (
-            <span className="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenEdit('tiebreak');
+              }}
+              className="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded hover:bg-amber-500/30 transition-colors"
+            >
               TB: {tiebreakDisplay}
-            </span>
+            </button>
           )}
-        </div>
+          <Pencil className="w-3 h-3 text-slate-500 ml-2" />
+        </button>
 
-        {/* Previous Sets Summary */}
+        {/* Previous Sets Summary - Tappable pour éditer les sets */}
         {score.sets.length > 1 && (
           <div className="flex items-center justify-center gap-2 mt-2 text-xs text-slate-500">
             {score.sets.slice(0, score.currentSet).map((set, idx) => (
-              <span key={idx} className="px-2 py-1 bg-slate-900 rounded">
+              <button
+                key={idx}
+                onClick={() => handleOpenEdit('sets')}
+                className="px-2 py-1 bg-slate-900 rounded hover:bg-slate-700 transition-colors"
+              >
                 {set.player1Games}-{set.player2Games}
                 {set.isTiebreak && set.tiebreakScore && ` (${set.tiebreakScore.player1}-${set.tiebreakScore.player2})`}
-              </span>
+              </button>
             ))}
           </div>
         )}
@@ -227,6 +260,15 @@ export function TennisLiveScoring({
         >
           <Undo2 className="w-5 h-5 mr-2" />
           Annuler
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => handleOpenEdit('sets')}
+          className="flex-1 py-6 text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 touch-target"
+        >
+          <Pencil className="w-5 h-5 mr-2" />
+          Éditer
         </Button>
 
         <Button
